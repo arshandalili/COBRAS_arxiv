@@ -1,0 +1,75 @@
+\begin{table*}[th]
+\centering
+\caption{The Dist-n (n = 1, 2, 3) lexical diversity evaluation of methods on detoxification with Falcon-7B, Mistral-7B, and LLaMA3.1-8B. Results are averaged over three runs.}
+\label{tab:toxicity_quality}
+\resizebox{0.65\linewidth}{!}{%
+\begin{tabular}{cc|ccc}
+\toprule[1.5pt]
+\multirow{2}{*}{\textbf{Method}} & \multirow{2}{*}{\textbf{Model}} &
+\multicolumn{3}{c}{\textbf{Detoxification} \textsubscript{\scriptsize\textbf{(Real Toxicity Prompts)}}} \\
+\cmidrule(lr){3-5}
+& & \textbf{Dist-1}\,$\boldsymbol{\uparrow}$ & \textbf{Dist-2}\,$\boldsymbol{\uparrow}$ & \textbf{Dist-3}\,$\boldsymbol{\uparrow}$ \\
+\midrule
+
+% ---------------- Falcon-7B ----------------
+Original     & \multirow{11}{*}{\rotatebox{90}{Falcon-7B}} & 0.810\std{0.003} & 0.948\std{0.003} & 0.972\std{0.002} \\
+\midrule
+RepE        &  & 0.797\std{0.001} & 0.940\std{0.001} & 0.966\std{0.001} \\
+ITI         &  & 0.796\std{0.004} & 0.935\std{0.006} & 0.960\std{0.004} \\
+CAA         &  & 0.810\std{0.002} & 0.950\std{0.002} & 0.974\std{0.001} \\
+MiMiC       &  & 0.801\std{0.000} & 0.941\std{0.002} & 0.967\std{0.002} \\
+HPR         &  & 0.768\std{0.005} & 0.919\std{0.002} & 0.950\std{0.003} \\
+RE-Control  &  & 0.802\std{0.005} & 0.941\std{0.007} & 0.964\std{0.007} \\
+Linear-AcT  &  & 0.810\std{0.002} & 0.949\std{0.002} & 0.972\std{0.001} \\
+TruthFlow   &  & 0.769\std{0.004} & 0.910\std{0.005} & 0.942\std{0.005} \\
+\midrule
+\ours{} (Ours) & & 0.798\std{0.003} & 0.944\std{0.005} & 0.969\std{0.004} \\
+\midrule[1pt]\midrule[1pt]
+
+% ---------------- Mistral-7B ----------------
+Original & \multirow{11}{*}{\rotatebox{90}{Mistral-7B}} & 0.905\std{0.003} & 0.991\std{0.001} & 0.997\std{0.001} \\
+\midrule
+RepE       &  & 0.774\std{0.009} & 0.969\std{0.004} & 0.994\std{0.002} \\
+ITI        &  & 0.901\std{0.004} & 0.989\std{0.002} & 0.996\std{0.001} \\
+CAA        &  & 0.906\std{0.001} & 0.991\std{0.001} & 0.997\std{0.001} \\
+MiMiC      &  & 0.906\std{0.002} & 0.991\std{0.002} & 0.997\std{0.001} \\
+HPR        &  & 0.871\std{0.002} & 0.975\std{0.002} & 0.988\std{0.001} \\
+RE-Control &  & 0.901\std{0.003} & 0.989\std{0.001} & 0.996\std{0.001} \\
+Linear-AcT &  & 0.907\std{0.004} & 0.991\std{0.000} & 0.997\std{0.001} \\
+TruthFlow  &  & 0.913\std{0.005} & 0.991\std{0.002} & 0.995\std{0.004} \\
+\midrule
+\ours{} (Ours) & & 0.905\std{0.002} & 0.993\std{0.001} & 0.998\std{0.000} \\
+\midrule[1pt]\midrule[1pt]
+
+% ---------------- LLaMA3.1-8B ----------------
+Original & \multirow{11}{*}{\rotatebox{90}{LLaMA3.1-8B}} & 0.909\std{0.002} & 0.991\std{0.001} & 0.997\std{0.000} \\
+\midrule
+RepE      &  & 0.906\std{0.003} & 0.991\std{0.001} & 0.997\std{0.001} \\
+ITI       &  & 0.906\std{0.003} & 0.991\std{0.001} & 0.997\std{0.000} \\
+CAA       &  & 0.907\std{0.001} & 0.991\std{0.002} & 0.996\std{0.001} \\
+MiMiC     &  & 0.908\std{0.001} & 0.992\std{0.001} & 0.998\std{0.001} \\
+HPR       &  & 0.911\std{0.002} & 0.993\std{0.000} & 0.998\std{0.001} \\
+RE-Control&  & 0.909\std{0.003} & 0.992\std{0.001} & 0.997\std{0.001} \\
+Linear-AcT&  & 0.907\std{0.001} & 0.991\std{0.001} & 0.997\std{0.001} \\
+TruthFlow &  & 0.905\std{0.001} & 0.992\std{0.000} & 0.998\std{0.001} \\
+\midrule
+\ours{} (Ours) & & 0.905\std{0.002} & 0.993\std{0.001} & 0.998\std{0.001} \\
+% \midrule[1pt]\midrule[1pt]
+
+% ---------------- Qwen2.5-7B ----------------
+Original & \multirow{11}{*}{\rotatebox{90}{\diff{Qwen2.5-7B}}} & 0.910\std{0.003} & 0.992\std{0.000} & 0.997\std{0.001} \\
+\midrule
+RepE      & & 0.878\std{0.002} & 0.961\std{0.001} & 0.976\std{0.002} \\
+ITI       & & 0.894\std{0.002} & 0.984\std{0.000} & 0.993\std{0.001} \\
+CAA       & & 0.910\std{0.001} & 0.991\std{0.000} & 0.996\std{0.001} \\
+MiMiC     & & 0.909\std{0.002} & 0.991\std{0.001} & 0.996\std{0.002} \\
+HPR       & & 0.910\std{0.001} & 0.991\std{0.001} & 0.996\std{0.002} \\
+RE-Control& & 0.902\std{0.003} & 0.988\std{0.001} & 0.995\std{0.001} \\
+Linear-AcT& & 0.912\std{0.002} & 0.993\std{0.001} & 0.998\std{0.001} \\
+TruthFlow & & 0.866\std{0.004} & 0.977\std{0.003} & 0.989\std{0.003} \\
+\midrule
+\ours{} (Ours) & & 0.906\std{0.003} & 0.992\std{0.002} & 0.997\std{0.001} \\
+\bottomrule[1.5pt]
+\end{tabular}
+}
+\end{table*}

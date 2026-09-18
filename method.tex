@@ -1,0 +1,306 @@
+\section{Background}
+\label{sec:bg}
+This section establishes the background for the steering problem by defining key notation and activation populations. We provide empirical evidence that these activations concentrate on a hypersphere, justifying the Riemannian geometry utilized throughout this work.
+
+\paragraph{Notation and setup.} 
+Fix a decoder-only transformer with residual width $d$, a layer index $\ell$, and a token position index $t$. For an input sequence $s$, let $\boldsymbol{h}_s \in \mathbb{R}^{d}$
+denote the residual-stream activation at layer-position pair $(\ell,t)$ when the model is run without steering. We consider two populations of input sequences, one associated with the desired behavior and one associated with the undesired behavior, and write $\pplus$ and $\pminus$ for the induced distributions of their activations. Given i.i.d.\ samples from these activation distributions $\mathcal{D}^{+} = \{\boldsymbol{h}^{+}_{i}\}_{i=1}^{N_{+}}$ with $\boldsymbol{h}^{+}_{i} \overset{\mathrm{i.i.d.}}{\sim} \pplus$ and 
+$\mathcal{D}^{-} = \{\boldsymbol{h}^{-}_{j}\}_{j=1}^{N_{-}}$ with  $\boldsymbol{h}^{-}_{i} \overset{\mathrm{i.i.d.}}{\sim} \pminus$,
+we denote the corresponding empirical measures by $\pplushat$ and $\pminushat$. At inference time, for a new input sequence $q$, let $\hquery \in \mathbb{R}^{d}$ be its unsteered activation at $(\ell,t)$. The steering map should return a modified activation that shifts $\hquery$ toward regions of activation space with high density under $\pplus$ and low density under $\pminus$, while remaining sufficiently close to $\hquery$ to preserve the semantics of $q$.
+
+
+\paragraph{Activation Manifold.}
+\label{subsec:manifold}
+To leverage the inherent geometric structure of neural representations, we motivate our manifold-based approach by observing the distribution of activation magnitudes within transformer architectures. A line of recent work has shown that, once the layer index is fixed, residual-stream activations concentrate strongly in norm across inputs, both empirically~\citep{pham2024householder, you2026spherical} and structurally~\citep{yang2023spectral, xie2026controlled}. Thus, for the present layer $\ell$, most of the variability relevant for steering lies in the \emph{direction} of the activation rather than in its Euclidean magnitude. This suggests that the natural state space is not all of $\mathbb{R}^{d}$ but instead a sphere of approximately constant radius. We therefore model activations as living on the hypersphere $\Sph = \{\boldsymbol{x}\in\mathbb{R}^{d} : \|\boldsymbol{x}\| = R\}$.  This norm concentration allows \Cobras to cast the steering problem into hyperspherical Riemannian geometry, letting us leverage established tools and results from Riemannian optimal transport.
+
+
+Figure~\ref{fig:norm-concentration} provides empirical support for this approximation by showing that activation norms cluster tightly around the layer mean radius. Accordingly, we project the query activation and the samples in $\mathcal{D}^{\pm}$ onto $\Sph$ and formulate the steering problem on this manifold.
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=\textwidth]{figures/norm_concentration.pdf}
+\caption{Normalized last-token residual-stream norms across layers on TruthfulQA for four LLMs. Each activation norm is divided by the layer-wise mean norm. Dark and light bands show the 25th-75th percentiles. The coefficient of variation (CoV) is reported per model.}
+% \caption{Normalized residual-stream norms at the last token position across all layers of four 7-8B language models, computed over TruthfulQA data. Each activation norm is divided by the layer-wise mean norm. Dark and light bands show the 25th-75th percentiles. The coefficient of variation (CoV) is reported per model.}
+\label{fig:norm-concentration}
+\end{figure}
+
+
+We equip $\Sph$ with the tangent projector $\Pi_{\boldsymbol{x}} = \boldsymbol{I} - R^{-2}\boldsymbol{x}\boldsymbol{x}^{\top}$, Riemannian gradient $\nablaS f = \Pi_{\boldsymbol{x}}\nabla f$, and geodesic distance $d_{\Sph}(\boldsymbol{x},\boldsymbol{y}) = R\arccos\left(R^{-2}\boldsymbol{x}^{\top}\boldsymbol{y}\right)$. The spherical exponential map $\exp_{\boldsymbol{x}}$ walks from
+$\boldsymbol{x}$ along a tangent vector $\boldsymbol{v}$ for a
+geodesic arc of length $\|\boldsymbol{v}\|$, while the logarithm
+$\log_{\boldsymbol{x}}(\boldsymbol{y})$ inverts this operation,
+returning the tangent vector at $\boldsymbol{x}$ that points toward
+$\boldsymbol{y}$ along the shortest great-circle arc, with magnitude
+equal to the geodesic distance. Explicitly,
+\begin{equation}
+\exp_{\boldsymbol{x}}(\boldsymbol{v}) = \cos\left(\frac{\|\boldsymbol{v}\|}{R}\right)\boldsymbol{x} + R\sin\left(\frac{\|\boldsymbol{v}\|}{R}\right)\frac{\boldsymbol{v}}{\|\boldsymbol{v}\|}, \qquad \log_{\boldsymbol{x}}(\boldsymbol{y}) = \frac{\theta}{\sin\theta}\Pi_{\boldsymbol{x}}\boldsymbol{y}, \quad \theta = \frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{y})}{R}.
+\label{eq:expmap}
+\end{equation}
+With the contrastive samples $\mathcal{D}^-\sim\pminus$ and $\mathcal{D}^+\sim\pplus$ projected onto $\Sph$ and the Riemannian toolkit in hand, we develop \Cobras that operates entirely within this spherical geometry.
+
+
+
+\section{LLM Steering as Schr\"{o}dinger Bridge}
+\label{sec:method}
+A growing body of steering methods~\cite{rimsky2024steering, zhaoodesteer, li2023inference} implicitly construct steering directions that approximate the gradient of the log-density ratio between desired and undesired activations:
+% {\begingroup
+% \setlength{\abovedisplayskip}{2pt}
+% \setlength{\belowdisplayskip}{2pt}
+% \setlength{\abovedisplayshortskip}{2pt}
+% \setlength{\belowdisplayshortskip}{2pt}
+\begin{equation}
+  v(\boldsymbol{x}) \;\propto\; \nabla \log \frac{\pplus(\boldsymbol{x})}{\pminus(\boldsymbol{x})}.
+  \label{eq:ldr-ideal}
+\end{equation}
+% \endgroup}
+
+
+The term $\nabla\log \pplus$ points toward regions favored by the desired behavior, while $-\nabla\log\pminus$ points away from regions associated with the undesired behavior. Together, they define the steepest-ascent direction of the density ratio. As observed by~\citet{zhaoodesteer}, many existing steering methods can be reinterpreted as approximations to Eq.~\ref{eq:ldr-ideal}. For example, Contrastive Activation Addition (CAA) \citep{rimsky2024steering} gets its steering vector with $p_{+}=\mathcal{N}(\boldsymbol{\mu}_{+}, \boldsymbol{I}_d)$ and $p_{-}=\mathcal{N}(\boldsymbol{\mu}_{-}, \boldsymbol{I}_d)$, leading to $v(\boldsymbol{x})=\nabla\log\frac{p_{+}}{p_{-}}=\boldsymbol{\mu}_+ - \boldsymbol{\mu}_-$. In Appendix~\ref{apx:ldr-formalize} we extend this connection and show that several other prominent steering paradigms such as  Spherical Steering (SS)~\citep{you2026spherical}, Inference-Time Intervention (ITI)~\citep{li2023inference},  Householder Reflection Probing (HPR)~\citep{pham2024householder}, and ODESteer~\citep{zhaoodesteer}  can also be unified under a singular framework governed by log-density ratio optimization over a latent manifold.
+
+Nevertheless, Eq.~\ref{eq:ldr-ideal} is typically \emph{adopted} as a plausible objective rather than \emph{derived} from an optimization problem. To our knowledge, no existing work formulates an optimization problem on the activation manifold whose solution provably yields the log-density-ratio gradient of Eq.~\ref{eq:ldr-ideal}. This gap raises a natural  question: can such a optimization-based formulation be rigorously established?
+
+
+We show that the Schr\"{o}dinger Bridge (SB)  provides a generalized, principled framework for steering. Specifically, we cast steering as an SB problem between the two marginals $\pminus$ and $\pplus$ and seek the optimal stochastic process that steers the distribution of hidden state from $\pminus$ to $\pplus$ with minimal ``effort,'' measured as the Kullback-Leibler (KL) divergence from a reference stochastic process. The SB solution induces a stochastic differential equation (SDE). To find the drift of the corresponding SDE, we reduce SB to an entropic optimal transport and solve it using the iterative Sinkhorn algorithm by alternating between updating the dual potentials (Sec.~\ref{subsec:sb}). We then apply the probability flow ODE to the induced SDE drift to obtain a deterministic process with the same time marginals. The resulting ODE has drift proportional to $\nablaS \log (\hat\psi / \hat\phi)$, the Riemannian gradient of the log-ratio of two Schr\"{o}dinger potentials (Sec.~\ref{subsec:pf-ode}). Finally, we evaluate this drift at arbitrary query points using nonparametric kernel density estimation (Sec.~\ref{subsec:estimation}), yielding the \Cobras method (Sec.~\ref{subsec:algorithm}).
+
+
+This derivation has two key consequences. First, the heuristic Eq.~\ref{eq:ldr-ideal} emerges as a well-defined limiting case of the SB log-ratio $\log(\hat\psi / \hat\phi)$: when the Sinkhorn potentials are approximately uniform, $\hat\psi$ and $\hat\phi$ reduce to kernel density estimates of $\pplus$ and $\pminus$, and the drift becomes $\nablaS\log(\pplus/\pminus)$ (Prop.\ref{prop:ldr-limit}). To the best of our knowledge, this is the first principled derivation of the log-density-ratio steering objective from a rigorous optimization problem. Second, because the Schr\"{o}dinger potentials are evaluated at the current activation, the resulting steering is inherently context dependent. Different queries receive different steering directions, with the weights adapting to the query's location and naturally attenuating intervention for inputs far from the training, thus supporting OOD queries.
+
+
+
+%For discrete marginals, this reduces to entropic optimal transport, whose dual potentials $(\phi_j, \psi_i)$ are computed by Sinkhorn iterations. The optimal bridge induces a forward SDE. We then apply the probability flow ODE construction to this SDE to obtain a deterministic process with the same time marginals (Sec.~\ref{subsec:pf-ode}). The resulting ODE has drift proportional to $\nablaS \log (\hat\psi / \hat\phi)$, the Riemannian gradient of the log-ratio of two Schr\"{o}dinger potentials. Finally, we evaluate this drift at arbitrary query points using nonparametric kernel density estimation, yielding the \Cobras method (Sec.~\ref{subsec:estimation}).
+
+\subsection{Formulating the objective of steering}
+\label{subsec:sb}
+
+We cast the steering problem as finding the path measure $P^{\star}$ that transports the empirical distribution of undesired activations, $\pminushat$, to the desired distribution, $\pplushat$, while minimizing the KL divergence with respect to a reference path measure $Q$:
+\begin{equation}
+P^{\star} = \arg\min_{P}\;\mathrm{KL}(P \,\|\, Q)
+\qquad\text{s.t.} \qquad
+P_{0} = \pminus,
+\quad
+P_{T} = \pplus,
+\label{eq:sb}
+\end{equation}
+where $P_{0}$ and $P_{T}$ denote the time-$0$ and time-$T$ marginals of $P$. The KL penalty ensures that the resulting transport plan is the minimal entropically regularized perturbation of the reference $Q$. We take $Q$ as Brownian motion on $\Sph$ with diffusivity $\sigma^{2} > 0$. It is defined by the SDE
+\begin{equation}
+d\boldsymbol{u}_{t} = \sigma\,dW_{t},
+\label{eq:brownian-sde}
+\end{equation}
+where $W_{t}$ is Brownian motion (random Gaussian noise) at time $t$. We need the reference's one-step transition kernel for solving Eq.~\ref{eq:sb}. In the short-time regime, the reference's transition kernel is approximated as \cite{de2022riemannian, chen2023logarithmic}
+\begin{equation}
+K_{\sigma}(\boldsymbol{x},\boldsymbol{y})
+= \exp\left(-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{y})^{2}}{2\sigma^{2}}\right).
+\label{eq:kernel}
+\end{equation}
+
+Intuitively, this kernel acts as a spatial transition probability. It penalizes large geodesic distances $d_{\Sph}(\boldsymbol{x},\boldsymbol{y})$, ensuring that a particle at $\boldsymbol{x}$ is most likely to diffuse to a nearby point $\boldsymbol{y}$ with spread $\sigma^{2}$.
+
+Having established the reference frame, we shift our focus to the practical resolution of solving Eq.~\ref{eq:sb}. In practice, the true distributions $p_-/p_+$ are typically inaccessible; consequently, we must operate within a data-driven framework, substituting these theoretical distributions with their empirical counterparts $\hat{p}_- / \hat{p}_+$. With these discrete marginals, the static formulation of Eq.~\ref{eq:sb} reduces to an \textit{entropic optimal transport} task with squared geodesic cost $c_{ji} = d_{\Sph}(\boldsymbol{h}^{-}_{j},\,\boldsymbol{h}^{+}_{i})^{2}/{(2\sigma^{2})}$ \cite{nutz2021introduction}, that governs the geometry of the underlying manifold. Then  the objective becomes to find a coupling that minimizes the transport cost while accounting for diffusive entropy
+\begin{equation}
+    \pi^{\star} = \arg\min_{\pi \in \Pi(\pminushat,\, \pplushat)} 
+\sum_{j=1}^{N_{-}}\sum_{i=1}^{N_{+}} \pi_{ji}\, c_{ji} 
++ \sum_{j=1}^{N_{-}}\sum_{i=1}^{N_{+}} \pi_{ji} \log \pi_{ji},
+    \label{eq:e-ot}
+\end{equation}
+and by Sinkhorn's theorem~\citep{cuturi2013sinkhorn}, the optimal coupling $\pi^{\star}$ factorizes as
+\begin{equation}
+\pi^{\star}_{ji}
+= \exp\left(\log\phi_{j} + \log\psi_{i} - c_{ji}\right),
+\label{eq:coupling}
+\end{equation}
+where the dual potentials $\{\phi_{j}\}_{j=1}^{N_{-}}$ and $\{\psi_{i}\}_{i=1}^{N_{+}}$ satisfy
+\begin{equation}
+\log\phi_{j} = -\log N_{-} - \log\sum_{i=1}^{N_{+}} \exp\left(\log\psi_{i} - c_{ji}\right),\;
+\log\psi_{i} = -\log N_{+} - \log\sum_{j=1}^{N_{-}} \exp\left(\log\phi_{j} - c_{ji}\right)
+\label{eq:sinkhorn}
+\end{equation}
+These dual potentials are efficiently computed using Sinkhorn iterations, alternating updates between $\phi$ and $\psi$ until convergence and later will be used to obtain the drift of the SDE induced by Eq.~\ref{eq:sb}. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Optimal Bridge SDE and its Probability Flow ODE }
+\label{subsec:pf-ode}
+With the dual potentials computed, we now derive the forward SDE of the optimal solution to Eq.~\ref{eq:sb}. The SB optimal bridge forward SDE is \cite{chen2021likelihood}
+\begin{equation}
+d\boldsymbol{x}_{t}
+= \sigma^{2}\,\nablaS\log\hat\psi(\boldsymbol{x}_{t},t)\,dt
+\;+\; \sigma\,dW_{t},
+\label{eq:sb-sde}
+\end{equation}
+where $\hat\psi(\cdot,t)$ is the backward Schr\"{o}dinger potential obtained by 
+propagating the terminal potential $\psi$ backward via a kernel-weighted sum over 
+the positive samples, with bandwidth $(T-t)\sigma^{2}$ that shrinks to zero as 
+$t\to T$, concentrating mass on $\pplushat$:
+\begin{equation}
+\hat\psi(\boldsymbol{x},t)
+= \sum\nolimits_{i=1}^{N_{+}} \psi_{i}\,
+  K_{(T-t)\sigma^{2}}(\boldsymbol{x},\,\boldsymbol{h}^{+}_{i}).
+\label{eq:psi-heat}
+\end{equation}
+Similarly, the forward Schr\"{o}dinger potential propagates $\phi$ from the 
+starting margin as a kernel-weighted sum over the negative samples, with bandwidth 
+$t\sigma^{2}$ that shrinks to zero as $t\to 0$, concentrating mass on 
+$\pminushat$:
+\begin{equation}
+\hat\phi(\boldsymbol{x},t)
+= \sum\nolimits_{j=1}^{N_{-}} \phi_{j}\,
+  K_{t\sigma^{2}}(\boldsymbol{x},\,\boldsymbol{h}^{-}_{j}).
+\label{eq:phi-heat}
+\end{equation}
+A fundamental property of the SB when the reference process is Brownian motion is that its time-marginal density factorizes as $p_{t}(\cdot) = \hat\phi(\cdot,t)\,\hat\psi(\cdot,t)$ \citep{chen2023deep}. Now with the SDE at Eq.~\ref{eq:sb-sde} in hand, we seek a deterministic process sharing the same marginal evolution with it. The probability flow ODE provides such a process. For any diffusion $d\boldsymbol{x}_t = b\,dt + \sigma\,dW_t$ with marginal density $p_{t}$, the corresponding probability flow ODE is $d\boldsymbol{x}_t = \left(b - \tfrac{\sigma^{2}}{2}\nablaS\log p_{t}\right)\,dt$~\citep{song2020score}. Substituting $b = \sigma^{2}\nablaS\log\hat\psi$ and $\log p_{t} = \log\hat\phi + \log\hat\psi$ gives
+\begin{align}
+d\boldsymbol{x}_t
+&= \left(\sigma^{2}\nablaS\log\hat\psi
+ - \tfrac{\sigma^{2}}{2}\bigl(\nablaS\log\hat\phi + \nablaS\log\hat\psi\bigr)\right)dt
+\nonumber\\
+&= \tfrac{\sigma^{2}}{2}\,\nablaS\log\hat\psi(\boldsymbol{x}_{t},t)dt
+ \;-\;\tfrac{\sigma^{2}}{2}\,\nablaS\log\hat\phi(\boldsymbol{x}_{t},t)dt,
+\label{eq:pf-ode}
+\end{align}
+or equivalently,
+\begin{equation}
+d\boldsymbol{x}_t
+= \frac{\sigma^{2}}{2}\,\nablaS\log
+  \frac{\hat\psi(\boldsymbol{x}_{t},t)}
+       {\hat\phi(\boldsymbol{x}_{t},t)}dt.
+\label{eq:ldr}
+\end{equation}
+
+\textcolor{blue}{The two terms in the drift have different roles: $\nabla_{\mathcal S}\log\hat\psi$ attracts toward $\hat p_+$, while $-\nabla_{\mathcal S}\log\hat\phi$ repels from $\hat p_-$. To relate this drift to the heuristic objective of Eq.~\eqref{eq:ldr-ideal}, two parameters must be kept apart: the entropic scale of the transport cost, which controls how strongly the coupling distinguishes sample pairs, and the bandwidth at which densities are evaluated. We therefore write $c_{ji}=d_{\mathcal S}(h_j^-,h_i^+)^2/(2\varepsilon)$ from here on and reserve $b$ for the evaluation bandwidth of Eqs.~\eqref{eq:psi-heat}--\eqref{eq:phi-heat}.}
+
+
+\begin{proposition}
+\label{prop:limit}
+Fix the samples $\mathcal D^\pm$ and a bandwidth $b>0$, and let $c_{\max}=\max_{j,i}c_{ji}$. Let $(\phi,\psi)$ solve the Sinkhorn equations \eqref{eq:sinkhorn} and let $v$ be the field of Eq.~\eqref{eq:field}. Then \begin{equation*} \max_j \log\phi_j-\min_j \log\phi_j \;\le\; c_{\max}, \qquad \max_i \log\psi_i-\min_i \log\psi_i \;\le\; c_{\max}, \end{equation*} and for every $x\in\mathcal S$, \begin{equation}\label{eq:prop1-bound} \Big\lVert\, v(x)\;-\;b\,\nabla_{\mathcal S}\log\frac{\hat p^{\,+}_b(x)}{\hat p^{\,-}_b(x)}\,\Big\rVert \;\le\; 2\pi R\,\bigl(e^{c_{\max}}-1\bigr), \end{equation} where $\hat p^{\,\pm}_b(x)=\frac{1}{N_\pm}\sum K_b(x,h^\pm_\cdot)$ are the spherical kernel density estimates of $p_\pm$. In particular, as $\varepsilon\to\infty$ the potentials become uniform and $v$ converges uniformly on $\mathcal S$ to the kernel density-ratio drift.
+\end{proposition}
+
+\begin{corollary}[Statistical limit, \cite{pelletier2005kernel}]
+\label{cor:kde}
+Suppose $p_\pm$ are $C^1$ densities with respect to the Riemannian volume on $\mathcal S$, bounded below on a compact set $K\subset\mathcal S$. If $N_\pm\to\infty$ and $b_N\to 0$ with $N_\pm b_N^{\,m+2}/\log N_\pm\to\infty$, where $m=\dim\mathcal S$, then $\nabla_{\mathcal S}\log(\hat p^{\,+}_{b_N}/\hat p^{\,-}_{b_N}) \to\nabla_{\mathcal S}\log(p_+/p_-)$ uniformly on $K$.
+\end{corollary}
+
+The proof of Proposition~\ref{prop:limit} is given in Appendix~\ref{app:proof-prop1}. Proposition~\ref{prop:limit}
+holds at finite samples with $b$ fixed, whereas Corollary~\ref{cor:kde} is the
+usual consistency of kernel density estimation and requires a shrinking
+bandwidth. Second,
+Proposition~\ref{prop:limit} explains the heuristic objective: when the transport problem carries no information, the SB
+drift equals the log-density-ratio drift that prior methods postulate, up to an
+explicit error. To our knowledge this is the first derivation of that objective
+from a well-posed optimization problem.
+
+
+\subsection{Non-parametric Estimation of the Probability Flow ODE Drift}
+\label{subsec:estimation}
+To steer a hidden state $\hquery$, we need to solve the ODE in Eq.~\ref{eq:pf-ode} with initial $\boldsymbol{x}_0=\hquery$ which requires computing the Riemannian gradients $\nablaS\log\hat\psi$ and $\nablaS\log\hat\phi$ as continuous functions on $\Sph$. Here we derive these objects using Kernel Density Estimation (KDE). This requires us to extend the potential values $(\phi_{j},\psi_{i})$, but they are only defined at the training points in $\mathcal{D}^-/\mathcal{D}^+$. To evaluate them at a query $\hquery$, we marginalize through the opposite training points via the kernel and cost matrix:
+\begin{align}
+\log\tilde\psi_{i}(\hquery)
+&= \operatorname{logsumexp}_{j}\!\left[
+   \log\phi_{j}
+   - \frac{d_{\Sph}(\hquery,\boldsymbol{h}^{-}_{j})^{2}}{2\sigma^{2}}
+   - c_{ji}\right],
+\label{eq:ext-psi}\\[4pt]
+\log\tilde\phi_{j}(\hquery)
+&= \operatorname{logsumexp}_{i}\!\left[
+   \log\psi_{i}
+   - \frac{d_{\Sph}(\hquery,\boldsymbol{h}^{+}_{i})^{2}}{2\sigma^{2}}
+   - c_{ji}\right].
+\label{eq:ext-phi}
+\end{align}
+For a query $\hquery$, Eq.~\ref{eq:ext-psi} weights each negative sample $\boldsymbol{h}^{-}_{j}$ by its proximity (via $\phi_{j}$ and the kernel), then propagate through the cost matrix to assign an effective potential to each positive sample $\boldsymbol{h}^{+}_{i}$.
+
+
+\paragraph{Riemannian gradient via kernel density estimation.}~The  gradient of $\log\hat\psi$ at $\hquery$ is a weighted Riemannian mean direction in the tangent space $T_{\hquery}\Sph$, yielding (the derivation is provided in Appendix~\ref{app:grad-psi}):
+\begin{equation}
+\nablaS\log\hat\psi(\hquery)
+=
+\sum_{i=1}^{N_{+}} \bar{w}^{+}_{i}(\hquery)\,
+\log_{\hquery}(\boldsymbol{h}^{+}_{i}),
+\label{eq:grad-psi}
+\end{equation}
+with weights
+\begin{equation}
+\bar{w}^{+}_{i}(\hquery)
+= \mathrm{softmax}_{i}\!\left[
+  \log\tilde\psi_{i}(\hquery)
+  - \frac{d_{\Sph}(\hquery,\boldsymbol{h}^{+}_{i})^{2}}
+         {2\sigma^{2}}\right],
+\label{eq:weights-pos}
+\end{equation}
+and symmetrically for $\nablaS\log\hat\phi(\hquery)=\sum_{j}\bar{w}^{-}_{j}(\hquery)\,\log_{\hquery}(\boldsymbol{h}^{-}_{j})$ with weights $\bar{w}^{-}_{j}(\hquery)$ defined over $\mathcal{D}^{-}$ using $\tilde\phi_{j}$. Substituting these expressions into the probability flow ODE in Eq.~\ref{eq:pf-ode} and absorbing the constant $\frac{\sigma^{2}}{2}$ into the step size yields the \Cobras vector field:
+\begin{equation}
+v(\hquery)
+= \sum\nolimits_{i=1}^{N_{+}} \bar{w}^{+}_{i}(\hquery)\,
+  \log_{\hquery}(\boldsymbol{h}^{+}_{i})
+\;-\;
+\sum\nolimits_{j=1}^{N_{-}} \bar{w}^{-}_{j}(\hquery)\,
+  \log_{\hquery}(\boldsymbol{h}^{-}_{j}).
+\label{eq:cobras-field}
+\end{equation}
+
+\textcolor{red}{add conclusion to connect}
+
+\subsection{The \Cobras Algorithms and its Out-of-Distribution Capability}
+\label{subsec:marginal-gate}
+\textcolor{blue}{First, i}
+
+
+before delving into the detialed algorithm, we first highlight how ..... 
+
+
+
+The Schr\"{o}dinger bridge provides not only a direction of transport but also a time-marginal density
+$p_t(\boldsymbol{x})=\hat\phi(\boldsymbol{x},t)\hat\psi(\boldsymbol{x},t)$, which measures how much probability the optimal transport process assigns to an activation at time $t$. In particular, the smoothed initial marginal
+\begin{equation}
+\hat p_0(\hquery)
+=\hat\phi(\hquery,0)\hat\psi(\hquery,0)
+\label{eq:initial-marginal}
+\end{equation}
+acts as a natural support score for a query. If $\hquery$ lies far from the training activations, the kernel-based extensions of both potentials assign little mass to it, and consequently $\hat p_0(\hquery)$ is small. We therefore identify queries with $\hat p_0(\hquery)<\tau$, where $\tau$ is a low quantile of the initial-marginal values on the training data, as unsupported and leave them unmodified.
+
+For supported queries, we separate the two roles of the bridge: the normalized drift $v(\hquery)/\|v(\hquery)\|$ specifies the steering direction, whereas the time-marginal specifies the steering strength. We use the calibrated score\footnote{\textcolor{blue}{We also discuss a simplified variant of this gate using $k$-NN, which can also be used as an extension of OOD gate to other methods that lack such OOD capability in the Appendix~\ref{apx:ood-gate}}.}
+\begin{equation}
+s(\hquery)
+=\min\!\left\{1,\frac{\hat p_0(\hquery)}{p_{\mathrm{ref}}}\right\},
+\qquad
+p_{\mathrm{ref}}=\operatorname{median}_{\boldsymbol{h}\in\mathcal{D}^{-}}
+\hat p_0(\boldsymbol{h}),
+\label{eq:marginal-strength}
+\end{equation}
+to scale the integration horizon. Thus, activations well supported by the learned transport plan receive the full intervention, weakly supported activations receive attenuated intervention, and detected outliers are not steered. This uses the probability model already induced by the bridge rather than introducing a separate geometric gate.
+
+
+\begin{figure}[!tb]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/cobras_overview.pdf}
+    \caption{Overview of COBRAS. \textbf{(a)} Contrastive prompt pairs induce two activation populations at layer $\ell$, whose supports $p_-$ and $p_+$ are projected onto the residual-stream hypersphere. \textbf{(b)} Entropic optimal transport between $\hat{p}_-$ and $\hat{p}_+$ yields Sinkhorn potentials $\hat{\phi},\hat{\psi}$, which the bridge uses twice: their \emph{ratio} gives the probability-flow drift $\nabla_{\mathcal{S}}\log(\hat{\psi}/\hat{\phi})$, evaluated at the current activation, so the steering direction varies across the sphere and each query follows its own trajectory of $K$ geodesic Euler steps from $q_0$ to $q_K$ (each step decomposing into attraction toward $p_+$ and repulsion from $p_-$); their \emph{product} gives the initial time-marginal $\hat{p}_0=\hat{\phi}\hat{\psi}$, shaded here, which scores how well an activation is supported. \textbf{(c)} A query-independent method applies the same direction and step size to every query. COBRAS instead reads the strength off $\hat{p}_0$: queries below the calibrated threshold $\tau$ (dashed) are returned unchanged, so a far-OOD query $q_0^{\mathrm{ood}}$ is left untouched while a supported query is steered in full.}
+    \label{fig:placeholder}
+\end{figure}
+
+\begin{algorithm}[t]
+\caption{\Cobras: Conditional Optimal Bridge for Riemannian Activation Steering}
+\label{alg:cobras}
+\begin{algorithmic}[1]
+\Require Positive samples $\mathcal{D}^{+}$, negative samples $\mathcal{D}^{-}$, query $\hquery$, time horizon $T$, steps $K$
+\Statex \textbf{// Offline: solve the static Schr\"{o}dinger Bridge}
+\State Set $R \gets \mathrm{mean}(\{\|\boldsymbol{h}\| : \boldsymbol{h}\in\mathcal{D}^{+}\cup\mathcal{D}^{-}\})$ and project all $\boldsymbol{h}^{\pm}_{k} \gets R\,\boldsymbol{h}^{\pm}_{k}/\|\boldsymbol{h}^{\pm}_{k}\|$
+\State Build the cost matrix $c_{ji} \gets d_{\Sph}(\boldsymbol{h}^{-}_{j},\,\boldsymbol{h}^{+}_{i})^{2}/(2\sigma^{2})$
+\State Compute the Schr\"{o}dinger potentials $(\log\boldsymbol{\phi},\,\log\boldsymbol{\psi}) \gets \textsc{Sinkhorn}(\boldsymbol{c})$ \hfill{Eq.~\eqref{eq:sinkhorn}}
+\State Calibrate $\tau$ and $p_{\mathrm{ref}}$ from $\{\hat p_0(\boldsymbol{h}^{-}_{j})\}_{j=1}^{N_-}$ \hfill{Eqs.~\eqref{eq:initial-marginal}-\eqref{eq:marginal-strength}}
+\Statex \textbf{// Online: integrate the probability flow ODE}
+\State $\boldsymbol{q}_{0} \gets R\,\hquery/\|\hquery\|$
+\State Evaluate the initial time-marginal $\hat p_0(\boldsymbol{q}_0)$ \hfill{Eq.~\eqref{eq:initial-marginal}}
+\If{$\hat p_0(\boldsymbol{q}_0)<\tau$}
+    \State \Return $\hquery$
+\EndIf
+\State $s \gets \min\{1,\hat p_0(\boldsymbol{q}_0)/p_{\mathrm{ref}}\}$ and $\Delta t \gets T\cdot s/K$
+\For{$k = 0,\dotsc,K{-}1$}
+    \State Extend the potentials to obtain $\tilde\psi_{i}(\boldsymbol{q}_{k})$ and $\tilde\phi_{j}(\boldsymbol{q}_{k})$ \hfill{Eqs.~\eqref{eq:ext-psi}-\eqref{eq:ext-phi}}
+    \State Compute the weights $\bar{w}^{+}_{i}(\boldsymbol{q}_{k})$ and $\bar{w}^{-}_{j}(\boldsymbol{q}_{k})$ \hfill{Eq.~\eqref{eq:weights-pos}}
+    \State $\boldsymbol{v}_{k} \gets \sum_{i}\bar{w}^{+}_{i}\log_{\boldsymbol{q}_{k}}(\boldsymbol{h}^{+}_{i}) - \sum_{j}\bar{w}^{-}_{j}\log_{\boldsymbol{q}_{k}}(\boldsymbol{h}^{-}_{j})$ \hfill{Eq.~\eqref{eq:cobras-field}}
+    \State $\boldsymbol{q}_{k+1} \gets \exp_{\boldsymbol{q}_{k}}\!\bigl(\Delta t\cdot\boldsymbol{v}_{k}/\|\boldsymbol{v}_{k}\|\bigr)$
+\EndFor
+\State \Return $\boldsymbol{q}_{K}\cdot\|\hquery\|/R$
+\end{algorithmic}
+\end{algorithm}
+
+To run the algorithm, given the vector field in Eq.~\ref{eq:cobras-field}, we steer a query activation $\hquery$ by integrating the probability flow ODE in Eq.~\ref{eq:pf-ode} on $\Sph$ using $K$ geodesic Euler steps. At each step, we evaluate the field at the current iterate and update via the exponential map in Eq.~\ref{eq:expmap}, ensuring that every iterate remains on $\Sph$. After integration, we restore the original norm $\|\hquery\|$. Algorithm~\ref{alg:cobras} summarizes the full procedure.
+The algorithm operates in two distinct phases: an offline optimization stage that solves the static SB problem and calibrates the initial time-marginal, and an online inference stage that evolves a supported query activation along the probability flow. In the offline phase, it projects the samples onto a hypersphere, solves an entropic optimal transport problem via Sinkhorn iterations, and evaluates the initial-marginal statistics used in Eq.~\ref{eq:marginal-strength}. During the online phase, $\hat p_0(\boldsymbol{q}_0)$ determines whether the query should be steered and scales the integration horizon, while the drift vector $\boldsymbol{v}_k$ determines the tangent direction at each step. The process concludes by rescaling the final activation $\boldsymbol{q}_{K}$ to the query's original norm.
+

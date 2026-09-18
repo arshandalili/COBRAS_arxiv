@@ -1,0 +1,476 @@
+\section{A Unified Log-density Ratio Optimization Framework for Activation Steering}
+\label{apx:ldr-formalize}
+
+In this section, we show that diverse activation steering methodologies can be unified under a single theoretical framework governed by log-density ratio optimization. Specifically, we analyze how these seemingly disparate techniques implicitly optimize the ratio $\log(p_+ / p_-)$ by reinterpreting them as specific geometric configurations of a continuous global flow. Formally, let $p_{+}$ and $p_{-}$ define a pair of continuous densities corresponding to the contrastive behavior distributions $\mathcal{D}^{+}$ and $\mathcal{D}^{-}$, respectively. Given an initial query activation $\boldsymbol{h}_q$ on an underlying representation manifold $\mathcal{M}$, the steering trajectory is obtained by integrating the continuous-time ordinary differential equation:
+
+\begin{equation}
+d\boldsymbol{x}_t = \nabla_{\mathcal{M}}\log\frac{p_{+}(\boldsymbol{x}_{t})}{p_{-}(\boldsymbol{x}_{t})}\,dt, \qquad \boldsymbol{x}_{0} = \hquery,
+\label{eq:global-flow}
+\end{equation}
+
+for $K$ steps over a specified time horizon $[0, T]$. Here, $\boldsymbol{x}_{t}$ denotes the steered activation along the flow, initialized as $\boldsymbol{x}_{0} = \hquery$. By systematically varying the manifold geometry $\mathcal{M}$, the step horizon $K$, and the parameterization of the density functions, we can recover prominent steering paradigms from this single formulation~\footnote{\citet{zhaoodesteer} presents a related unification of several of these methods, but their analysis is confined to Euclidean space; by treating the manifold $\mathcal{M}$ as an explicit design choice, however, our framework additionally captures geometry-aware methods such as SS and HPR.}.
+
+For example, the following methods can be recalled from this perspective as summarized in Table~\ref{tab:steering_framework}.
+
+
+
+
+\paragraph{Contrastive Activation Addition (CAA)~\citep{rimsky2024steering}} The  CAA algorithm can be framed as a specific, single-step optimization instantiation of a continuous global flow over the hidden state manifold. Specifically,  CAA simplifies this trajectory by optimizing over a flat Euclidean space $\mathcal{M}=\mathbb{R}^d$ via a single discrete step ($K=1$). By modeling the factual (positive) and counterfactual (negative) activation distributions as isotropic Gaussians sharing an identity covariance $p_{+}=\mathcal{N}(\boldsymbol{\mu}_{+}, \boldsymbol{I}_d)$ and $p_{-}=\mathcal{N}(\boldsymbol{\mu}_{-}, \boldsymbol{I}_d)$, the complex continuous gradient field collapses into a constant shift vector defined by the difference of their respective means  $\nabla_{\mathcal{M}}\log\frac{p_{+}}{p_{-}}=\boldsymbol{\mu}_+ - \boldsymbol{\mu}_-$. Consequently, the empirical practice of injecting a static difference vector during the forward pass is mathematically grounded as an exact, first-order approximation toward maximizing the target likelihood ratio.
+
+\paragraph{Spherical Steering (SS)~\citep{you2026spherical}}
+
+
+To relax the assumption of a flat Euclidean space and account for the directional nature of high-dimensional neural representations, Spherical Steering constrains the optimization trajectory to a unit hypersphere manifold, setting $\mathcal{M}=\mathcal{S}^{d-1}$. Under a single-step discrete horizon ($K=1$), the method models the target positive activations using a von Mises-Fisher (vMF) distribution $p_+=\mathrm{vMF}(\cdot;\boldsymbol{\mu},\kappa)$ which acts as the spherical analogue to an isotropic Gaussian with a mean direction vector $\boldsymbol{\mu}$ and a concentration parameter $\kappa$. Conversely, the negative behavior is modeled as a uniform distribution over the sphere $p_-=\mathrm{Unif}(\mathcal{S})$. The unit prototype towards the positive activations $\boldsymbol{\mu}$ is empirically defined by normalizing the difference between the mean positive and negative activations:
+$$\boldsymbol{\mu}= \frac{\bar{\boldsymbol{h}}^{+} - \bar{\boldsymbol{h}}^{-}}{\|\bar{\boldsymbol{h}}^{+} - \bar{\boldsymbol{h}}^{-}\|}.$$
+
+When evaluating the global flow framework under these spherical constraints, the Riemannian gradient of the likelihood ratio yields a non-linear direction proportional to the logarithmic map on the sphere 
+$\nabla_{\mathcal{S}}\log\tfrac{p_+}{p_-}
+\propto\log_{\boldsymbol{x}}(\boldsymbol{\mu})$ which corresponds to the Slerp direction toward $\boldsymbol{\mu}$ in
+the direction of this Riemannian gradient. By explicitly respecting the spherical geometry of hidden states, SS ensures that the magnitude of the activation vector is preserved, avoiding out-of-distribution distortion while performing directional steering.
+
+\begin{table}[t!]
+\centering
+\caption{Summary of Parameterizations under the Unified Global Flow Framework.}
+\label{tab:steering_framework}
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l p{2.2cm} p{2cm} p{4.0cm} p{5.8cm}}
+\toprule
+\textbf{Method} & \textbf{Manifold ($\mathcal{M}$)} & \textbf{Horizon ($K$)} & \textbf{Density Ratio $\log(\pplus / \pminus)$} & \textbf{Induced Gradient $\nabla_{\mathcal{M}} \log(\pplus / \pminus)$} \\ 
+\midrule
+\textbf{CAA}~\citep{rimsky2024steering} & $\mathbb{R}^d$ & $K=1$ & Isotropic Gaussians:\newline $\mathcal{N}(\boldsymbol{\mu}_{\pm}, \boldsymbol{I}_d)$ & Constant translation:\newline $\boldsymbol{\mu}_+ - \boldsymbol{\mu}_-$ \\ \addlinespace
+\textbf{SS}~\citep{you2026spherical} & $\mathcal{S}^{d-1}$ & $K=1$ & von Mises-Fisher vs. Uniform:\newline $\text{vMF}(\boldsymbol{\mu}, \kappa) / \text{Unif}(\mathcal{S})$ & Slerp direction toward unit prototype $\boldsymbol{\mu}$ \\ \addlinespace
+\textbf{ITI}~\citep{li2023inference} & $\mathbb{R}^d$ & $K=1$ & Discriminative Linear\newline Logistic Probe: $\sigma(\boldsymbol{\theta}^\top \boldsymbol{x})$ & Normal vector to decision boundary: $\boldsymbol{\theta}$ \\ \addlinespace
+\textbf{HPR}~\citep{pham2024householder} & $\mathcal{S}^{d-1}$ & $K=1$ & Linear Probe mapped via Householder Reflector $\boldsymbol{H}$ & Slerp path toward reflected state $\boldsymbol{H}\hat{\boldsymbol{x}}$ \\ \addlinespace
+\textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & $K > 1$ & Polynomial Count-Sketch Feature Map: $\boldsymbol{w}^\top \phi(\boldsymbol{x}) + b$ & State-dependent Jacobian field:\newline $\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w} / \|\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w}\|$ \\
+\textbf{\Cobras~(ours)} & $\mathcal{S}^{d-1}$ & $K > 1$ & Schr\"{o}dinger potentials via spherical KDE:\newline $\hat\psi / \hat\phi$ & Weighted Riemannian mean of log-maps:\newline $\sum_{i}\bar{w}^{+}_{i}\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i}) - \sum_{j}\bar{w}^{-}_{j}\log_{\boldsymbol{x}}(\boldsymbol{h}^{-}_{j})$ \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\paragraph{Inference-Time Intervention (ITI) \citep{li2023inference}} Rather than assuming explicit parametric distributions for the hidden states, ITI leverages a discriminative classifier to implicitly estimate the underlying density ratio. Operating within a single-step horizon ($K=1$) over a flat Euclidean vector space $\mathcal{M} = \mathbb{R}^d$, ITI trains a linear logistic probe, $p_{\boldsymbol{\theta}}(\boldsymbol{x}) = \sigma(\boldsymbol{\theta}^\top \boldsymbol{x})$, to distinguish between positive and negative activation vectors. By invoking the classic equivalence between logistic regression and density ratio estimation, the log-density ratio can be rewritten linearly as $\log \frac{p_+(\boldsymbol{x})}{p_-(\boldsymbol{x})} = \boldsymbol{\theta}^\top \boldsymbol{x} + \log \frac{N_-}{N_+}$, where $N_+$ and $N_-$ represent the respective sample counts. Taking the gradient with respect to the manifold yields a constant vector field defined entirely by the probe's learned weights:$$\nabla_{\mathcal{M}} \log \frac{p_+}{p_-} = \boldsymbol{\theta}$$This formulation reveals a powerful geometric justification for ITI: the orthogonal vector to the classifier's decision boundary acts as the exact gradient direction needed to maximize the factual likelihood ratio. Consequently, shifting activations along the direction of $\boldsymbol{\theta}$ during inference provides a theoretically grounded, first-order trajectory for target behavior optimization.
+\paragraph{Householder Reflection Probe (HPR)~\citep{pham2024householder}}  To reconcile discriminative, probe-based steering with non-Euclidean representation spaces, the HPR method maps the log-density ratio directly onto a hyperspherical manifold ($\mathcal{M} = \mathcal{S}^{d-1}$) under a single-step horizon ($K=1$). Similar to ITI, the method first projects the log-density ratio linearly using a trained linear probe, $\log \frac{p_+(\boldsymbol{x})}{p_-(\boldsymbol{x})} = \boldsymbol{\theta}^\top \boldsymbol{x} + \log \frac{N_-}{N_+}$. To respect the spherical constraints, HPR constructs an orthogonal Householder reflection matrix, $\boldsymbol{H} = \boldsymbol{I} - 2\boldsymbol{u}\boldsymbol{u}^\top$, where $\boldsymbol{u} = \boldsymbol{\theta} / \|\boldsymbol{\theta}\|$ represents the unit normal vector to the probe's decision boundary. By reflecting the normalized activation vector $\hat{\boldsymbol{x}} = \boldsymbol{x} / \|\boldsymbol{x}\|$ across this boundary, the directional gradient on the sphere is formalized as $\nabla_{\mathcal{S}} \log \frac{p_+(\boldsymbol{x})}{p_-(\boldsymbol{x})} \propto \Pi_{\hat{\boldsymbol{x}}}(\boldsymbol{H}\hat{\boldsymbol{x}} - \hat{\boldsymbol{x}})$, where $\Pi_{\hat{\boldsymbol{x}}}$ denotes the projection onto the tangent space at $\hat{\boldsymbol{x}}$. Geometrically, this confirms that the optimal trajectory corresponds to a Spherical Linear Interpolation (Slerp) toward the reflected state $\boldsymbol{H}\hat{\boldsymbol{x}}$. By leveraging a reflection operator, HPR effectively utilizes the probe's decision boundaries to execute directional steering while intrinsically preserving the latent norm of the activation path.
+
+\paragraph{ODESteer~\citep{zhaoodesteer}} Departing from single-step first-order approximations ($K=1$), ODESteer fully embraces the continuous-time formulation of the global flow framework by integrating across multiple steps ($K > 1$) over a flat Euclidean vector space $\mathcal{M} = \mathbb{R}^d$. Rather than adopting simple parametric distributions or linear probes, this approach models complex, non-linear activation dynamics by parameterizing the log-density ratio with a polynomial count-sketch feature map $\phi$ and setting $\log \frac{p_+(\boldsymbol{x})}{p_-(\boldsymbol{x})} = \boldsymbol{w}^\top \phi(\boldsymbol{x}) + b$, where the parameter pair $(\boldsymbol{w}, b)$ is fit empirically over the contrastive dataset. Under this non-linear projection, the steering direction is dictated by a dynamic, normalized vector field:$$\boldsymbol{V}(\boldsymbol{x}) = \frac{\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w}}{\|\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w}\|}$$where $\boldsymbol{J}_{\phi}(\boldsymbol{x})$ denotes the Jacobian matrix of the feature map $\phi$ evaluated at the current state $\boldsymbol{x}$. By evaluating and integrating this state-dependent vector field using discrete Euler steps over the time horizon $[0, T]$, ODESteer traces a curved, non-linear path through the representation space. This multi-step integration allows the model to continuously adapt to the changing manifold geometry during the steering process, providing precise control while tracking complex latent boundaries.
+
+
+\section{Theoretical Analysis}
+In this section, we provide the theoretical analysis for \Cobras.
+\subsection{Proof of Proposition~\ref{prop:ldr-limit}}
+\label{apx:proof-ldr-limit}
+ 
+\begin{proof}
+When $c_{\max}\to 0$, every cost entry $c_{ji}\to 0$. The Sinkhorn update for $\phi_{j}$ (Eq.~\ref{eq:sinkhorn}) becomes
+\begin{equation}
+\log\phi_{j}
+= -\log N_{-} - \log\sum_{i=1}^{N_{+}}\exp(\log\psi_{i} - c_{ji})
+\xrightarrow{c_{ji}\to 0}
+-\log N_{-} - \log\sum_{i=1}^{N_{+}}\psi_{i},
+\end{equation}
+which is independent of $j$. Hence, every $\phi_{j}$ takes the same value. By the symmetric argument applied to the $\psi_{i}$ update, every $\psi_{i}$ is also equal. The marginal constraints $\sum_{i}\pi^{\star}_{ji} = \frac{1}{N_{-}}$ and $\sum_{j}\pi^{\star}_{ji} = \frac{1}{N_{+}}$ then fix $\psi_{i} = \frac{1}{N_{+}}$ and $\phi_{j} = \frac{1}{N_{-}}$.
+ 
+Substituting into Eqs.~\ref{eq:psi-heat}-\ref{eq:phi-heat}:
+\begin{equation}
+\hat\psi(\boldsymbol{x},t)
+= \tfrac{1}{N_{+}}\sum_{i=1}^{N_{+}}K_{(T-t)\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i}),
+\qquad
+\hat\phi(\boldsymbol{x},t)
+= \tfrac{1}{N_{-}}\sum_{j=1}^{N_{-}}K_{t\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{-}_{j}).
+\end{equation}
+The log-ratio is
+\begin{equation}
+\log\hat\psi - \log\hat\phi
+= \log\tfrac{1}{N_{+}} - \log\tfrac{1}{N_{-}}
++ \log\sum_{i}K_{(T-t)\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})
+- \log\sum_{j}K_{t\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{-}_{j}).
+\end{equation}
+The constant vanishes and yields Eq.~\ref{eq:ldr-limit}. The numerator and denominator are spherical kernel density estimates of $\pplus$ and $\pminus$, which converge to the true densities as $N_{\pm}\to\infty$~\citep{pelletier2005kernel}.
+\end{proof}
+\subsection{Derivation of the Riemannian Gradient of $\log\hat\psi$ and $\log\hat\phi$}
+\label{app:grad-psi}
+ 
+We derive Eq.~\eqref{eq:grad-psi} which is the closed-form Riemannian gradient of the log backward Schr\"{o}dinger factor on $\Sph$. The derivation for $\nablaS\log\hat\varphi$ is identical with $(\mathcal{D}^{-},\tilde\varphi_{j})$ replacing $(\mathcal{D}^{+},\tilde\psi_{i})$.
+ 
+\subsection{Gradient of the Geodesic Gaussian Kernel}
+ 
+Let $K_{\sigma}(\boldsymbol{x},\boldsymbol{h}) = \exp\!\bigl(-d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^{2}/(2\sigma)\bigr)$ for a bandwidth $\sigma > 0$. By the chain rule and the fact that $\nablaS\, d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^{2}
+= -2\,\log_{\boldsymbol{x}}(\boldsymbol{h})$:
+\begin{align}
+\nablaS\,K_{\sigma}(\boldsymbol{x},\boldsymbol{h})
+&= K_{\sigma}(\boldsymbol{x},\boldsymbol{h})\cdot
+   \frac{-1}{2\sigma}\,\nablaS\,d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^{2}
+\nonumber\\
+&= K_{\sigma}(\boldsymbol{x},\boldsymbol{h})\cdot
+   \frac{-1}{2\sigma}\cdot\bigl(-2\,\log_{\boldsymbol{x}}(\boldsymbol{h})\bigr)
+\nonumber\\
+&= \frac{1}{\sigma}\,K_{\sigma}(\boldsymbol{x},\boldsymbol{h})\,
+   \log_{\boldsymbol{x}}(\boldsymbol{h}).
+\label{eq:app-grad-kernel}
+\end{align}
+ 
+ 
+\subsection{Gradient of the Log Backward Potential}
+ 
+Define the backward potential at $\boldsymbol{x}\in\Sph$: 
+\begin{equation}
+\hat\psi(\boldsymbol{x})
+= \sum_{i=1}^{N_{+}} \tilde\psi_{i}(\boldsymbol{x})\,
+  K_{\sigma^{2}}(\boldsymbol{x},\,\boldsymbol{h}^{+}_{i}),
+\label{eq:app-psi-kde}
+\end{equation}
+where the extended potentials $\tilde\psi_{i}(\boldsymbol{x})$ are also treated as constants with respect to differentiation at $\boldsymbol{x}$.
+ 
+Taking the Riemannian gradient of $\log\hat\psi$:
+\begin{equation}
+\nablaS\log\hat\psi(\boldsymbol{x})
+= \frac{\nablaS\,\hat\psi(\boldsymbol{x})}{\hat\psi(\boldsymbol{x})}
+= \frac{\displaystyle\sum_{i=1}^{N_{+}}\tilde\psi_{i}(\boldsymbol{x})\,
+        \nablaS\,K_{\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})}
+       {\displaystyle\sum_{i=1}^{N_{+}}\tilde\psi_{i}(\boldsymbol{x})\,
+        K_{\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})}.
+\label{eq:app-grad-log-step1}
+\end{equation}
+Substituting the kernel gradient~\eqref{eq:app-grad-kernel} with $\sigma = \sigma^{2}$:
+\begin{equation}
+\nablaS\log\hat\psi(\boldsymbol{x})
+= \frac{1}{\sigma^{2}}\;
+  \frac{\displaystyle\sum_{i=1}^{N_{+}}\tilde\psi_{i}(\boldsymbol{x})\,
+        K_{\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})\,
+        \log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i})}
+       {\displaystyle\sum_{i=1}^{N_{+}}\tilde\psi_{i}(\boldsymbol{x})\,
+        K_{\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})}.
+\label{eq:app-grad-log-step2}
+\end{equation}
+Define the normalized weights
+\begin{equation}
+\bar{w}^{+}_{i}(\boldsymbol{x})
+:= \frac{\tilde\psi_{i}(\boldsymbol{x})\,
+         K_{\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})}
+        {\displaystyle\sum_{k=1}^{N_{+}}\tilde\psi_{k}(\boldsymbol{x})\,
+         K_{\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{k})}.
+\label{eq:app-weights-def}
+\end{equation}
+In log-space, the unnormalized log-weight of point $i$ is
+\begin{equation}
+\log\bigl[\tilde\psi_{i}(\boldsymbol{x})\,
+K_{\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})\bigr]
+= \log\tilde\psi_{i}(\boldsymbol{x})
+  - \frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})^{2}}{2\sigma^{2}(\boldsymbol{x})},
+\label{eq:app-log-unnorm}
+\end{equation}
+so normalization is a softmax:
+\begin{equation}
+\bar{w}^{+}_{i}(\boldsymbol{x})
+= \mathrm{softmax}_{i}\!\left[
+  \log\tilde\psi_{i}(\boldsymbol{x})
+  - \frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})^{2}}
+         {2\sigma^{2}(\boldsymbol{x})}\right].
+\label{eq:app-softmax}
+\end{equation}
+This recovers Eq.~\eqref{eq:weights-pos}. Substituting into~\eqref{eq:app-grad-log-step2}:
+\begin{equation}
+\nablaS\log\hat\psi(\boldsymbol{x})
+= \frac{1}{\sigma^{2}}\sum_{i=1}^{N_{+}}
+  \bar{w}^{+}_{i}(\boldsymbol{x})\,\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i}).
+\label{eq:app-grad-final}
+\end{equation}
+This is a weighted Riemannian mean direction in the tangent space $T_{\boldsymbol{x}}\Sph$. Each log-map vector $\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i})$ points from the current query $\boldsymbol{x}$ toward the positive point $\boldsymbol{h}^{+}_{i}$ with magnitude equal to the geodesic distance, and the weight $\bar{w}^{+}_{i}(\boldsymbol{x})$ combines geometric proximity (the kernel) with the Schr\"{o}dinger potential (the transport plan).
+
+\section{OOD Gate}
+\label{apx:ood-gate}
+
+
+\section{Experimental Details}
+\label{appendix:experimental_details}
+
+\subsection{Base LLM Models}
+
+Our base LLMs follow the experimental setup of Zhao~\etal~\cite{zhaoodesteer}. We describe them here for completeness. We evaluate all methods on four open-source models: (i) Falcon-7B, \texttt{tiiuae/falcon-7b}\footnote{\url{https://huggingface.co/tiiuae/falcon-7b}}; (ii) Mistral-7B-v0.3, \texttt{mistralai/Mistral-7B-v0.3}\footnote{\url{https://huggingface.co/mistralai/Mistral-7B-v0.3}}; (iii) LLaMA3.1-8B, \texttt{meta-llama/Llama-3.1-8B}\footnote{\url{https://huggingface.co/meta-llama/Llama-3.1-8B}}; and (iv) Qwen2.5-7B, \texttt{Qwen/Qwen2.5-7B}\footnote{\url{https://huggingface.co/Qwen/Qwen2.5-7B}}. We use the same generation configuration for all models and experiments: temperature $=0.7$, top-$p=0.9$, and repetition penalty $=1.1$.
+
+
+\subsection{Datasets}
+
+
+\begin{itemize}
+    \item \textbf{TruthfulQA}~\citep{lin2021truthfulqa} is a benchmark consisting of 817 questions paired with true and false reference answers, along with source information. The questions cover 38 diverse categories and are commonly evaluated in a zero-shot setting. Following Zhao~\etal~\cite{zhaoodesteer}, we construct 5,918 question--answer pairs and use a 40/10/50 train/validation/test split with two-fold cross validation.
+
+    \item \textbf{UltraFeedback}~\citep{cui2023ultrafeedback} is a large-scale alignment dataset covering instruction-following qualities such as truthfulness, honesty, and helpfulness. In our experiments, we use the UltraFeedback-Binarized dataset\footnote{\url{https://huggingface.co/datasets/HuggingFaceH4/ultrafeedback_binarized}}. Specifically, we use the preference-modeling split, where each prompt is paired with an accepted response and a rejected response. Following Zhao~\etal~\cite{zhaoodesteer}, we randomly sample 10K training pairs, 500 validation pairs, and 500 test pairs.
+
+    \item \textbf{RealToxicityPrompts}~\citep{gehman2020realtoxicityprompts} is a benchmark for evaluating toxic degeneration in language models. It consists of naturally occurring web prompts paired with toxicity annotations obtained from the Perspective API. The dataset contains approximately 21K toxic prompts with toxicity scores greater than 0.5 and 77K non-toxic prompts. Following Zhao~\etal~\citep{zhaoodesteer}, we train toxicity steering methods using the Jigsaw Unintended Bias in Toxicity Classification dataset\footnote{\url{https://www.kaggle.com/c/jigsaw-unintended-bias-in-toxicity-classification}} and evaluate them on RealToxicityPrompts. Specifically, we construct a balanced Jigsaw training set of 10K sentences by sampling according to toxicity scores, with 5K toxic and 5K benign examples. For evaluation, we select 500 toxic prompts from RealToxicityPrompts and use them as inputs to the LLMs. This setup allows us to assess whether steering methods reduce toxic generations while preserving response quality.
+
+    \item \textbf{TriviaQA}~\citep{joshi2017triviaqa} is a large-scale dataset consisting over 650 triplets of trivia questions - answers - evidences. The questions are naturally occurring and often require lexical, syntactic, and multi-sentence reasoning. In our experiments, we use the a subset of the original dataset, specifcially, the huggingface dataset which is tailored for Inference Time Intervenetion: ~\href{https://huggingface.co/datasets/OamPatel/iti_trivia_qa_val}{TriviaQA HF Dataset}. 
+
+    \item \textbf{NQ}~\citep{kwiatkowski2019natural} In our experiments, we use the a subset of the original dataset, specifcially, the huggingface dataset which is tailored for Inference Time Intervenetion: ~\href{https://huggingface.co/datasets/OamPatel/iti_nq_open_val}{NQ HF Dataset}.  All steering methods are trained on TruthfulQA as described in OOD section and then evaluated on a randomly sampled 1K NQ examples. 
+    
+    \item \textbf{GSM8K}~\citep{cobbe2021gsm8k} contains approximately 8.5K grade-school math word problems paired with natural-language solutions. The dataset contains roughly 7.5K training examples and 1K test examples. We use the original test split for out-of-distribution evaluation. All methods are trained on TruthfulQA as described above and then evaluated on the 1K GSM8K test examples in a 5-shot setting.
+
+    \item \textbf{MMLU}~\citep{hendrycks2020measuring} is a large-scale multiple-choice benchmark covering a broad range of academic and professional subjects. It contains approximately 100K training examples and 14K test examples. We use the default test split for out-of-distribution evaluation and perform 5-shot generation.
+\end{itemize}
+
+
+% \subsection{Baselines}
+
+% \begin{itemize}
+%     \item Representation Engineering~\citep{zou2023representation} (RepE):
+%     \item Inference-Time Intervention~\citep{li2023inference} (ITI): 
+%     \item Contrastive Activation Addition~\citep{rimsky2024steering} (CAA): 
+%     \item Minimally Modified Counterfactuals~\citep{singh2024representation} (MiMiC)
+%     \item Householder Pseudo-Rotation~\citep{pham2024householder} (HPR):
+%     \item Linear Activation Transport~\citep{rodriguez2025controlling} (Linear-AcT):
+%     \item SphericalSteering~\cite{you2026spherical}:
+%     \item ODESteer~\cite{zhaoodesteer}:
+% \end{itemize}
+
+
+\subsection{Metrics}
+\label{appendix:metrics}
+\begin{itemize}
+    \item \textbf{Truthfulness (\%).}
+    Truthfulness is evaluated on TruthfulQA~\cite{lin2021truthfulqa} using a publicly available fine-tuned LLaMA2-7B judge\footnote{\url{https://huggingface.co/allenai/truthfulqa-truth-judge-llama2-7B}}. The judge predicts a binary truthfulness label for each generated answer using prompts of the form:
+    \[
+    \texttt{Q: \{question\} \textbackslash n A: \{answer\}. \textbackslash n True:}
+    \]
+    We report the percentage of generations classified as truthful.
+
+    \item \textbf{Informativeness (\%).}
+    Informativeness is evaluated on TruthfulQA~\cite{lin2021truthfulqa} using a publicly available fine-tuned LLaMA2-7B judge\footnote{\url{https://huggingface.co/allenai/truthfulqa-info-judge-llama2-7B}}. The judge predicts whether a response is informative or helpful using prompts of the form:
+    \[
+    \texttt{Q: \{question\} \textbackslash n A: \{answer\}. \textbackslash n Helpful:}
+    \]
+    We report the percentage of generations classified as informative.
+
+    \item \textbf{Truthfulness $\times$ Informativeness (\%).}
+    Following prior work, we report the percentage of responses that are both truthful and informative. For each prompt, this metric is computed as the product of the binary truthfulness and informativeness labels, and the final score is averaged over all prompts.
+
+    \item \textbf{Win Rate (\%).}
+    We adopt the reward-model win-rate metric used in RewardBench~\citep{lambert2025rewardbench} and ODESteer~\citep{zhaoodesteer}. Given a set of prompts $\{x_i\}_{i=1}^{N}$ and two candidate systems $A$ and $B$, let $s_i^A$ and $s_i^B$ denote their reward-model scores under the same reward model. The win rate of $A$ over $B$ is defined as
+    \[
+    \mathrm{Win}(A,B)
+    =
+    \frac{1}{N}
+    \sum_{i=1}^{N}
+    \left[
+    \mathbbm{1}(s_i^A > s_i^B)
+    +
+    \frac{1}{2}\mathbbm{1}(s_i^A = s_i^B)
+    \right],
+    \]
+    where $\mathbbm{1}(\cdot)$ is the indicator function. A value of $0.5$ indicates parity with system $B$, values greater than $0.5$ indicate that $A$ outperforms $B$, and ties contribute $0.5$ by convention.
+
+    \item \textbf{RM$_{\text{mean}}$ and RM$_{90}$.}
+    For UltraFeedback, we use an LLM-as-a-judge reward model to score helpfulness. Specifically, we use \texttt{Skywork/Skywork-Reward-V2-Llama-3.1-8B}\footnote{\url{https://huggingface.co/Skywork/Skywork-Reward-V2-Llama-3.1-8B}}. We report RM$_{\text{mean}}$, the average reward score across examples and three random seeds, and RM$_{90}$, the 90th percentile reward score.
+
+    \item \textbf{Toxicity Score.}
+    Toxicity is evaluated using the Perspective API\footnote{\url{https://perspectiveapi.com/}}. The toxicity score is a probability-like score indicating the likelihood that a reader would perceive the generated text as toxic. Lower values therefore indicate less toxic generations.
+
+    \item \textbf{Perplexity.}
+    We evaluate generation fluency using perplexity under GPT-2-XL~\cite{radford2019language}. Given a generated response $y=(y_1,\ldots,y_T)$, GPT-2-XL assigns a next-token negative log-likelihood
+    \[
+    \mathcal{L}(y)
+    =
+    -\frac{1}{T-1}
+    \sum_{t=1}^{T-1}
+    \log p_{\text{GPT2-XL}}(y_{t+1}\mid y_{\leq t}).
+    \]
+    The perplexity of $y$ is then,
+    $\mathrm{PPL}(y)
+    =
+    \exp\left(\mathcal{L}(y)\right).$ Lower perplexity indicates that the generated text is more fluent under GPT-2-XL.
+
+    \item \textbf{Dist-$n$.}
+    We measure lexical diversity using Dist-$n$ for $n\in\{1,2,3\}$. For a generated response $y$, let $\mathcal{G}_n(y)$ denote the multiset of all word-level $n$-grams in $y$, obtained by whitespace tokenization. Dist-$n$ is defined as
+    \[
+    \mathrm{Dist}\text{-}n(y)
+    =
+    \frac{
+    \left|\mathrm{Unique}(\mathcal{G}_n(y))\right|
+    }{
+    \left|\mathcal{G}_n(y)\right|
+    }.
+    \]
+    If the response contains fewer than $n$ words, we set $\mathrm{Dist}\text{-}n(y)=0$. Higher Dist-$n$ indicates greater lexical diversity.
+\end{itemize}
+
+\subsection{Implementation Details}
+
+
+All our experiments are conducted on a machine equipped with 1x H100 80GB. We extend ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement our steering methods and baselines. \Cobras uses the following default values: steering strength of $0.65$, abstention $K$ of $32$, abstention percentile of $98$,  geodesic Euler steps $K$ = 10. 
+
+\section{Additional Results}
+
+
+
+\subsection{Effect of steering strength $T$ on \Cobras} 
+\label{appendix:cobras_vs_t}
+
+Figure~\ref{fig:cobras_vs_t} shows that steering strength has a non-monotonic effect. On TruthfulQA, moderate $T$ generally improves True$\times$Info, with peaks around $T=0.6$ for LLaMA3.1-8B, $T=0.7$ for Mistral-7B, and $T=0.4$ for Qwen2.5-7B; larger values often degrade performance, suggesting over-steering. Falcon-7B is flatter and weaker overall, with a sharp drop at high $T$. On UltraFeedback, the trend is more model-dependent: LLaMA3.1-8B benefits from moderate $T$, Falcon-7B is relatively stable, while Mistral-7B and Qwen2.5-7B degrade as $T$ increases. Overall, these results support using moderate steering, typically $T\approx0.5$--$0.7$ for TruthfulQA and lower-to-moderate values for UltraFeedback.
+
+
+\begin{figure}[!ht]
+    \centering
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/cobras_tqa_vs_t_single_panel.png}
+        \caption{TruthfulQA}
+        \label{fig:cobras_tqa_vs_t}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/cobras_uf_vs_t_single_panel.png}
+        \caption{UltraFeedback}
+        \label{fig:cobras_uf_vs_t}
+    \end{subfigure}
+
+    \caption{\Cobras performance as a function of steering strength $T$. Moderate values of $T$ generally yield the best TruthfulQA performance, while overly large values degrade both TruthfulQA and UltraFeedback performance for several models. Results are averaged over three runs with different seeds.}
+    \label{fig:cobras_vs_t}
+\end{figure}
+
+
+\begin{table*}[h!]
+\centering
+\caption{The Dist-$n$ ($n = 1, 2, 3$) diversity evaluation of steering methods on detoxification.}
+\label{tab:detox_dist}
+\resizebox{0.65\linewidth}{!}{%
+\begin{tabular}{cc|ccc}
+\toprule[1.5pt]
+\multirow{2}{*}{\textbf{Method}} & \multirow{2}{*}{\textbf{Model}} &
+\multicolumn{3}{c}{\textbf{Detoxification} \textsubscript{\scriptsize\textbf{(Real Toxicity Prompts)}}} \\
+\cmidrule(lr){3-5}
+& & \textbf{Dist-1}\,$\boldsymbol{\uparrow}$ & \textbf{Dist-2}\,$\boldsymbol{\uparrow}$ & \textbf{Dist-3}\,$\boldsymbol{\uparrow}$ \\
+\midrule
+% ---------------- Falcon-7B ----------------
+Original & \multirow{9}{*}{\rotatebox{90}{Falcon-7B}} & 0.807 {\tiny $\pm$ 0.007} & 0.946 {\tiny $\pm$ 0.003} & 0.970 {\tiny $\pm$ 0.003} \\
+\midrule
+RepE & & 0.798 {\tiny $\pm$ 0.002} & 0.941 {\tiny $\pm$ 0.003} & 0.967 {\tiny $\pm$ 0.002} \\
+ITI & & 0.804 {\tiny $\pm$ 0.007} & 0.941 {\tiny $\pm$ 0.005} & 0.964 {\tiny $\pm$ 0.003} \\
+CAA & & 0.638 {\tiny $\pm$ 0.002} & 0.852 {\tiny $\pm$ 0.002} & 0.924 {\tiny $\pm$ 0.005} \\
+MiMiC & & 0.803 {\tiny $\pm$ 0.006} & 0.941 {\tiny $\pm$ 0.004} & 0.965 {\tiny $\pm$ 0.004} \\
+Linear-AcT & & 0.810 {\tiny $\pm$ 0.005} & 0.947 {\tiny $\pm$ 0.002} & 0.970 {\tiny $\pm$ 0.002} \\
+ODESteer & & 0.796 {\tiny $\pm$ 0.004} & 0.940 {\tiny $\pm$ 0.002} & 0.966 {\tiny $\pm$ 0.001} \\
+SphericalSteer & & 0.765 {\tiny $\pm$ 0.006} & 0.924 {\tiny $\pm$ 0.008} & 0.954 {\tiny $\pm$ 0.008} \\
+\midrule
+\Cobras (Ours) & & 0.793 {\tiny $\pm$ 0.004} & 0.942 {\tiny $\pm$ 0.005} & 0.968 {\tiny $\pm$ 0.004} \\
+\midrule[1pt]\midrule[1pt]
+
+% ---------------- Mistral-7B ----------------
+Original & \multirow{9}{*}{\rotatebox{90}{Mistral-7B}} & 0.905 {\tiny $\pm$ 0.001} & 0.990 {\tiny $\pm$ 0.001} & 0.997 {\tiny $\pm$ 0.001} \\
+\midrule
+RepE & & 0.776 {\tiny $\pm$ 0.008} & 0.969 {\tiny $\pm$ 0.001} & 0.994 {\tiny $\pm$ 0.000} \\
+ITI & & 0.900 {\tiny $\pm$ 0.001} & 0.989 {\tiny $\pm$ 0.000} & 0.997 {\tiny $\pm$ 0.000} \\
+CAA & & 0.903 {\tiny $\pm$ 0.000} & 0.991 {\tiny $\pm$ 0.001} & 0.998 {\tiny $\pm$ 0.000} \\
+MiMiC & & 0.903 {\tiny $\pm$ 0.001} & 0.989 {\tiny $\pm$ 0.001} & 0.996 {\tiny $\pm$ 0.000} \\
+Linear-AcT & & 0.904 {\tiny $\pm$ 0.002} & 0.990 {\tiny $\pm$ 0.001} & 0.997 {\tiny $\pm$ 0.001} \\
+ODESteer & & 0.902 {\tiny $\pm$ 0.001} & 0.993 {\tiny $\pm$ 0.001} & 0.998 {\tiny $\pm$ 0.001} \\
+SphericalSteer & & 0.904 {\tiny $\pm$ 0.004} & 0.992 {\tiny $\pm$ 0.001} & 0.997 {\tiny $\pm$ 0.001} \\
+\midrule
+\Cobras (Ours) & & 0.898 {\tiny $\pm$ 0.002} & 0.990 {\tiny $\pm$ 0.001} & 0.996 {\tiny $\pm$ 0.001} \\
+\midrule[1pt]\midrule[1pt]
+
+% ---------------- LLaMA3.1-8B ----------------
+Original & \multirow{9}{*}{\rotatebox{90}{LLaMA3.1-8B}} & 0.911 {\tiny $\pm$ 0.002} & 0.992 {\tiny $\pm$ 0.001} & 0.998 {\tiny $\pm$ 0.001} \\
+\midrule
+RepE & & 0.908 {\tiny $\pm$ 0.002} & 0.991 {\tiny $\pm$ 0.001} & 0.997 {\tiny $\pm$ 0.001} \\
+ITI & & 0.905 {\tiny $\pm$ 0.004} & 0.990 {\tiny $\pm$ 0.002} & 0.996 {\tiny $\pm$ 0.001} \\
+CAA & & 0.908 {\tiny $\pm$ 0.001} & 0.992 {\tiny $\pm$ 0.001} & 0.998 {\tiny $\pm$ 0.001} \\
+MiMiC & & 0.909 {\tiny $\pm$ 0.004} & 0.991 {\tiny $\pm$ 0.001} & 0.997 {\tiny $\pm$ 0.001} \\
+Linear-AcT & & 0.910 {\tiny $\pm$ 0.001} & 0.991 {\tiny $\pm$ 0.001} & 0.997 {\tiny $\pm$ 0.000} \\
+ODESteer & & 0.908 {\tiny $\pm$ 0.004} & 0.993 {\tiny $\pm$ 0.000} & 0.998 {\tiny $\pm$ 0.000} \\
+SphericalSteer & & 0.902 {\tiny $\pm$ 0.001} & 0.993 {\tiny $\pm$ 0.000} & 0.997 {\tiny $\pm$ 0.001} \\
+\midrule
+\Cobras (Ours) & & 0.904 {\tiny $\pm$ 0.001} & 0.992 {\tiny $\pm$ 0.000} & 0.997 {\tiny $\pm$ 0.001} \\
+\midrule[1pt]\midrule[1pt]
+
+% ---------------- Qwen2.5-7B ----------------
+Original & \multirow{9}{*}{\rotatebox{90}{Qwen2.5-7B}} & 0.906 {\tiny $\pm$ 0.000} & 0.989 {\tiny $\pm$ 0.001} & 0.995 {\tiny $\pm$ 0.001} \\
+\midrule
+RepE & & 0.908 {\tiny $\pm$ 0.003} & 0.990 {\tiny $\pm$ 0.000} & 0.996 {\tiny $\pm$ 0.001} \\
+ITI & & 0.905 {\tiny $\pm$ 0.004} & 0.990 {\tiny $\pm$ 0.001} & 0.996 {\tiny $\pm$ 0.001} \\
+CAA & & 0.879 {\tiny $\pm$ 0.003} & 0.982 {\tiny $\pm$ 0.002} & 0.991 {\tiny $\pm$ 0.002} \\
+MiMiC & & 0.902 {\tiny $\pm$ 0.001} & 0.989 {\tiny $\pm$ 0.002} & 0.995 {\tiny $\pm$ 0.001} \\
+Linear-AcT & & 0.909 {\tiny $\pm$ 0.002} & 0.990 {\tiny $\pm$ 0.001} & 0.996 {\tiny $\pm$ 0.000} \\
+ODESteer & & 0.910 {\tiny $\pm$ 0.002} & 0.990 {\tiny $\pm$ 0.002} & 0.996 {\tiny $\pm$ 0.002} \\
+SphericalSteer & & 0.844 {\tiny $\pm$ 0.008} & 0.942 {\tiny $\pm$ 0.008} & 0.948 {\tiny $\pm$ 0.005} \\
+\midrule
+\Cobras (Ours) & & 0.898 {\tiny $\pm$ 0.002} & 0.985 {\tiny $\pm$ 0.003} & 0.991 {\tiny $\pm$ 0.003} \\
+\bottomrule[1.5pt]
+\end{tabular}
+}
+\end{table*}
+
+\subsection{Diversity on Detoxification}
+
+
+Table~\ref{tab:detox_dist} shows the generation diversity of steering methods on the detoxification task using Dist-$n$ metrics. Overall, \Cobras preserves lexical diversity close to the original model across all four backbones. The gap is small for Mistral-7B and LLaMA3.1-8B, where Dist-2 and Dist-3 remain nearly unchanged compared to the original model.
+
+We also observe that some baselines reduce diversity more noticeably. For example, CAA lowers diversity on Falcon-7B and Qwen2.5-7B, while SphericalSteer shows a larger drop on Qwen2.5-7B. In contrast, \Cobras maintains high Dist-2 and Dist-3 scores, suggesting that its detoxification effect does not come from generating overly repetitive or generic responses.
+
+
+
+\subsection{Impact of geodesic Euler steps $K$}
+
+Table~\ref{tab:cobras_truthfulqa_iters} shows the effect of increasing the number of geodesic Euler steps $K$ in our proposed \Cobras steering method on TruthfulQA. Overall, increasing $K$ improves the True $\times$ Info score across all models, although the trend differs slightly by model.
+
+For Falcon-7B, larger $K$ increases informativeness, but also reduces the True score, leading to only a modest gain in True $\times$ Info. For Mistral-7B, performance is relatively stable across different values of $K$, with a small improvement at $K=10$. LLaMA3.1-8B benefits the most from increasing $K$, where True $\times$ Info improves consistently from $64.6$ at $K=1$ to $68.5$ at $K=10$. These results suggest that using more geodesic Euler steps generally improves steering quality, with $K=10$ giving the best overall performance in our experiments. 
+
+
+\begin{table*}[h!]
+\centering
+\caption{TruthfulQA performance of \Cobras across geodesic Euler steps $K$.}
+\renewcommand{\arraystretch}{1.2}
+\small
+% \resizebox{0.72\linewidth}{!}{%
+\begin{tabular}{cccc>{\columncolor{lightpurple!25}}c}
+\toprule[1.5pt]
+\textbf{Model} & \textbf{$K$} & \textbf{True (\%)}$\uparrow$ & \textbf{Info (\%)}$\uparrow$ & \textbf{T$\times$I (\%)}$\uparrow$ \\
+\midrule
+\multirow{4}{*}{{Falcon-7B}} & 1 &  60.5 {\tiny $\pm$ 0.187} & 73.7 {\tiny $\pm$ 0.245} & 37.3 {\tiny $\pm$ 0.883} \\
+ & 2 &  58.3 {\tiny $\pm$ 0.628} & 78.6 {\tiny $\pm$ 0.071} & 39.9 {\tiny $\pm$ 0.367} \\
+ & 5 &  56.0 {\tiny $\pm$ 1.837} & 80.3 {\tiny $\pm$ 0.308} & 39.0 {\tiny $\pm$ 1.540} \\
+ & 10 & 45.5 {\tiny $\pm$ 2.124} & 93.4 {\tiny $\pm$ 1.379} & 40.3 {\tiny $\pm$ 1.390} \\
+\midrule
+\multirow{4}{*}{{Mistral-7B}} & 1 &  81.4 {\tiny $\pm$ 1.180} & 82.7 {\tiny $\pm$ 0.956} & 64.6 {\tiny $\pm$ 1.841} \\
+ & 2 &  80.8 {\tiny $\pm$ 0.510} & 83.4 {\tiny $\pm$ 1.671} & 64.8 {\tiny $\pm$ 1.309} \\
+ & 5 &  79.8 {\tiny $\pm$ 0.883} & 84.6 {\tiny $\pm$ 0.324} & 64.9 {\tiny $\pm$ 0.648} \\
+ & 10 &  79.5 {\tiny $\pm$ 0.308} & 85.3 {\tiny $\pm$ 1.002} & 65.4 {\tiny $\pm$ 0.738} \\
+\midrule
+\multirow{4}{*}{{LLaMA3.1-8B}} & 1 &  86.7 {\tiny $\pm$ 1.443} & 77.2 {\tiny $\pm$ 1.205} & 64.6 {\tiny $\pm$ 2.406} \\
+ & 2 &  86.5 {\tiny $\pm$ 1.481} & 78.5 {\tiny $\pm$ 0.787} & 65.6 {\tiny $\pm$ 2.198} \\
+ & 5 &  86.2 {\tiny $\pm$ 2.139} & 80.9 {\tiny $\pm$ 0.424} & 67.6 {\tiny $\pm$ 2.345} \\
+ & 10 &  86.3 {\tiny $\pm$ 1.484} & 81.8 {\tiny $\pm$ 1.097} & 68.5 {\tiny $\pm$ 0.717} \\
+\bottomrule[1.5pt]
+\end{tabular}
+% }
+\label{tab:cobras_truthfulqa_iters}
+\end{table*}
+
+
+\begin{figure}[ht]
+    \centering
+     \includegraphics[width=\linewidth]{figures/performance_vs_steering_strength.png}
+    \caption{
+        Performance vs. steering strength ($T$) on TruthfulQA and UltraFeedback across four models for selected steering methods.
+    }
+    \label{fig:performance_vs_t}
+\end{figure}
+
+
+
+\subsection{Performance vs Steering Strength for baselines}
+
+To select the steering strength for each baseline, we sweep over model-specific ranges: $T=20$--$23$ for Falcon-7B, $T=2$--$5$ for Mistral-7B, $T=3$--$6$ for LLaMA3.1-8B, and $T=13$--$16$ for Qwen2.5-7B. Figure~\ref{fig:performance_vs_t} shows the performance of RepE, ITI, CAA, and ODESteer on TruthfulQA and UltraFeedback. For baselines without a comparable steering-strength parameter, we use the best values reported in their papers.
+
+The results show that the best steering strength depends on both the model and the method. In general, some methods improve TruthfulQA performance at moderate values of $T$, but larger steering strengths can hurt UltraFeedback performance. This trend is especially visible for ODESteer on Mistral-7B and LLaMA3.1-8B, where increasing $T$ leads to a large drop in UltraFeedback win rate. CAA is more stable on UltraFeedback and often improves with larger $T$, while ITI tends to change more gradually across the sweep.
+
+
+
+% \FloatBarrier
+\clearpage
+\section{Sample Responses}
+
+To analyze the quality of the steering, we show random samples obtained from UltraFeedback and TruthfulQA on steering methods.
+
+\input{sample_responses/ultrafeedback}
+
+\input{sample_responses/truthfulqa}

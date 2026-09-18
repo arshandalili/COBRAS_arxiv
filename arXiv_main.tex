@@ -1,0 +1,158 @@
+\documentclass[a4paper,10pt]{article}
+
+% --- Layout & Geometry ---
+\usepackage[margin=1in]{geometry}
+\usepackage{indentfirst}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{authblk}
+
+% --- Language & Fonts ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{xspace}
+
+% --- Math Packages ---
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+\usepackage{bbm}
+\usepackage{bm}
+\usepackage{nicefrac}
+
+% --- Colors (loaded with global options up front to prevent clashes) ---
+\usepackage[dvipsnames,table]{xcolor}
+\definecolor{burgundy}{rgb}{0.5, 0.0, 0.13}
+\definecolor{antiquewhite}{rgb}{0.98, 0.92, 0.84}
+\definecolor{blizzardblue}{rgb}{0.67, 0.9, 0.93}
+\colorlet{shadecolor}{pink}
+\definecolor{lightpurple}{RGB}{225, 215, 245}
+\definecolor{cobrasblue}{RGB}{235, 242, 250}
+
+% --- Graphics, Figures & Captions ---
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{wrapfig}
+\usepackage{framed}
+\usepackage{soul}
+\usepackage{pifont}
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+\usepackage[skip=0pt]{caption}
+
+% --- Tables & Lists ---
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{adjustbox}
+\usepackage{threeparttable}
+\usepackage{tablefootnote}
+\usepackage{siunitx}
+\usepackage{paralist}
+\usepackage{colortbl}
+\usepackage{longtable}
+\usepackage[shortlabels]{enumitem}
+
+% --- Algorithms ---
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\newcommand{\algcolor}[3]{\hspace*{-\fboxsep}\colorbox{#1}{\parbox{#2\linewidth}{#3}}}
+
+% --- Boxes & Floats ---
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{breakable}
+\usepackage{placeins}
+
+% --- Bibliographies & Citations ---
+\usepackage{natbib}
+\usepackage{doi}
+
+% --- Miscellaneous ---
+\usepackage{comment}
+\usepackage{csquotes}
+\usepackage[colorinlistoftodos,bordercolor=orange,backgroundcolor=orange!20,linecolor=orange,textsize=scriptsize]{todonotes}
+
+% --- Hyperlinks & Cross-Referencing (loaded last) ---
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{cleveref}
+
+\hypersetup{
+    colorlinks=true,
+    citecolor=burgundy,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan
+}
+\urlstyle{same}
+
+% --- Theorem Environments ---
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{hypothesis}[theorem]{Hypothesis}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{fact}[theorem]{Fact}
+
+% --- Custom Math Commands ---
+\newcommand{\vertiii}[1]{{\left\vert\kern-0.25ex\left\vert\kern-0.25ex\left\vert #1
+  \right\vert\kern-0.25ex\right\vert\kern-0.25ex\right\vert}}
+
+
+
+\input{notation_commands}
+
+% --- Document Metadata ---
+\title{Conditional Optimal Bridge for Riemannian Activation Steering}
+
+\author{Seyed Arshan Dalili \qquad Ajay Narayanan Sridhar \vspace*{.0em} \\
+        Vijaykrishnan Narayanan \qquad Mehrdad Mahdavi \vspace*{.5em} \\
+        \quad The Pennsylvania State University\vspace*{.2em} \\  \{\texttt{sbd5760,afs6372,vxn9,mzm616\}@psu.edu}}
+\date{}
+
+\sloppy
+\begin{document}
+\maketitle
+
+
+\begin{abstract}
+Activation steering offers a lightweight alternative to fine-tuning for controlling large language models at inference time. While many existing methods implicitly optimize a log-density-ratio objective between desired and undesired activation distributions, they do so heuristically rather than deriving it from a principled optimization problem. Moreover, these methods produce query-independent steering directions that can degrade performance on both in-distribution and out-of-distribution (OOD) inputs. We introduce \textsc{Cobras} (Conditional Optimal Bridge for Riemannian Activation Steering), which addresses both limitations by casting activation steering as a Schr\"{o}dinger Bridge on the residual-stream hypersphere. This formulation yields, to our knowledge, the first principled derivation of the log-density-ratio steering objective from a well-posed optimization problem. Solving the bridge via entropic optimal transport and extracting the probability flow ODE recovers the widely used density-ratio gradient as a special case when the Sinkhorn potentials are uniform. Crucially, the Schr\"{o}dinger potentials are evaluated at the current activation, making the resulting steering direction inherently query-adaptive. Empirically, across four models and three alignment axes (helpfulness, truthfulness, and detoxification), \textsc{Cobras} consistently outperforms prior activation steering baselines while avoiding the OOD degradation commonly observed in existing methods. The code can be found \href{https://github.com/arshandalili/cobras}{here}.
+\end{abstract}
+
+
+\bigskip
+
+\input{introduction}
+\input{related_work}
+\input{method}
+\input{experiments}
+\input{conclusion}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%% References %%%%%%%%%%%%%%%%%%%%%
+\bibliography{ref}
+\bibliographystyle{plainnat}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\appendix
+\input{appendix}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \newpage
+% \input{checklist.tex}
+
+\end{document}

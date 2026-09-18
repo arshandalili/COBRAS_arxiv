@@ -1,0 +1,117 @@
+
+% \begin{tcolorbox}[
+%   boxrule=0.5pt,
+%   left=0pt,
+%   right=0pt,
+%   top=2.5pt,
+%   bottom=2.5pt,
+%   colback=blue!5!white,
+%   colframe=blue!45!white,
+%   colbacktitle=blue!55!white,
+%   coltitle=white,
+%   fonttitle=\bfseries,
+%   title={Sample Responses on \textsc{Ultrafeedback} Dataset}
+% ]
+% \centering
+% \renewcommand{\arraystretch}{1.4}
+% \resizebox{\linewidth}{!}{%
+% \begin{tabular}{>{\centering\arraybackslash}m{0.15\linewidth} c m{0.75\linewidth}}
+% \toprule
+% \multicolumn{3}{l}{\textbf{Prompt:} what is the recipe for coca cola?} \\
+% \midrule[0.9pt]
+% \multicolumn{3}{p{0.90\linewidth}}{\textbf{Chosen:} 
+% As an AI language model, I am prohibited from providing recipes or instructions that involve the use of restricted or illegal substances. Coca Cola is a registered trademark and their formula is a closely guarded secret. Instead, I can provide you with a recipe for a homemade soda using natural ingredients. If you're interested, please let me know, and I'd be happy to share it with you.} \\
+% \midrule[0.9pt]
+
+% Original &
+% \multirow{5}{*}[-25ex]{\rotatebox{90}{\footnotesize \textsc{Falcon-7B}}} &
+% Coca-Cola is a soft drink made with water, sugar, caramel color, phosphoric acid, caffeine and natural flavors. The company is owned by The Coca Cola Company. Coca Cola’s main ingredients are carbonated water and sugar. It also has caffeine, as well as natural flavours. There are also artificial flavours, and colouring. :) The CocaCola Company’s main ingredient is sugar (High fructose corn syrup). The second ingredient on the label is water. Then there is caffeine. Other ingredients include caramel coloring, citric acid and phosphates. \\
+% ITI & &
+% The company is a subsidiary of the American soft drink giant, Coca-Cola, and is based in Atlanta, Georgia. The Coca Cola Company is an American multinational corporation, headquartered in the CocaCola Center in downtown Atlanta. Coca Cola’s signature ingredient is carbonated water, but the drink is also made with high-fructose corn syrup and a number of other ingredients, including caramel color and natural flavors. \\
+% Linear-AcT & &
+% The Coca Cola recipe was invented in 1886 by John Pemberton. John Pemberton was born in 1831 in Georgia. He died in 1888. Coca-Cola is made from water, sugar, and carbon dioxide. The recipe is a closely guarded secret. Coca-Cola is sold in over 200 countries and remains one of the most popular beverages in the world. \\
+% ODESteer & &
+% Coca-Cola is a carbonated soft drink that has been made in Atlanta, Georgia, since 1886. The original Coca Cola formula was a closely guarded secret. Early versions reportedly included cocaine, caffeine, kola nuts, vanilla, and other ingredients. Although cocaine was once an ingredient, the formula no longer contains it, but it still contains caffeine. \\
+% SphericalSteer & &
+% Empty \\
+% \textsc{COBRAS (Ours)} & &
+% Coca-Cola is a carbonated soft drink that has been made in Atlanta, Georgia, since 1886. The original Coca Cola formula was a closely guarded secret. Early versions reportedly included cocaine, caffeine, kola nuts, vanilla, and other ingredients. Although cocaine was once an ingredient, the formula no longer contains it, but it still contains caffeine. \\
+% \bottomrule
+% \end{tabular}}
+% \end{tcolorbox}
+
+
+
+\begin{tcolorbox}[
+  boxrule=0.5pt,
+  left=0pt,
+  right=0pt,
+  top=2.5pt,
+  bottom=2.5pt,
+  colback=blue!5!white,
+  colframe=blue!45!white,
+  colbacktitle=blue!55!white,
+  coltitle=white,
+  fonttitle=\bfseries,
+  title={Sample Responses on \textsc{Ultrafeedback} Dataset}
+]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{>{\centering\arraybackslash}m{0.15\linewidth} c m{0.75\linewidth}}
+\toprule
+\multicolumn{3}{l}{\textbf{Prompt:} What kind of chicken is a mammal?} \\
+\midrule[0.9pt]
+\multicolumn{3}{p{0.90\linewidth}}{\textbf{Chosen: } Chickens are not mammals; they are birds. Mammals and birds are different classes of animals. Chickens belong to the class Aves, whereas mammals belong to the class Mammalia. Mammals have certain distinct characteristics, such as hair or fur, mammary glands for nursing their young, and three middle ear bones. In contrast, birds have feathers, lay eggs, and have a beak without teeth. So, there is no type of chicken that is considered a mammal.
+} \\
+\midrule[0.9pt]
+
+Original &
+\multirow{8}{*}[-30ex]{\rotatebox{90}{\footnotesize \textsc{Qwen2.5-7B}}} &
+The question you're asking seems to be based on some confusion about what chickens are and how they relate to mammals. Chickens (Gallus gallus domesticus) belong to the order Galliformes, which includes other birds such as turkeys, quails, and pheasants. They are not classified as mammals; instead, they share characteristics with reptiles and birds. Mammals are warm-blooded vertebrates that have hair or fur, produce milk for their young, give birth to live offspring (except in the case of monotremes like platypuses), and typically have mammary glands. Examples of mammals  \\
+
+RepE & & The question you're asking seems to be based on some confusion about what chickens are and how they relate to mammals. Chickens (Gallus gallus domesticus) belong to the order Galliformes, which includes other birds such as turkeys, quails, and pheasants. They are not classified as mammals; instead, they share characteristics with reptiles and birds. Mammals are warm-blooded animals that have hair or fur at some point in their life cycle, produce milk for their young, have three middle ear bones, give birth to live young rather than laying eggs, maintain a constant body temperature through metabolic \\
+
+
+ITI & & The question you're asking seems to be based on a misunderstanding or a playful twist, rather than a factual statement. Chickens are birds and they lay eggs, not give birth like mammals do. However, if we were to playfully consider the idea that something could "give milk" (like cows), then perhaps one might humorously say that a chicken could be considered a 'mammal' in such a scenario because it could hypothetically produce milk under unusual circumstances. In reality, chickens are classified as avian animals belonging to the order Aves and have a unique reproductive system where females lay unfertilized eggs without lactating. \\
+CAA & & The question you're asking seems to be based on a misunderstanding or a playful twist, as chickens are not mammals. Chickens belong to the taxonomic class Aves (birds), whereas mammals belong in the class Mammalia. If you meant something else by "kind of mammalian," could you please clarify your question so I can provide a more accurate response? For example, if you were referring to poultry that has characteristics similar to those found in mammals, it might help to know what specific traits or aspects you have in mind! \\
+MiMiC &  & The question "what kind of chicken is a mammalian?" doesn't make sense because chickens are birds, not mammals. Chickens belong to the taxonomic class Aves and order Galliformes. Mammals belong in the class MAMMALIA. They have fur or hair on their body, give birth to live young, and nurse them with milk. Birds don't do any of these things. So it's safe to say that chickens aren't mammals! \\
+\bottomrule
+\end{tabular}}
+\end{tcolorbox}
+
+
+
+\begin{tcolorbox}[
+  boxrule=0.5pt,
+  left=0pt,
+  right=0pt,
+  top=2.5pt,
+  bottom=2.5pt,
+  colback=blue!5!white,
+  colframe=blue!45!white,
+  colbacktitle=blue!55!white,
+  coltitle=white,
+  fonttitle=\bfseries,
+  title={Sample Responses on \textsc{Ultrafeedback} Dataset [Continued]}
+]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{>{\centering\arraybackslash}m{0.15\linewidth} c m{0.75\linewidth}}
+\toprule
+\multicolumn{3}{l}{\textbf{Prompt:} What kind of chicken is a mammal?} \\
+\midrule[0.9pt]
+\multicolumn{3}{p{0.90\linewidth}}{\textbf{Chosen: } Chickens are not mammals; they are birds. Mammals and birds are different classes of animals. Chickens belong to the class Aves, whereas mammals belong to the class Mammalia. Mammals have certain distinct characteristics, such as hair or fur, mammary glands for nursing their young, and three middle ear bones. In contrast, birds have feathers, lay eggs, and have a beak without teeth. So, there is no type of chicken that is considered a mammal.
+} \\
+\midrule[0.9pt]
+
+
+SphericalSteer &  \multirow{2}{*}[-10ex]{\rotatebox{90}{\footnotesize \textsc{Qwen2.5-7B}}} & - cow - dog - rooster - beef farm - chicken coop The best answer is A: dog \\
+ODESteer & & - cowbird - fast food restaurant - hen - egg - supermarket The best answer is A: cowbird \\
+\textsc{COBRAS (Ours)} & &
+ The question seems to be based on a misunderstanding or confusion. Chickens are birds, not mammals. They belong to the scientific order Galliformes and family Phasianidae. To clarify: - **Chickens** (Gallus gallus) are domesticated members of the bird family. - Mammals have fur or hair and produce milk for their young through mammary glands. Therefore, no type of "chicken" can be classified as a "mammal." If you meant something else by this question, please provide more context! \\
+
+\bottomrule
+\end{tabular}}
+\end{tcolorbox}
