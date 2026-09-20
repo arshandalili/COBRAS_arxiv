@@ -14,7 +14,8 @@ we denote the corresponding empirical measures by $\pplushat$ and $\pminushat$. 
 To leverage the inherent geometric structure of neural representations, we motivate our manifold-based approach by observing the distribution of activation magnitudes within transformer architectures. A line of recent work has shown that, once the layer index is fixed, residual-stream activations concentrate strongly in norm across inputs, both empirically~\citep{pham2024householder, you2026spherical} and structurally~\citep{yang2023spectral, xie2026controlled}. Thus, for the present layer $\ell$, most of the variability relevant for steering lies in the \emph{direction} of the activation rather than in its Euclidean magnitude. This suggests that the natural state space is not all of $\mathbb{R}^{d}$ but instead a sphere of approximately constant radius. We therefore model activations as living on the hypersphere $\Sph = \{\boldsymbol{x}\in\mathbb{R}^{d} : \|\boldsymbol{x}\| = R\}$.  This norm concentration allows \Cobras to cast the steering problem into hyperspherical Riemannian geometry, letting us leverage established tools and results from Riemannian optimal transport.
 
 
-Figure~\ref{fig:norm-concentration} provides empirical support for this approximation by showing that activation norms cluster tightly around the layer mean radius. Accordingly, we project the query activation and the samples in $\mathcal{D}^{\pm}$ onto $\Sph$ and formulate the steering problem on this manifold.
+Figure~\ref{fig:activation_norms} provides empirical support for this approximation by showing that activation norms cluster tightly around the layer mean radius. We further validate this assumption across layers and additional model architectures in Appendix~\ref{appendix:norm_concentration}. Accordingly, we project the query activation and the samples in $\mathcal{D}^{\pm}$ onto $\mathcal{S}$ and formulate the steering problem on this manifold.
+
 
 \begin{figure}[!ht]
 \centering
@@ -285,7 +286,7 @@ to scale the integration horizon. Thus, activations well supported by the learne
 \State Compute the Schr\"{o}dinger potentials $(\log\boldsymbol{\phi},\,\log\boldsymbol{\psi}) \gets \textsc{Sinkhorn}(\boldsymbol{c})$ \hfill{Eq.~\eqref{eq:sinkhorn}}
 \State Calibrate $\tau$ and $p_{\mathrm{ref}}$ from $\{\hat p_0(\boldsymbol{h}^{-}_{j})\}_{j=1}^{N_-}$ \hfill{Eqs.~\eqref{eq:initial-marginal}-\eqref{eq:marginal-strength}}
 \Statex \textbf{// Online: integrate the probability flow ODE}
-\State $\boldsymbol{q}_{0} \gets R\,\hquery/\|\hquery\|$
+\State $\boldsymbol{q}_{0} \gets R\,\hquery/\|\hquery\|$ \label{alg:cobras:norm_equation}
 \State Evaluate the initial time-marginal $\hat p_0(\boldsymbol{q}_0)$ \hfill{Eq.~\eqref{eq:initial-marginal}}
 \If{$\hat p_0(\boldsymbol{q}_0)<\tau$}
     \State \Return $\hquery$
