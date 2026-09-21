@@ -201,8 +201,8 @@ Our base LLMs follow the experimental setup of Zhao~\etal~\cite{zhaoodesteer}. W
 
     \item \textbf{TriviaQA}~\citep{joshi2017triviaqa} is a large-scale dataset consisting over 650 triplets of trivia questions - answers - evidences. The questions are naturally occurring and often require lexical, syntactic, and multi-sentence reasoning. In our experiments, we use the a subset of the original dataset, specifcially, the huggingface dataset which is tailored for Inference Time Intervenetion: ~\href{https://huggingface.co/datasets/OamPatel/iti_trivia_qa_val}{TriviaQA HF Dataset}. 
 
-    \item \textbf{NQ}~\citep{kwiatkowski2019natural} In our experiments, we use the a subset of the original dataset, specifcially, the huggingface dataset which is tailored for Inference Time Intervenetion: ~\href{https://huggingface.co/datasets/OamPatel/iti_nq_open_val}{NQ HF Dataset}.  All steering methods are trained on TruthfulQA as described in OOD section and then evaluated on a randomly sampled 1K NQ examples. 
-    
+    \item \textbf{Natural Questions (NQ)}~\citep{kwiatkowski2019natural} is a question-answering dataset constructed from real, anonymized Google search queries. In our experiments, we use the modified NQ-Open validation set released by the ITI authors for transfer evaluation: \href{https://huggingface.co/datasets/OamPatel/iti_nq_open_val}{NQ HF Dataset}. All steering methods are trained on TruthfulQA, as described in the OOD evaluation section, and evaluated on a randomly sampled subset of 1K NQ examples.
+
     \item \textbf{GSM8K}~\citep{cobbe2021gsm8k} contains approximately 8.5K grade-school math word problems paired with natural-language solutions. The dataset contains roughly 7.5K training examples and 1K test examples. We use the original test split for out-of-distribution evaluation. All methods are trained on TruthfulQA as described above and then evaluated on the 1K GSM8K test examples in a 5-shot setting.
 
     \item \textbf{MMLU}~\citep{hendrycks2020measuring} is a large-scale multiple-choice benchmark covering a broad range of academic and professional subjects. It contains approximately 100K training examples and 14K test examples. We use the default test split for out-of-distribution evaluation and perform 5-shot generation.
@@ -305,27 +305,32 @@ All our experiments are conducted on a machine equipped with 1x H100 80GB. We ex
 
 \Cobras models residual-stream activations at a fixed layer as lying approximately on a hypersphere. As shown in Algorithm~\ref{alg:cobras}, it projects each query onto the fitted sphere (Line~\ref{alg:cobras:norm_equation}), \[ \mathbf{q}_0 = R \frac{\mathbf{h}_q}{\|\mathbf{h}_q\|}, \] performs steering on the sphere, and restores the original norm afterward. Thus, steering depends on activation direction rather than magnitude. We test this assumption by measuring the coefficient of variation (CoV) of residual-stream norms across layers and model families. For the four models used in the main experiments, we use 5,918 TruthfulQA activations; for four additional architectures (Gemma-2-2B~\cite{team2024gemma}, GPT-OSS-20B~\cite{agarwal2025gpt}, LLama-3.2-1B, Qwen2.5-1.5B), we use approximately 110K tokens of web text.
 
+
 \begin{table}[t]
 \centering
 \small
-\begin{tabular}{lccc}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lccc@{}}
 \toprule
-\textbf{Model} & \textbf{\# Layers} & \textbf{CoV, layers $\geq 3$} & \textbf{CoV, layers 0--2} \\
+\textbf{Model} & \textbf{\# Layers} & \textbf{Early (0--2)} & \textbf{Later ($\geq 3$)} \\
 \midrule
-LLaMA3.1-8B        & 32 & 0.017--0.080 & 0.072--0.134 \\
-Mistral-7B         & 32 & 0.035--0.081 & 0.084--0.123 \\
-Falcon-7B          & 32 & 0.021--0.085 & 0.108--0.165 \\
-Qwen2.5-7B         & 28 & 0.018--0.034 & 0.021--0.043 \\
+LLaMA3.1-8B       & 32 & [0.072, 0.134] & [0.017, 0.080] \\
+Mistral-7B        & 32 & [0.084, 0.123] & [0.035, 0.081] \\
+Falcon-7B         & 32 & [0.108, 0.165] & [0.021, 0.085] \\
+Qwen2.5-7B        & 28 & [0.021, 0.043] & [0.018, 0.034] \\
 \midrule
-Gemma-2-2B        & 26 & 0.098--0.281 & 0.147--0.207 \\
-GPT-OSS-20B (MoE)   & 24 & 0.083--0.191 & 0.102--0.129 \\
-LLaMA-3.2-1B       & 16 & 0.044--0.109 & 0.101--0.152 \\
-Qwen2.5-1.5B       & 28 & 0.077--0.192 & 0.120--0.191 \\
+Gemma-2-2B        & 26 & [0.147, 0.207] & [0.098, 0.281] \\
+GPT-OSS-20B (MoE) & 24 & [0.102, 0.129] & [0.083, 0.191] \\
+LLaMA-3.2-1B      & 16 & [0.101, 0.152] & [0.044, 0.109] \\
+Qwen2.5-1.5B      & 28 & [0.120, 0.191] & [0.077, 0.192] \\
 \bottomrule
 \end{tabular}
-\caption{Coefficient of variation of residual-stream activation norms across model families and layers. The top block contains the four models used in the main experiments, while the bottom block contains additional architectures.}
+\caption{Range of the coefficient of variation (CoV) of residual-stream
+activation norms across layers. The top block contains models used in the
+main experiments; the bottom block contains additional architectures.}
 \label{tab:norm_concentration}
 \end{table}
+
 
 From Table~\ref{tab:norm_concentration}, we observe that norms are least concentrated in the first three layers and substantially more concentrated in later layers for all four models used in our experiments. The same qualitative pattern holds across the additional architectures, although the degree of concentration varies across model families. A notable exception is the initial attention-sink token (e.g., \texttt{<|begin\_of\_text|>} for LLaMA). Although these tokens account for only about 0.45\% of the web-text tokens, their norms can reach up to $418\times$ the median. For example, including them increases the overall CoV of Qwen2.5-1.5B from 0.19 to 9.20. This does not affect \Cobras, since steering is applied to the last prompt token and subsequent generation positions, not the initial token. Overall, these results support the hyperspherical approximation in the layers and positions where \Cobras is applied, while identifying the initial attention-sink token as a clear exception.
 
