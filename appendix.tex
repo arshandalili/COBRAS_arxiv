@@ -1,185 +1,441 @@
-\section{A Unified Log-density Ratio Optimization Framework for Activation Steering}
+\section{Activation Steering Methods as Log-Density-Ratio Flows}
 \label{apx:ldr-formalize}
 
-In this section, we show that diverse activation steering methodologies can be unified under a single theoretical framework governed by log-density ratio optimization. Specifically, we analyze how these seemingly disparate techniques implicitly optimize the ratio $\log(p_+ / p_-)$ by reinterpreting them as specific geometric configurations of a continuous global flow. Formally, let $p_{+}$ and $p_{-}$ define a pair of continuous densities corresponding to the contrastive behavior distributions $\mathcal{D}^{+}$ and $\mathcal{D}^{-}$, respectively. Given an initial query activation $\boldsymbol{h}_q$ on an underlying representation manifold $\mathcal{M}$, the steering trajectory is obtained by integrating the continuous-time ordinary differential equation:
-
+Let $\pplus$ and $\pminus$ be densities on a manifold $\mathcal{M}$ describing the desired and undesired activation populations $\mathcal{D}^{+}$ and $\mathcal{D}^{-}$, and let a steering map carry a query activation along the flow
 \begin{equation}
-d\boldsymbol{x}_t = \nabla_{\mathcal{M}}\log\frac{p_{+}(\boldsymbol{x}_{t})}{p_{-}(\boldsymbol{x}_{t})}\,dt, \qquad \boldsymbol{x}_{0} = \hquery,
+d\boldsymbol{x}_{t}
+= \nabla_{\mathcal{M}}\log\frac{\pplus(\boldsymbol{x}_{t})}{\pminus(\boldsymbol{x}_{t})}\,dt,
+\qquad \boldsymbol{x}_{0}=\hquery,
 \label{eq:global-flow}
 \end{equation}
+discretized into $K$ Euler steps over a unit interval, with the distance traveled fixed by a per-method step size. We write $\Sph$ for the radius-$R$ sphere of Section~\ref{sec:bg}, on which the initial condition is the projection $\boldsymbol{x}_{0}=R\,\hquery/\lVert\hquery\rVert$. SS and HPR are stated on the unit sphere and differ from the radius-$R$ convention only by the rescaling $\boldsymbol{x}\mapsto R\boldsymbol{x}$.
 
-for $K$ steps over a specified time horizon $[0, T]$. Here, $\boldsymbol{x}_{t}$ denotes the steered activation along the flow, initialized as $\boldsymbol{x}_{0} = \hquery$. By systematically varying the manifold geometry $\mathcal{M}$, the step horizon $K$, and the parameterization of the density functions, we can recover prominent steering paradigms from this single formulation~\footnote{\citet{zhaoodesteer} presents a related unification of several of these methods, but their analysis is confined to Euclidean space; by treating the manifold $\mathcal{M}$ as an explicit design choice, however, our framework additionally captures geometry-aware methods such as SS and HPR.}.
-
-For example, the following methods can be recalled from this perspective as summarized in Table~\ref{tab:steering_framework}.
-
-
-
-
-\paragraph{Contrastive Activation Addition (CAA)~\citep{rimsky2024steering}} The  CAA algorithm can be framed as a specific, single-step optimization instantiation of a continuous global flow over the hidden state manifold. Specifically,  CAA simplifies this trajectory by optimizing over a flat Euclidean space $\mathcal{M}=\mathbb{R}^d$ via a single discrete step ($K=1$). By modeling the factual (positive) and counterfactual (negative) activation distributions as isotropic Gaussians sharing an identity covariance $p_{+}=\mathcal{N}(\boldsymbol{\mu}_{+}, \boldsymbol{I}_d)$ and $p_{-}=\mathcal{N}(\boldsymbol{\mu}_{-}, \boldsymbol{I}_d)$, the complex continuous gradient field collapses into a constant shift vector defined by the difference of their respective means  $\nabla_{\mathcal{M}}\log\frac{p_{+}}{p_{-}}=\boldsymbol{\mu}_+ - \boldsymbol{\mu}_-$. Consequently, the empirical practice of injecting a static difference vector during the forward pass is mathematically grounded as an exact, first-order approximation toward maximizing the target likelihood ratio.
-
-\paragraph{Spherical Steering (SS)~\citep{you2026spherical}}
-
-
-To relax the assumption of a flat Euclidean space and account for the directional nature of high-dimensional neural representations, Spherical Steering constrains the optimization trajectory to a unit hypersphere manifold, setting $\mathcal{M}=\mathcal{S}^{d-1}$. Under a single-step discrete horizon ($K=1$), the method models the target positive activations using a von Mises-Fisher (vMF) distribution $p_+=\mathrm{vMF}(\cdot;\boldsymbol{\mu},\kappa)$ which acts as the spherical analogue to an isotropic Gaussian with a mean direction vector $\boldsymbol{\mu}$ and a concentration parameter $\kappa$. Conversely, the negative behavior is modeled as a uniform distribution over the sphere $p_-=\mathrm{Unif}(\mathcal{S})$. The unit prototype towards the positive activations $\boldsymbol{\mu}$ is empirically defined by normalizing the difference between the mean positive and negative activations:
-$$\boldsymbol{\mu}= \frac{\bar{\boldsymbol{h}}^{+} - \bar{\boldsymbol{h}}^{-}}{\|\bar{\boldsymbol{h}}^{+} - \bar{\boldsymbol{h}}^{-}\|}.$$
-
-When evaluating the global flow framework under these spherical constraints, the Riemannian gradient of the likelihood ratio yields a non-linear direction proportional to the logarithmic map on the sphere 
-$\nabla_{\mathcal{S}}\log\tfrac{p_+}{p_-}
-\propto\log_{\boldsymbol{x}}(\boldsymbol{\mu})$ which corresponds to the Slerp direction toward $\boldsymbol{\mu}$ in
-the direction of this Riemannian gradient. By explicitly respecting the spherical geometry of hidden states, SS ensures that the magnitude of the activation vector is preserved, avoiding out-of-distribution distortion while performing directional steering.
+Three choices place a steering method inside the family of Eq.~\eqref{eq:global-flow}: the manifold $\mathcal{M}$ on which the gradient is taken, the number of steps $K$, and the model that supplies the pair $(\pplus,\pminus)$. Each entry below is a reading rather than a re-derivation: we choose the density pair whose log-ratio gradient reproduces a method's published update and read off the assumptions the pair encodes, so what the reading exhibits is what a method implicitly assumes, not what its authors derived.\footnote{\citet{zhaoodesteer} give a related reading of several steering methods with $\mathcal{M}$ fixed to $\mathbb{R}^{d}$, and treating $\mathcal{M}$ as one of the three choices extends the same reading to the spherical methods SS and HPR.} The reading is exact for CAA, SS, ITI and HPR, whose published updates are the single Euler step of Eq.~\eqref{eq:global-flow} under the stated densities, and for ODESteer the log-ratio is itself the fitted object, so there the reading is the method's own construction. Table~\ref{tab:steering_framework} records the three choices and the induced field method by method.
 
 \begin{table}[t!]
 \centering
-\caption{Summary of Parameterizations under the Unified Global Flow Framework.}
+\caption{The three choices that place each method inside the family of Eq.~\eqref{eq:global-flow}: the manifold, the number of Euler steps, and the model whose log-density ratio reproduces the method's published update. The last column gives the induced field, up to the per-method step size.}
 \label{tab:steering_framework}
 \small
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{l p{2.2cm} p{2cm} p{4.0cm} p{5.8cm}}
 \toprule
-\textbf{Method} & \textbf{Manifold ($\mathcal{M}$)} & \textbf{Horizon ($K$)} & \textbf{Density Ratio $\log(\pplus / \pminus)$} & \textbf{Induced Gradient $\nabla_{\mathcal{M}} \log(\pplus / \pminus)$} \\ 
+\textbf{Method} & \textbf{Manifold ($\mathcal{M}$)} & \textbf{Steps ($K$)} & \textbf{Model for $\log(\pplus / \pminus)$} & \textbf{Induced field (up to the step size)} \\
 \midrule
 \textbf{CAA}~\citep{rimsky2024steering} & $\mathbb{R}^d$ & $K=1$ & Isotropic Gaussians:\newline $\mathcal{N}(\boldsymbol{\mu}_{\pm}, \boldsymbol{I}_d)$ & Constant translation:\newline $\boldsymbol{\mu}_+ - \boldsymbol{\mu}_-$ \\ \addlinespace
-\textbf{SS}~\citep{you2026spherical} & $\mathcal{S}^{d-1}$ & $K=1$ & von Mises-Fisher vs. Uniform:\newline $\text{vMF}(\boldsymbol{\mu}, \kappa) / \text{Unif}(\mathcal{S})$ & Slerp direction toward unit prototype $\boldsymbol{\mu}$ \\ \addlinespace
-\textbf{ITI}~\citep{li2023inference} & $\mathbb{R}^d$ & $K=1$ & Discriminative Linear\newline Logistic Probe: $\sigma(\boldsymbol{\theta}^\top \boldsymbol{x})$ & Normal vector to decision boundary: $\boldsymbol{\theta}$ \\ \addlinespace
-\textbf{HPR}~\citep{pham2024householder} & $\mathcal{S}^{d-1}$ & $K=1$ & Linear Probe mapped via Householder Reflector $\boldsymbol{H}$ & Slerp path toward reflected state $\boldsymbol{H}\hat{\boldsymbol{x}}$ \\ \addlinespace
-\textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & $K > 1$ & Polynomial Count-Sketch Feature Map: $\boldsymbol{w}^\top \phi(\boldsymbol{x}) + b$ & State-dependent Jacobian field:\newline $\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w} / \|\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w}\|$ \\
-\textbf{\Cobras~(ours)} & $\mathcal{S}^{d-1}$ & $K > 1$ & Schr\"{o}dinger potentials via spherical KDE:\newline $\hat\psi / \hat\phi$ & Weighted Riemannian mean of log-maps:\newline $\sum_{i}\bar{w}^{+}_{i}\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i}) - \sum_{j}\bar{w}^{-}_{j}\log_{\boldsymbol{x}}(\boldsymbol{h}^{-}_{j})$ \\
+\textbf{SS}~\citep{you2026spherical} & $\Sph$ & $K=1$ & von Mises--Fisher against uniform:\newline $\mathrm{vMF}(\boldsymbol{\mu}, \kappa) / \mathrm{Unif}(\Sph)$ & Slerp toward the unit prototype:\newline $\log_{\boldsymbol{x}}(\boldsymbol{\mu})$ \\ \addlinespace
+\textbf{ITI}~\citep{li2023inference} & $\mathbb{R}^d$ & $K=1$ & Linear logistic probe:\newline $(1+e^{-\boldsymbol{\theta}^\top \boldsymbol{x}})^{-1}$ & Normal to the decision boundary:\newline $\boldsymbol{\theta}$ \\ \addlinespace
+\textbf{HPR}~\citep{pham2024householder} & $\Sph$ & $K=1$ & Linear probe read through the Householder reflector $\boldsymbol{H}$ & Slerp toward the reflected state:\newline $\Pi_{\hat{\boldsymbol{x}}}(\boldsymbol{H}\hat{\boldsymbol{x}} - \hat{\boldsymbol{x}})$ \\ \addlinespace
+\textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & $K > 1$ & Polynomial count-sketch feature map: $\boldsymbol{w}^\top \Phi(\boldsymbol{x}) + b_{0}$ & Normalized Jacobian field:\newline $\boldsymbol{J}_{\Phi}(\boldsymbol{x})^{\top}\boldsymbol{w} / \|\boldsymbol{J}_{\Phi}(\boldsymbol{x})^{\top}\boldsymbol{w}\|$ \\ \addlinespace
+\textbf{\Cobras~(ours)} & $\Sph$ & $K > 1$ & Entropic transport potentials at bandwidth $b$:\newline $\log\widehat{\psi}_{b}(\boldsymbol{x}) - \log\widehat{\varphi}_{b}(\boldsymbol{x})$ & $b\,\nablaS\log(\widehat{\psi}_{b}(\boldsymbol{x})/\widehat{\varphi}_{b}(\boldsymbol{x}))$ with the multipliers reweighted per query (Eq.~\eqref{eq:weights-pos}):\newline $\sum_{i}\bar{w}^{+}_{i}(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i}) - \sum_{j}\bar{w}^{-}_{j}(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}^{-}_{j})$ \\
 \bottomrule
 \end{tabular}
 }
 \end{table}
 
-\paragraph{Inference-Time Intervention (ITI) \citep{li2023inference}} Rather than assuming explicit parametric distributions for the hidden states, ITI leverages a discriminative classifier to implicitly estimate the underlying density ratio. Operating within a single-step horizon ($K=1$) over a flat Euclidean vector space $\mathcal{M} = \mathbb{R}^d$, ITI trains a linear logistic probe, $p_{\boldsymbol{\theta}}(\boldsymbol{x}) = \sigma(\boldsymbol{\theta}^\top \boldsymbol{x})$, to distinguish between positive and negative activation vectors. By invoking the classic equivalence between logistic regression and density ratio estimation, the log-density ratio can be rewritten linearly as $\log \frac{p_+(\boldsymbol{x})}{p_-(\boldsymbol{x})} = \boldsymbol{\theta}^\top \boldsymbol{x} + \log \frac{N_-}{N_+}$, where $N_+$ and $N_-$ represent the respective sample counts. Taking the gradient with respect to the manifold yields a constant vector field defined entirely by the probe's learned weights:$$\nabla_{\mathcal{M}} \log \frac{p_+}{p_-} = \boldsymbol{\theta}$$This formulation reveals a powerful geometric justification for ITI: the orthogonal vector to the classifier's decision boundary acts as the exact gradient direction needed to maximize the factual likelihood ratio. Consequently, shifting activations along the direction of $\boldsymbol{\theta}$ during inference provides a theoretically grounded, first-order trajectory for target behavior optimization.
-\paragraph{Householder Reflection Probe (HPR)~\citep{pham2024householder}}  To reconcile discriminative, probe-based steering with non-Euclidean representation spaces, the HPR method maps the log-density ratio directly onto a hyperspherical manifold ($\mathcal{M} = \mathcal{S}^{d-1}$) under a single-step horizon ($K=1$). Similar to ITI, the method first projects the log-density ratio linearly using a trained linear probe, $\log \frac{p_+(\boldsymbol{x})}{p_-(\boldsymbol{x})} = \boldsymbol{\theta}^\top \boldsymbol{x} + \log \frac{N_-}{N_+}$. To respect the spherical constraints, HPR constructs an orthogonal Householder reflection matrix, $\boldsymbol{H} = \boldsymbol{I} - 2\boldsymbol{u}\boldsymbol{u}^\top$, where $\boldsymbol{u} = \boldsymbol{\theta} / \|\boldsymbol{\theta}\|$ represents the unit normal vector to the probe's decision boundary. By reflecting the normalized activation vector $\hat{\boldsymbol{x}} = \boldsymbol{x} / \|\boldsymbol{x}\|$ across this boundary, the directional gradient on the sphere is formalized as $\nabla_{\mathcal{S}} \log \frac{p_+(\boldsymbol{x})}{p_-(\boldsymbol{x})} \propto \Pi_{\hat{\boldsymbol{x}}}(\boldsymbol{H}\hat{\boldsymbol{x}} - \hat{\boldsymbol{x}})$, where $\Pi_{\hat{\boldsymbol{x}}}$ denotes the projection onto the tangent space at $\hat{\boldsymbol{x}}$. Geometrically, this confirms that the optimal trajectory corresponds to a Spherical Linear Interpolation (Slerp) toward the reflected state $\boldsymbol{H}\hat{\boldsymbol{x}}$. By leveraging a reflection operator, HPR effectively utilizes the probe's decision boundaries to execute directional steering while intrinsically preserving the latent norm of the activation path.
+\paragraph{Assumed densities.} Contrastive Activation Addition (CAA)~\citep{rimsky2024steering} fixes $\mathcal{M}=\mathbb{R}^{d}$, $K=1$ and a pair of isotropic Gaussians $\pplus=\mathcal{N}(\boldsymbol{\mu}_{+},\boldsymbol{I}_{d})$, $\pminus=\mathcal{N}(\boldsymbol{\mu}_{-},\boldsymbol{I}_{d})$, for which the log-ratio is affine and its gradient is the constant $\boldsymbol{\mu}_{+}-\boldsymbol{\mu}_{-}$, so CAA's difference-of-means update is the single Euler step of Eq.~\eqref{eq:global-flow} for that field. Spherical Steering (SS)~\citep{you2026spherical} keeps $K=1$, moves the flow to $\Sph$, and replaces the Gaussian pair by a von Mises--Fisher density against the uniform one, $\pplus=\mathrm{vMF}(\boldsymbol{\mu},\kappa)$ and $\pminus=\mathrm{Unif}(\Sph)$, with the prototype $\boldsymbol{\mu}$ of Eq.~\eqref{eq:mu}. Because a uniform density has zero gradient, $\nablaS\log(\pplus/\pminus)=\nablaS\log\pplus\propto\log_{\boldsymbol{x}}(\boldsymbol{\mu})$, the Slerp direction from the current state toward $\boldsymbol{\mu}$. Neither parameterization admits a query-dependent direction: equal covariances make the Gaussian gradient constant in $\boldsymbol{x}$, and a uniform $\pminus$ leaves a gradient that points at one fixed target regardless of the query's position, so on $\Sph$ the only variation left is the tangent projection. Taking $\pminus$ uniform also deletes the repulsive term of Eq.~\eqref{eq:ldr-ideal} outright, so the SS field cannot express where the query lies relative to $\mathcal{D}^{-}$. The repulsive term can be restored within the same parametric family. With $\pplus=\mathrm{vMF}(\boldsymbol{\mu},\kappa)$, $\pminus=\mathrm{vMF}(-\boldsymbol{\mu},\kappa)$, equal priors and a shared concentration, the two normalizing constants cancel and $\log(\pplus/\pminus)(\boldsymbol{x})=2\kappa\langle\boldsymbol{x}/R,\boldsymbol{\mu}\rangle$, and the induced posterior for the undesired class is the per-token side term of Eq.~\eqref{eq:side}. The baselines of Table~\ref{tab:steering_framework} and the side term therefore belong to the same formalism.
 
-\paragraph{ODESteer~\citep{zhaoodesteer}} Departing from single-step first-order approximations ($K=1$), ODESteer fully embraces the continuous-time formulation of the global flow framework by integrating across multiple steps ($K > 1$) over a flat Euclidean vector space $\mathcal{M} = \mathbb{R}^d$. Rather than adopting simple parametric distributions or linear probes, this approach models complex, non-linear activation dynamics by parameterizing the log-density ratio with a polynomial count-sketch feature map $\phi$ and setting $\log \frac{p_+(\boldsymbol{x})}{p_-(\boldsymbol{x})} = \boldsymbol{w}^\top \phi(\boldsymbol{x}) + b$, where the parameter pair $(\boldsymbol{w}, b)$ is fit empirically over the contrastive dataset. Under this non-linear projection, the steering direction is dictated by a dynamic, normalized vector field:$$\boldsymbol{V}(\boldsymbol{x}) = \frac{\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w}}{\|\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w}\|}$$where $\boldsymbol{J}_{\phi}(\boldsymbol{x})$ denotes the Jacobian matrix of the feature map $\phi$ evaluated at the current state $\boldsymbol{x}$. By evaluating and integrating this state-dependent vector field using discrete Euler steps over the time horizon $[0, T]$, ODESteer traces a curved, non-linear path through the representation space. This multi-step integration allows the model to continuously adapt to the changing manifold geometry during the steering process, providing precise control while tracking complex latent boundaries.
+\paragraph{Densities implied by a probe.} Inference-Time Intervention (ITI)~\citep{li2023inference} and Householder Reflection Probing (HPR)~\citep{pham2024householder} posit no densities at all. Both fit a linear logistic probe $p_{\boldsymbol{\theta}}(\boldsymbol{x})=(1+e^{-\boldsymbol{\theta}^{\top}\boldsymbol{x}})^{-1}$ to separate $\mathcal{D}^{+}$ from $\mathcal{D}^{-}$, then use the equivalence between logistic regression and density-ratio estimation~\citep{sugiyama2012density} to read a log-ratio off the fit, $\log(\pplus/\pminus)(\boldsymbol{x})=\boldsymbol{\theta}^{\top}\boldsymbol{x}+\log(N_{-}/N_{+})$. On $\mathcal{M}=\mathbb{R}^{d}$ with $K=1$ the gradient of that expression is the constant $\boldsymbol{\theta}$, which is ITI's published direction. HPR takes the same implied log-ratio onto the sphere: writing $\boldsymbol{u}=\boldsymbol{\theta}/\lVert\boldsymbol{\theta}\rVert$, $\hat{\boldsymbol{x}}=\boldsymbol{x}/\lVert\boldsymbol{x}\rVert$ and $\boldsymbol{H}=\boldsymbol{I}-2\boldsymbol{u}\boldsymbol{u}^{\top}$ for the Householder reflector across the probe's boundary, the Riemannian gradient is the tangential part of $\boldsymbol{\theta}$, so $\nablaS\log(\pplus/\pminus)\propto\Pi_{\hat{\boldsymbol{x}}}(\boldsymbol{H}\hat{\boldsymbol{x}}-\hat{\boldsymbol{x}})$ with a factor that is positive exactly when $\boldsymbol{\theta}^{\top}\boldsymbol{x}<0$, and on the undesired side of the probe's boundary the reflection is a Slerp along that gradient. An affine log-ratio has a constant gradient, so a fitted probe reaches the same boundary as an assumed Gaussian pair, and ITI's field cannot vary with the query while HPR's varies only through the tangent projection. A probe also identifies the log-ratio and not the two densities, since every pair $(\pplus,\pminus)$ with the same ratio reproduces the same update, so this parameterization supplies a direction but no marginal.
 
+\paragraph{A fitted log-ratio.} ODESteer~\citep{zhaoodesteer} keeps $\mathcal{M}=\mathbb{R}^{d}$ and drops both the parametric pair and the linear probe, fitting the log-ratio directly as $\log(\pplus/\pminus)(\boldsymbol{x})=\boldsymbol{w}^{\top}\Phi(\boldsymbol{x})+b_{0}$, where $\Phi$ is a polynomial count-sketch feature map and $(\boldsymbol{w},b_{0})$ is estimated on $\mathcal{D}^{+}\cup\mathcal{D}^{-}$. The induced field is the normalized Jacobian direction $\boldsymbol{J}_{\Phi}(\boldsymbol{x})^{\top}\boldsymbol{w}/\lVert\boldsymbol{J}_{\Phi}(\boldsymbol{x})^{\top}\boldsymbol{w}\rVert$, with $\boldsymbol{J}_{\Phi}(\boldsymbol{x})$ the Jacobian of $\Phi$ at the current state, and $K>1$ Euler steps follow that field along a curved trajectory: the nonlinear feature map makes the direction depend on the state, and $K>1$ lets the path track that dependence instead of committing to the direction at $\hquery$. A regressed ratio likewise supplies no marginal, so on an input far from $\mathcal{D}^{+}\cup\mathcal{D}^{-}$ the feature map extrapolates rather than abstains, and normalizing the field leaves the distance traveled to the step size alone.
+
+\paragraph{The manifold and the number of steps.} On $\mathbb{R}^{d}$, which CAA, ITI and ODESteer choose, the trajectory may change the norm of the activation, and the published updates limit the resulting distortion only through the step size. On $\Sph$, which SS, HPR and \Cobras choose, each step is an exponential map, so the norm is fixed by construction and the step size is an arc length. Fixing the norm removes any part of the intervention that the magnitude of the activation would have carried, and the projection onto $\Sph$ is not a change of coordinates, because prompt activations and contrastive samples have different norms at the steering layer (Appendix~\ref{apx:ood-gate}). A single Euler step integrates Eq.~\eqref{eq:global-flow} exactly only when the field is constant along the path, which holds for CAA and ITI, whereas the tangent projection of SS and HPR turns as the state moves. Following a state-dependent field requires $K>1$, as in ODESteer and \Cobras, at a per-token cost that grows with $K$ and, for a nonparametric density model, with the size of the contrastive set.
+
+\Cobras occupies the remaining combination of the three choices, $\mathcal{M}=\Sph$, $K>1$, and a density model that is neither assumed nor regressed but computed as the Schr\"{o}dinger potentials of an entropic transport problem between the two samples. Its potentials are evaluated at the current activation and reweighted per query (Eq.~\eqref{eq:weights-pos}), whereas the single-step methods admit no state dependence beyond the tangent projection. The product of the same potentials supplies the marginal that the support gate reads (Section~\ref{subsec:strength}), whereas ITI, HPR and ODESteer supply a ratio only and CAA and SS a single unimodal density fixed by a class mean. Proposition~\ref{prop:ldr-limit} places the kernel log-density-ratio drift, the nonparametric member of Eq.~\eqref{eq:global-flow}, at one end of the bridge construction, so Table~\ref{tab:steering_framework} compares parameterizations of one object.
 
 \section{Theoretical Analysis}
-In this section, we provide the theoretical analysis for \Cobras.
+\label{apx:theory}
+
+The following conventions hold throughout this appendix. The kernel is always the one of Eq.~\eqref{eq:kernel}, whose subscript is a variance, and the transport costs $c_{ji}=d_{\Sph}(\boldsymbol{h}^{-}_{j},\boldsymbol{h}^{+}_{i})^{2}/(2\varepsilon)$ are nonnegative with $c_{\max}=\max_{j,i}c_{ji}$. Every gradient identity below is stated on $\Sph$ with the antipodes of the contrastive samples removed, since the squared geodesic distance to a sample is smooth except at that sample's antipode, which is its entire cut locus on $\Sph$. The removed set is finite, and on Llama3.1-8B layer~13 the largest geodesic distance between a negative and a positive activation is $14.7$ against a diameter $\pi R=30.3$, so the excluded points lie far from the region in which the field is evaluated. The Sinkhorn system~\eqref{eq:sinkhorn} determines $(\boldsymbol{a}^{-},\boldsymbol{a}^{+})$ only up to the rescaling $(\boldsymbol{a}^{-},\boldsymbol{a}^{+})\mapsto(\lambda\boldsymbol{a}^{-},\lambda^{-1}\boldsymbol{a}^{+})$ with $\lambda>0$, and every quantity used below is invariant under that rescaling: the optimal coupling $\pi^{\star}_{ji}=a^{-}_{j}a^{+}_{i}K_{\varepsilon}(\boldsymbol{h}^{-}_{j},\boldsymbol{h}^{+}_{i})$, the log-ranges of Lemma~\ref{lem:log-range}, the softmax weights of Eq.~\eqref{eq:weights-pos}, the field of Eq.~\eqref{eq:cobras-field}, and the product $\widehat{\varphi}_{b_g}(\boldsymbol{x})\widehat{\psi}_{b_g}(\boldsymbol{x})$ that the support score of Eq.~\eqref{eq:support-score} reads. The potentials therefore require no normalization.
+
+\subsection{From the path-measure problem to the deterministic field}
+\label{apx:static}
+
+Sections~\ref{subsec:sb} and~\ref{subsec:estimation} pose Eq.~\eqref{eq:sb} with the population marginals, substitute the empirical ones, and then integrate a deterministic flow in place of the optimal bridge. The steps stated there are carried out here.
+
+\paragraph{Disintegration and the empirical substitution.} Splitting a path measure into its endpoint law and its bridges gives
+\begin{equation}
+\KL(P\,\Vert\,Q)=\KL(P_{01}\,\Vert\,Q_{01})+\mathbb{E}_{P_{01}}\bigl[\KL(P_{|01}\,\Vert\,Q_{|01})\bigr],
+\label{eq:apx-disint}
+\end{equation}
+with $P_{01}$ the joint law of $(\boldsymbol{x}_{0},\boldsymbol{x}_{1})$ under $P$ and $P_{|01}$ the law of the path conditioned on its endpoints. The second term is nonnegative and vanishes exactly when $P$ pins the reference bridges of $Q$. Replacing the bridges of any admissible $P$ by those of $Q$ leaves $P_{01}$, and with it both constraints, untouched, so the minimizer pins them, is fixed by its endpoint coupling alone, and the problem may be posed over couplings of the two samples~\citep{leonard2013survey, nutz2021introduction}. Equation~\eqref{eq:sb} cannot be posed with $\pminushat,\pplushat$ in place of $\pminus,\pplus$, because the endpoint law of such a $P$ is atomic, hence singular with respect to $Q_{01}$, whose marginals have densities, so the first term of Eq.~\eqref{eq:apx-disint} is $+\infty$. The empirical marginals therefore enter as a plug-in step applied to the static problem, and not as constraints on the path measure.
+
+\paragraph{The transport cost as a reference log-weight.} Over the horizon $[0,1]$ the reference assigns the pair $(\boldsymbol{h}^{-}_{j},\boldsymbol{h}^{+}_{i})$ the weight $Q_{ji}=(N_{-}N_{+})^{-1}K_{\varepsilon}(\boldsymbol{h}^{-}_{j},\boldsymbol{h}^{+}_{i})$, which is the kernel of Eq.~\eqref{eq:kernel} at $b=\varepsilon$ against a uniform choice of endpoints. For every coupling $\pi$ of $\pminushat$ and $\pplushat$, so that $\sum_{j,i}\pi_{ji}=1$,
+\begin{equation}
+\sum_{j,i}\pi_{ji}\log\frac{\pi_{ji}}{Q_{ji}}
+=\sum_{j,i}\pi_{ji}\,c_{ji}+\sum_{j,i}\pi_{ji}\log\pi_{ji}+\log(N_{-}N_{+}),
+\label{eq:apx-cost}
+\end{equation}
+The last term of Eq.~\eqref{eq:apx-cost} does not depend on $\pi$, so minimizing the divergence from the reference coupling is the entropic optimal transport problem
+\begin{equation}
+\pi^{\star} = \operatorname*{arg\,min}_{\pi \in \mathcal{U}(\pminushat,\, \pplushat)}
+\sum_{j,i} \pi_{ji}\, c_{ji} + \sum_{j,i} \pi_{ji} \log \pi_{ji},
+\label{eq:e-ot}
+\end{equation}
+over the couplings $\mathcal{U}(\pminushat,\pplushat)$ with uniform marginals, whose minimizer factorizes as $\pi^{\star}_{ji}=a^{-}_{j}a^{+}_{i}K_{\varepsilon}(\boldsymbol{h}^{-}_{j},\boldsymbol{h}^{+}_{i})$ with the scalings of Eq.~\eqref{eq:sinkhorn}~\citep{cuturi2013sinkhorn}. The transport cost $c_{ji}$ is therefore the negative logarithm of a reference weight rather than an independently chosen penalty.
+
+\paragraph{The empirical factors at time-dependent bandwidths.}
+For $0<t<1$, evaluating the kernel factors of Eq.~\eqref{eq:frozen-factors} at the remaining-time and
+elapsed-time bandwidths gives
+\begin{align}
+\widehat{\psi}_{(1-t)\varepsilon}(\boldsymbol{x})
+&= \sum\nolimits_{i=1}^{N_{+}} a^{+}_{i}\,K_{(1-t)\varepsilon}(\boldsymbol{x},\boldsymbol{h}^{+}_{i}),
+\label{eq:psi-heat}\\[2pt]
+\widehat{\varphi}_{t\varepsilon}(\boldsymbol{x})
+&= \sum\nolimits_{j=1}^{N_{-}} a^{-}_{j}\,K_{t\varepsilon}(\boldsymbol{x},\boldsymbol{h}^{-}_{j}).
+\label{eq:phi-heat}
+\end{align}
+The subscripts specify the bandwidth used in each evaluation: $(1-t)\varepsilon$ for the desired factor
+and $t\varepsilon$ for the undesired factor. They coincide at $t=1/2$.
+These hatted functions are empirical kernel factors, distinguished from the continuous bridge potentials
+$\psi(\boldsymbol{x},t)$ and $\varphi(\boldsymbol{x},t)$. Section~\ref{subsec:estimation} instead evaluates
+both empirical factors at a common bandwidth $b>0$, independently of a bridge time.
+
+\paragraph{The endpoint marginal constraints.}
+The discrete endpoint masses can be checked without evaluating a kernel at zero bandwidth.
+At a desired sample, Eq.~\eqref{eq:sinkhorn} gives
+$\widehat{\varphi}_{\varepsilon}(\boldsymbol{h}^{+}_{i})
+=\sum_j a^{-}_{j}\,K_{\varepsilon}(\boldsymbol{h}^{-}_{j},\boldsymbol{h}^{+}_{i})=(N_+a^{+}_{i})^{-1}$.
+Thus the coupling assigns mass
+$\sum_j\pi^\star_{ji}=a^{+}_{i}\widehat{\varphi}_{\varepsilon}(\boldsymbol{h}^{+}_{i})=1/N_+$
+to desired sample $i$. Similarly,
+$\sum_i\pi^\star_{ji}=a^{-}_{j}\widehat{\psi}_{\varepsilon}(\boldsymbol{h}^{-}_{j})=1/N_-$
+for each undesired sample $j$. These are the empirical marginal constraints on the transport plan.
+
+\paragraph{The deterministic flow.}
+For the continuous bridge, let $\boldsymbol{x}_t$ solve
+$d\boldsymbol{x}_t=\boldsymbol{u}(\boldsymbol{x}_t,t)\,dt
++\sigma\Pi_{\boldsymbol{x}_t}\!\circ d\boldsymbol{W}_t$ on $\Sph$.
+Its marginal density $p_t(\boldsymbol{x})$ obeys
+$\partial_t p_t(\boldsymbol{x})
+=-\operatorname{div}_{\Sph}[p_t(\boldsymbol{x})\boldsymbol{u}(\boldsymbol{x},t)]
++\tfrac{\sigma^2}{2}\Delta_{\Sph}p_t(\boldsymbol{x})$,
+where $\Delta_{\Sph}$ is the Laplace--Beltrami operator. All differential operators below act on the
+spatial argument $\boldsymbol{x}$ at fixed $t$. Using
+$\Delta_{\Sph}p_t(\boldsymbol{x})
+=\operatorname{div}_{\Sph}[p_t(\boldsymbol{x})\nablaS\log p_t(\boldsymbol{x})]$ yields
+\begin{equation}
+\partial_t p_t(\boldsymbol{x})
+=-\operatorname{div}_{\Sph}\!\left[p_t(\boldsymbol{x})
+\left(\boldsymbol{u}(\boldsymbol{x},t)-\frac{\sigma^2}{2}\nablaS\log p_t(\boldsymbol{x})\right)\right].
+\label{eq:apx-continuity}
+\end{equation}
+This is the continuity equation for the deterministic flow
+$d\boldsymbol{x}_t=[\boldsymbol{u}(\boldsymbol{x}_t,t)
+-\tfrac{\sigma^2}{2}\nablaS\log p_t(\boldsymbol{x}_t)]\,dt$,
+which therefore shares the diffusion's time marginals~\citep{song2020score}.
+For the bridge, $\boldsymbol{u}(\boldsymbol{x},t)=\sigma^2\nablaS\log\psi(\boldsymbol{x},t)$ and
+$\log p_t(\boldsymbol{x})=\log\varphi(\boldsymbol{x},t)+\log\psi(\boldsymbol{x},t)$
+up to a normalization constant independent of $\boldsymbol{x}$.
+The resulting deterministic drift is
+$\tfrac{\sigma^2}{2}\nablaS\log\psi(\boldsymbol{x},t)
+-\tfrac{\sigma^2}{2}\nablaS\log\varphi(\boldsymbol{x},t)$,
+which gives Eq.~\eqref{eq:ldr} when evaluated at $\boldsymbol{x}=\boldsymbol{x}_t$.
+
+\subsection{A reweighting bound for softmax weights}
+\label{apx:reweight}
+
+Proposition~\ref{prop:ldr-limit} compares two fields whose weights differ only by the multipliers that tilt one softmax into the other, so the quantitative content of the proposition is the following elementary bound, in which $\Delta$ measures how far the multipliers spread on the log scale.
+
+\begin{lemma}[Reweighting a softmax]
+\label{lem:reweight}
+Let $a_{1},\dots,a_{N}\in\mathbb{R}$ and let $m_{1},\dots,m_{N}>0$ have log-range $\Delta=\max_{k}\log m_{k}-\min_{k}\log m_{k}$. Write $u=\mathrm{softmax}(\boldsymbol{a})$ and $w=\mathrm{softmax}(\boldsymbol{a}+\log\boldsymbol{m})$, so that $w_{k}\propto m_{k}e^{a_{k}}$. Then
+\begin{equation}
+\lVert w-u\rVert_{1}\;\le\;e^{\Delta}-1 .
+\label{eq:apx-reweight}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Both $w$ and $\Delta$ are unchanged when every $m_{k}$ is multiplied by a common positive constant, so we may assume $\min_{k}\log m_{k}=0$ and hence $1\le m_{k}\le e^{\Delta}$ for every $k$. Put $S=\sum_{l}u_{l}m_{l}$, so that $w_{k}=u_{k}m_{k}/S$ and $S\in[1,e^{\Delta}]$. Then
+\begin{equation}
+\lVert w-u\rVert_{1}=\sum_{k}u_{k}\left\lvert\frac{m_{k}}{S}-1\right\rvert=\frac{1}{S}\sum_{k}u_{k}\,\lvert m_{k}-S\rvert\;\le\;\frac{1}{S}\max_{k}\,\lvert m_{k}-S\rvert\;\le\;e^{\Delta}-1,
+\end{equation}
+because $m_{k}$ and $S$ both lie in $[1,e^{\Delta}]$ and $S\ge1$.
+\end{proof}
+
+The constant is not sharp, but the argument only requires that the bound vanish linearly in $\Delta$.
+
 \subsection{Proof of Proposition~\ref{prop:ldr-limit}}
 \label{apx:proof-ldr-limit}
- 
-\begin{proof}
-When $c_{\max}\to 0$, every cost entry $c_{ji}\to 0$. The Sinkhorn update for $\phi_{j}$ (Eq.~\ref{eq:sinkhorn}) becomes
-\begin{equation}
-\log\phi_{j}
-= -\log N_{-} - \log\sum_{i=1}^{N_{+}}\exp(\log\psi_{i} - c_{ji})
-\xrightarrow{c_{ji}\to 0}
--\log N_{-} - \log\sum_{i=1}^{N_{+}}\psi_{i},
-\end{equation}
-which is independent of $j$. Hence, every $\phi_{j}$ takes the same value. By the symmetric argument applied to the $\psi_{i}$ update, every $\psi_{i}$ is also equal. The marginal constraints $\sum_{i}\pi^{\star}_{ji} = \frac{1}{N_{-}}$ and $\sum_{j}\pi^{\star}_{ji} = \frac{1}{N_{+}}$ then fix $\psi_{i} = \frac{1}{N_{+}}$ and $\phi_{j} = \frac{1}{N_{-}}$.
- 
-Substituting into Eqs.~\ref{eq:psi-heat}-\ref{eq:phi-heat}:
-\begin{equation}
-\hat\psi(\boldsymbol{x},t)
-= \tfrac{1}{N_{+}}\sum_{i=1}^{N_{+}}K_{(T-t)\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i}),
-\qquad
-\hat\phi(\boldsymbol{x},t)
-= \tfrac{1}{N_{-}}\sum_{j=1}^{N_{-}}K_{t\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{-}_{j}).
-\end{equation}
-The log-ratio is
-\begin{equation}
-\log\hat\psi - \log\hat\phi
-= \log\tfrac{1}{N_{+}} - \log\tfrac{1}{N_{-}}
-+ \log\sum_{i}K_{(T-t)\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})
-- \log\sum_{j}K_{t\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{-}_{j}).
-\end{equation}
-The constant vanishes and yields Eq.~\ref{eq:ldr-limit}. The numerator and denominator are spherical kernel density estimates of $\pplus$ and $\pminus$, which converge to the true densities as $N_{\pm}\to\infty$~\citep{pelletier2005kernel}.
-\end{proof}
-\subsection{Derivation of the Riemannian Gradient of $\log\hat\psi$ and $\log\hat\phi$}
-\label{app:grad-psi}
- 
-We derive Eq.~\eqref{eq:grad-psi} which is the closed-form Riemannian gradient of the log backward Schr\"{o}dinger factor on $\Sph$. The derivation for $\nablaS\log\hat\varphi$ is identical with $(\mathcal{D}^{-},\tilde\varphi_{j})$ replacing $(\mathcal{D}^{+},\tilde\psi_{i})$.
- 
-\subsection{Gradient of the Geodesic Gaussian Kernel}
- 
-Let $K_{\sigma}(\boldsymbol{x},\boldsymbol{h}) = \exp\!\bigl(-d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^{2}/(2\sigma)\bigr)$ for a bandwidth $\sigma > 0$. By the chain rule and the fact that $\nablaS\, d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^{2}
-= -2\,\log_{\boldsymbol{x}}(\boldsymbol{h})$:
-\begin{align}
-\nablaS\,K_{\sigma}(\boldsymbol{x},\boldsymbol{h})
-&= K_{\sigma}(\boldsymbol{x},\boldsymbol{h})\cdot
-   \frac{-1}{2\sigma}\,\nablaS\,d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^{2}
-\nonumber\\
-&= K_{\sigma}(\boldsymbol{x},\boldsymbol{h})\cdot
-   \frac{-1}{2\sigma}\cdot\bigl(-2\,\log_{\boldsymbol{x}}(\boldsymbol{h})\bigr)
-\nonumber\\
-&= \frac{1}{\sigma}\,K_{\sigma}(\boldsymbol{x},\boldsymbol{h})\,
-   \log_{\boldsymbol{x}}(\boldsymbol{h}).
-\label{eq:app-grad-kernel}
-\end{align}
- 
- 
-\subsection{Gradient of the Log Backward Potential}
- 
-Define the backward potential at $\boldsymbol{x}\in\Sph$: 
-\begin{equation}
-\hat\psi(\boldsymbol{x})
-= \sum_{i=1}^{N_{+}} \tilde\psi_{i}(\boldsymbol{x})\,
-  K_{\sigma^{2}}(\boldsymbol{x},\,\boldsymbol{h}^{+}_{i}),
-\label{eq:app-psi-kde}
-\end{equation}
-where the extended potentials $\tilde\psi_{i}(\boldsymbol{x})$ are also treated as constants with respect to differentiation at $\boldsymbol{x}$.
- 
-Taking the Riemannian gradient of $\log\hat\psi$:
-\begin{equation}
-\nablaS\log\hat\psi(\boldsymbol{x})
-= \frac{\nablaS\,\hat\psi(\boldsymbol{x})}{\hat\psi(\boldsymbol{x})}
-= \frac{\displaystyle\sum_{i=1}^{N_{+}}\tilde\psi_{i}(\boldsymbol{x})\,
-        \nablaS\,K_{\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})}
-       {\displaystyle\sum_{i=1}^{N_{+}}\tilde\psi_{i}(\boldsymbol{x})\,
-        K_{\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})}.
-\label{eq:app-grad-log-step1}
-\end{equation}
-Substituting the kernel gradient~\eqref{eq:app-grad-kernel} with $\sigma = \sigma^{2}$:
-\begin{equation}
-\nablaS\log\hat\psi(\boldsymbol{x})
-= \frac{1}{\sigma^{2}}\;
-  \frac{\displaystyle\sum_{i=1}^{N_{+}}\tilde\psi_{i}(\boldsymbol{x})\,
-        K_{\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})\,
-        \log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i})}
-       {\displaystyle\sum_{i=1}^{N_{+}}\tilde\psi_{i}(\boldsymbol{x})\,
-        K_{\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})}.
-\label{eq:app-grad-log-step2}
-\end{equation}
-Define the normalized weights
-\begin{equation}
-\bar{w}^{+}_{i}(\boldsymbol{x})
-:= \frac{\tilde\psi_{i}(\boldsymbol{x})\,
-         K_{\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})}
-        {\displaystyle\sum_{k=1}^{N_{+}}\tilde\psi_{k}(\boldsymbol{x})\,
-         K_{\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{k})}.
-\label{eq:app-weights-def}
-\end{equation}
-In log-space, the unnormalized log-weight of point $i$ is
-\begin{equation}
-\log\bigl[\tilde\psi_{i}(\boldsymbol{x})\,
-K_{\sigma^{2}}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})\bigr]
-= \log\tilde\psi_{i}(\boldsymbol{x})
-  - \frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})^{2}}{2\sigma^{2}(\boldsymbol{x})},
-\label{eq:app-log-unnorm}
-\end{equation}
-so normalization is a softmax:
-\begin{equation}
-\bar{w}^{+}_{i}(\boldsymbol{x})
-= \mathrm{softmax}_{i}\!\left[
-  \log\tilde\psi_{i}(\boldsymbol{x})
-  - \frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})^{2}}
-         {2\sigma^{2}(\boldsymbol{x})}\right].
-\label{eq:app-softmax}
-\end{equation}
-This recovers Eq.~\eqref{eq:weights-pos}. Substituting into~\eqref{eq:app-grad-log-step2}:
-\begin{equation}
-\nablaS\log\hat\psi(\boldsymbol{x})
-= \frac{1}{\sigma^{2}}\sum_{i=1}^{N_{+}}
-  \bar{w}^{+}_{i}(\boldsymbol{x})\,\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i}).
-\label{eq:app-grad-final}
-\end{equation}
-This is a weighted Riemannian mean direction in the tangent space $T_{\boldsymbol{x}}\Sph$. Each log-map vector $\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i})$ points from the current query $\boldsymbol{x}$ toward the positive point $\boldsymbol{h}^{+}_{i}$ with magnitude equal to the geodesic distance, and the weight $\bar{w}^{+}_{i}(\boldsymbol{x})$ combines geometric proximity (the kernel) with the Schr\"{o}dinger potential (the transport plan).
 
-\section{OOD Gate}
+The proposition compares two objects at one fixed evaluation bandwidth $b>0$: the field $\boldsymbol{v}$ of Eq.~\eqref{eq:cobras-field}, whose weights carry the conditional multipliers $m^{+}_{i,b}(\boldsymbol{x}),m^{-}_{j,b}(\boldsymbol{x})$ of Eqs.~\eqref{eq:ext-psi}--\eqref{eq:ext-phi}, and the kernel log-density-ratio drift of Eq.~\eqref{eq:ldr-kde}, built from the spherical kernel sums $\hat p^{\pm}_{b}$. Neither is read at the time-varying bridge bandwidths $(1-t)\varepsilon$ and $t\varepsilon$ of Eqs.~\eqref{eq:psi-heat}--\eqref{eq:phi-heat}, which agree only at the midpoint $t=1/2$. The quantitative ingredient is a bound on the spread of the multipliers.
+
+\begin{lemma}[Log-range of the multipliers]
+\label{lem:log-range}
+Let $(\boldsymbol{a}^{-},\boldsymbol{a}^{+})$ come from any complete sweep of Eq.~\eqref{eq:sinkhorn}, in particular from its fixed point or from finitely many iterations. Then $\max_{j}\log a^{-}_{j}-\min_{j}\log a^{-}_{j}\le c_{\max}$ and $\max_{i}\log a^{+}_{i}-\min_{i}\log a^{+}_{i}\le c_{\max}$, and the conditional multipliers of Eqs.~\eqref{eq:ext-psi}--\eqref{eq:ext-phi} obey the same two bounds at every $\boldsymbol{x}\in\Sph$.
+\end{lemma}
+
+\begin{proof}
+Fix any vector $\boldsymbol{a}^{+}$ and any two indices $j,j'$. Subtracting the two instances of the first update in Eq.~\eqref{eq:sinkhorn} cancels the constant $-\log N_{-}$ and leaves
+\begin{equation}
+\log a^{-}_{j}-\log a^{-}_{j'}=\operatorname{logsumexp}_{i}\bigl[\log a^{+}_{i}-c_{j'i}\bigr]-\operatorname{logsumexp}_{i}\bigl[\log a^{+}_{i}-c_{ji}\bigr].
+\label{eq:apx-phi-diff}
+\end{equation}
+Because $\operatorname{logsumexp}$ is monotone in each argument and shifts by a constant when all of its arguments do, $0\le c_{ji}\le c_{\max}$ gives
+\begin{equation}
+\operatorname{logsumexp}_{i}\bigl[\log a^{+}_{i}\bigr]-c_{\max}\;\le\;\operatorname{logsumexp}_{i}\bigl[\log a^{+}_{i}-c_{ji}\bigr]\;\le\;\operatorname{logsumexp}_{i}\bigl[\log a^{+}_{i}\bigr],
+\end{equation}
+so both terms of Eq.~\eqref{eq:apx-phi-diff} lie in one interval of length $c_{\max}$ and their difference lies in $[-c_{\max},c_{\max}]$. Hence $\max_{j}\log a^{-}_{j}-\min_{j}\log a^{-}_{j}\le c_{\max}$, and the same computation with the two samples exchanged gives $\max_{i}\log a^{+}_{i}-\min_{i}\log a^{+}_{i}\le c_{\max}$.
+
+The conditional multipliers obey the identical bound, which extends the proposition from the sample-attached field to the deployed one. Write $\ell_{j,b}(\boldsymbol{x})=\log a^{-}_{j}-d_{\Sph}(\boldsymbol{x},\boldsymbol{h}^{-}_{j})^{2}/(2b)$, a quantity that does not depend on $i$. Then Eq.~\eqref{eq:ext-psi} reads $\log m^{+}_{i,b}(\boldsymbol{x})=\operatorname{logsumexp}_{j}[\ell_{j,b}(\boldsymbol{x})-c_{ji}]$, the index $i$ enters only through a cost in $[0,c_{\max}]$, and the argument above applies verbatim:
+\begin{equation}
+\max_{i}\log m^{+}_{i,b}(\boldsymbol{x})-\min_{i}\log m^{+}_{i,b}(\boldsymbol{x})\le c_{\max},
+\qquad
+\max_{j}\log m^{-}_{j,b}(\boldsymbol{x})-\min_{j}\log m^{-}_{j,b}(\boldsymbol{x})\le c_{\max},
+\label{eq:apx-cond-range}
+\end{equation}
+for every $\boldsymbol{x}\in\Sph$. Each of the four bounds consumes one half-sweep of Eq.~\eqref{eq:sinkhorn} and no fixed-point property, so all four hold at every Sinkhorn iterate and not only at the solution of the system.
+\end{proof}
+
+\begin{proof}
+We now prove Proposition~\ref{prop:ldr-limit}. \textit{The bound.} Lemma~\ref{lem:exact-grad}, whose proof is independent of this one, expresses both fields as weighted sums of the same log-maps. Applied with the constant multipliers $m_{i}\equiv N_{+}^{-1}$, which cancel inside the softmax, the lemma gives
+\begin{equation}
+b\,\nablaS\log\hat p^{+}_{b}(\boldsymbol{x})=\sum_{i=1}^{N_{+}}w^{\mathrm{kde},+}_{i}(\boldsymbol{x})\,\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i}),
+\qquad
+w^{\mathrm{kde},+}_{i}(\boldsymbol{x})=\mathrm{softmax}_{i}\!\left[-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})^{2}}{2b}\right],
+\label{eq:apx-kde-grad}
+\end{equation}
+while the weights $\bar w^{+}_{i}(\boldsymbol{x})$ of Eq.~\eqref{eq:weights-pos} are the weights of the same lemma with $m_{i}=m^{+}_{i,b}(\boldsymbol{x})$ in place of $N_{+}^{-1}$. The two weight vectors therefore differ by exactly one reweighting of the kind Lemma~\ref{lem:reweight} bounds, with multipliers whose log-range is at most $c_{\max}$ by Lemma~\ref{lem:log-range}, so $\lVert\bar w^{+}-w^{\mathrm{kde},+}\rVert_{1}\le e^{c_{\max}}-1$ by Eq.~\eqref{eq:apx-reweight}. Since $\lVert\log_{\boldsymbol{x}}(\boldsymbol{h})\rVert=d_{\Sph}(\boldsymbol{x},\boldsymbol{h})\le\pi R$ for every $\boldsymbol{h}\in\Sph$,
+\begin{equation}
+\Bigl\lVert\sum_{i}\bigl(\bar w^{+}_{i}(\boldsymbol{x})-w^{\mathrm{kde},+}_{i}(\boldsymbol{x})\bigr)\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i})\Bigr\rVert
+\;\le\;\pi R\,\lVert\bar w^{+}-w^{\mathrm{kde},+}\rVert_{1}
+\;\le\;\pi R\bigl(e^{c_{\max}}-1\bigr).
+\end{equation}
+The negative branch contributes the same estimate with $\bar w^{-},w^{\mathrm{kde},-}$ and $\mathcal{D}^{-}$ in place of $\bar w^{+},w^{\mathrm{kde},+}$ and $\mathcal{D}^{+}$, and the two add:
+\begin{equation}
+\Bigl\lVert\boldsymbol{v}(\boldsymbol{x})-b\,\nablaS\log\frac{\hat p^{+}_{b}(\boldsymbol{x})}{\hat p^{-}_{b}(\boldsymbol{x})}\Bigr\rVert\;\le\;2\pi R\bigl(e^{c_{\max}}-1\bigr).
+\label{eq:apx-prop1-bound}
+\end{equation}
+
+\textit{The limit.} The samples enter $c_{\max}$ only through their geodesic separation, so $c_{\max}\le\pi^{2}R^{2}/(2\varepsilon)$. With $\mathcal{D}^{\pm}$ and $b$ held fixed and $\varepsilon\to\infty$, the inequality $e^{c}-1\le c\,e^{c}$ turns Eq.~\eqref{eq:apx-prop1-bound} into a bound of order $1/\varepsilon$ that is uniform in $\boldsymbol{x}$, so $\boldsymbol{v}$ converges uniformly to the field of Eq.~\eqref{eq:ldr-kde}. That limit field is determined by $b$ and $\mathcal{D}^{\pm}$ alone: it carries no dependence on $\varepsilon$ and does not degenerate as $\varepsilon$ grows.
+\end{proof}
+
+\begin{remark}[Tightness at the operating point]
+\label{rem:prop1-tightness}
+Lemma~\ref{lem:log-range} and the bound of Eq.~\eqref{eq:apx-prop1-bound} behave differently at the scale used in our experiments. The lemma holds with a wide margin. On Llama3.1-8B layer~13, with $\varepsilon=\sigma^{2}$ and the evaluation bandwidth also set to $\sigma^{2}$, we measure $c_{\max}=1.507$, while the measured log-ranges are $0.473$ for $\boldsymbol{a}^{-}$, $0.504$ for $\boldsymbol{a}^{+}$, and at most $0.508$ for the conditional multipliers over real prompt activations. The bound is vacuous there. $R=9.658$ and $\sigma^{2}=71.7$, so $\sigma/R\approx0.88$ and the right-hand side of Eq.~\eqref{eq:apx-prop1-bound} is $213$, whereas both fields in that inequality are differences of convex combinations of log-maps, of norm at most $2\pi R=60.7$, so their difference is at most $4\pi R=121$ without any transport argument. What Proposition~\ref{prop:ldr-limit} supplies at finite $\varepsilon$ is therefore a rate, $O(1/\varepsilon)$, and not a numerical guarantee at the scale used in our experiments.
+\end{remark}
+
+\subsection{The sampling limit}
+\label{apx:consistency}
+
+Proposition~\ref{prop:ldr-limit} holds at a fixed sample and a fixed bandwidth and moves the transport scale alone. How far the kernel sums $\hat p^{\pm}_{b}$ sit from the populations $\pplus$ and $\pminus$ is a separate question, and closing that gap moves the bandwidth alone. Section~\ref{subsec:reduction} states the limit, and its hypotheses and attribution are given here.
+
+\begin{remark}[Sampling limit]
+\label{rem:consistency}
+Proposition~\ref{prop:ldr-limit} says nothing about the distance between $\hat p^{\pm}_{b}$ and $\pplus,\pminus$, and closing that gap requires a shrinking bandwidth: on a length scale $h_{N}=\sqrt{b_{N}}\to0$ with $N_{\pm}h_{N}^{\,m+2}/\log N_{\pm}\to\infty$ and $m=\dim\Sph=d-1$, the plug-in drift $\nablaS\log(\hat p^{+}_{b_{N}}/\hat p^{-}_{b_{N}})$ converges to $\nablaS\log(\pplus/\pminus)$ on closed sets where both densities are bounded away from zero. \citet{pelletier2005kernel} gives consistency of the spherical kernel density estimate itself, while the log-ratio gradient statement needs the rate condition above, which at $d$ in the thousands is asymptotic in character.
+\end{remark}
+
+The hypotheses behind Remark~\ref{rem:consistency} are the usual ones: $\pplus$ and $\pminus$ are $C^{2}$ with respect to the Riemannian volume of $\Sph$, the closed set on which convergence is claimed is a $\mathcal{K}\subseteq\Sph$ with $\inf_{\mathcal{K}}\min(\pplus,\pminus)>0$, and $h_{N}=\sqrt{b_{N}}$ is the length scale matching the variance $b_{N}$. No entropic scale appears anywhere in the statement: $\varepsilon$ is held fixed and plays no role.
+
+\citet{pelletier2005kernel} proves consistency of a kernel estimator of the \emph{density} on a Riemannian manifold, not of a derivative and not of a ratio of two estimators. A gradient statement is strictly stronger, which is why the remark assumes $C^{2}$ densities and a bandwidth rate with exponent $m+2$ rather than the exponent $m$ that a density result needs. The estimator also differs from Pelletier's in two ways, one immaterial and one not: $\hat p^{\pm}_{b}$ omits the $h^{-m}$ normalization, which does not depend on $\boldsymbol{x}$ and is annihilated by $\nablaS\log$, and it omits the volume-density factor $\theta_{\boldsymbol{y}}(\boldsymbol{x})=\bigl(\sin(d_{\Sph}(\boldsymbol{x},\boldsymbol{y})/R)\big/(d_{\Sph}(\boldsymbol{x},\boldsymbol{y})/R)\bigr)^{m-1}$, which on $\Sph$ is a function of geodesic distance alone and so can be folded into the kernel, at the cost of leaving the Gaussian form of Eq.~\eqref{eq:kernel}. With $m=4095$ the rate condition is asymptotic in character and is far from satisfied at our sample sizes. Remark~\ref{rem:consistency} and Proposition~\ref{prop:ldr-limit} meet at one shared object, the kernel log-density-ratio drift at bandwidth $b$, but the two statements do not compose into a single guarantee for $\boldsymbol{v}$: the proposition compares $\boldsymbol{v}$ with that drift scaled by $b$, and along a sequence $b_{N}\to0$ the scaled drift $b_{N}\nablaS\log(\hat p^{+}_{b_{N}}/\hat p^{-}_{b_{N}})$ tends to zero.
+
+\subsection{Riemannian gradient of the log Schr\"{o}dinger factors}
+\label{app:grad-psi}
+
+The closed form of Eq.~\eqref{eq:grad-psi} rests on one differential identity, which fixes the sign and the constant of every later prefactor. The exponential and logarithm maps are those of Eq.~\eqref{eq:expmap}.
+
+\begin{lemma}[Gradient of the squared geodesic distance]
+\label{lem:dist-grad}
+Fix $\boldsymbol{h}\in\Sph$ and let $\boldsymbol{x}\in\Sph\setminus\{-\boldsymbol{h}\}$. Then $\nablaS\,d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^{2}=-2\log_{\boldsymbol{x}}(\boldsymbol{h})$.
+\end{lemma}
+
+\begin{proof}
+Write $c=R^{-2}\boldsymbol{x}^{\top}\boldsymbol{h}$ and $\theta=\arccos c\in[0,\pi)$, so that $d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^{2}=R^{2}\theta^{2}$. The Euclidean gradient of $\theta$ in $\boldsymbol{x}$ is $-R^{-2}\boldsymbol{h}/\sin\theta$, hence $\nabla_{\boldsymbol{x}}(R^{2}\theta^{2})=-2\theta\,\boldsymbol{h}/\sin\theta$, and projecting with $\Pi_{\boldsymbol{x}}$ gives $\nablaS\,d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^{2}=-\tfrac{2\theta}{\sin\theta}\,\Pi_{\boldsymbol{x}}\boldsymbol{h}=-2\log_{\boldsymbol{x}}(\boldsymbol{h})$ by Eq.~\eqref{eq:expmap}. At $\boldsymbol{x}=-\boldsymbol{h}$ the factor $\sin\theta$ vanishes and $d_{\Sph}(\cdot,\boldsymbol{h})^{2}$ is not differentiable, which is the single excluded point.
+\end{proof}
+
+\begin{lemma}[Exact gradient at fixed multipliers]
+\label{lem:exact-grad}
+Let $\boldsymbol{h}_{1},\dots,\boldsymbol{h}_{N}\in\Sph$, let $m_{1},\dots,m_{N}>0$ be constants, let $b>0$, and set $\Psi_b(\boldsymbol{x})=\sum_{k}m_{k}K_{b}(\boldsymbol{x},\boldsymbol{h}_{k})$. Then, away from the antipodes of the $\boldsymbol{h}_{k}$,
+\begin{equation}
+\nablaS\log\Psi_b(\boldsymbol{x})=\frac{1}{b}\sum_{k=1}^{N}w_{k}(\boldsymbol{x})\,\log_{\boldsymbol{x}}(\boldsymbol{h}_{k}),
+\qquad
+w_{k}(\boldsymbol{x})=\mathrm{softmax}_{k}\!\left[\log m_{k}-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_{k})^{2}}{2b}\right].
+\label{eq:apx-exact-grad}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+By the chain rule and Lemma~\ref{lem:dist-grad}, $\nablaS K_{b}(\boldsymbol{x},\boldsymbol{h})=-\tfrac{1}{2b}K_{b}(\boldsymbol{x},\boldsymbol{h})\,\nablaS d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^{2}=\tfrac{1}{b}K_{b}(\boldsymbol{x},\boldsymbol{h})\log_{\boldsymbol{x}}(\boldsymbol{h})$. The multipliers are constants, so
+\begin{equation}
+\nablaS\log\Psi_b(\boldsymbol{x})=\frac{\nablaS\Psi_b(\boldsymbol{x})}{\Psi_b(\boldsymbol{x})}
+=\frac{1}{b}\cdot\frac{\sum_{k}m_{k}K_{b}(\boldsymbol{x},\boldsymbol{h}_{k})\log_{\boldsymbol{x}}(\boldsymbol{h}_{k})}{\sum_{k}m_{k}K_{b}(\boldsymbol{x},\boldsymbol{h}_{k})},
+\end{equation}
+and the normalized coefficients of that quotient are exactly the softmax of $\log m_{k}-d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_{k})^{2}/(2b)$.
+\end{proof}
+
+Equation~\eqref{eq:apx-exact-grad} is exact, and an independent automatic-differentiation check in double precision reproduces it to a relative error of order $10^{-16}$. Two instances of the lemma carry the derivation of Section~\ref{sec:method}. With $m_{i}=a^{+}_{i}$ the lemma gives the gradient of the sample-attached factor $\widehat{\psi}_{b}(\boldsymbol{x})=\sum_{i}a^{+}_{i}K_{b}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})$, and with $m_{j}=a^{-}_{j}$ that of $\widehat{\varphi}_{b}(\boldsymbol{x})$, so that
+\begin{align}
+b\,\nablaS\log\frac{\widehat{\psi}_{b}(\boldsymbol{x})}{\widehat{\varphi}_{b}(\boldsymbol{x})}
+&=\sum_{i=1}^{N_{+}}\mathrm{softmax}_{i}\!\left[\log a^{+}_{i}-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})^{2}}{2b}\right]\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i})
+\nonumber\\
+&\qquad-\sum_{j=1}^{N_{-}}\mathrm{softmax}_{j}\!\left[\log a^{-}_{j}-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{h}^{-}_{j})^{2}}{2b}\right]\log_{\boldsymbol{x}}(\boldsymbol{h}^{-}_{j}),
+\label{eq:apx-sample-attached}
+\end{align}
+with the prefactor $1/b$ displayed rather than absorbed. With $m_{i}\equiv N_{+}^{-1}$ and $m_{j}\equiv N_{-}^{-1}$ the same lemma gives Eq.~\eqref{eq:apx-kde-grad} and its negative counterpart, the pair against which Proposition~\ref{prop:ldr-limit} measures $\boldsymbol{v}$. The deployed weights of Eq.~\eqref{eq:weights-pos} are obtained from the first instance by replacing the constant $a^{+}_{i}$ inside the softmax by the conditional multiplier $m^{+}_{i,b}(\boldsymbol{x})$, and the negative weights likewise. Appendix~\ref{apx:omitted-term} analyzes this substitution. The same identity identifies the object each branch computes: at fixed weights $\sum_{i}\bar w^{+}_{i}\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i})=-\tfrac{1}{2}\nablaS\sum_{i}\bar w^{+}_{i}\,d_{\Sph}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})^{2}$, one step of a Karcher-mean iteration toward the $\bar w^{+}$-weighted Fr\'{e}chet mean of $\mathcal{D}^{+}$, so Eq.~\eqref{eq:cobras-field} is the difference of two such steps.
+
+The main text evaluates both branches of Eq.~\eqref{eq:cobras-field} at one common bandwidth $b$. The implementation instead selects a bandwidth per query and per branch, $b_{\pm}(\boldsymbol{x})=\max_{\boldsymbol{h}\in\mathcal{D}^{\pm}}d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^{2}$ clamped below, and holds it fixed inside the gradient, an adaptive-bandwidth choice whose dependence on $\boldsymbol{x}$ would otherwise contribute a further term to each kernel gradient. Replacing that choice by the fixed common $b=\sigma^{2}$ of the main text moves TruthfulQA TxI from $0.634$ to $0.630$ on a single seed, well inside the spread across seeds, so the fixed-bandwidth presentation is faithful to the reported numbers.
+
+\subsection{Gradient of the composite with conditional multipliers}
+\label{apx:omitted-term}
+
+The conditional multipliers of Eq.~\eqref{eq:ext-psi} vary with $\boldsymbol{x}$, so the field of Eq.~\eqref{eq:cobras-field} is not the Riemannian gradient of the log-ratio of the two composites $\Psi^{+}_{b}(\boldsymbol{x})=\sum_{i}m^{+}_{i,b}(\boldsymbol{x})K_{b}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})$ and $\Psi^{-}_{b}(\boldsymbol{x})=\sum_{j}m^{-}_{j,b}(\boldsymbol{x})K_{b}(\boldsymbol{x},\boldsymbol{h}^{-}_{j})$: differentiating a composite through its multipliers adds a term that the chain rule supplies in closed form. The size of that term determines whether the field can be identified with the gradient of the composite.
+
+Each multiplier is itself a kernel sum over the opposite cloud: taking Eq.~\eqref{eq:ext-psi} out of log-space gives $m^{+}_{i,b}(\boldsymbol{x})=\sum_{j}a^{-}_{j}K_{\varepsilon}(\boldsymbol{h}^{-}_{j},\boldsymbol{h}^{+}_{i})K_{b}(\boldsymbol{x},\boldsymbol{h}^{-}_{j})$, which is the object of Lemma~\ref{lem:exact-grad} with the constant multipliers $a^{-}_{j}K_{\varepsilon}(\boldsymbol{h}^{-}_{j},\boldsymbol{h}^{+}_{i})$ over $\mathcal{D}^{-}$. Hence
+\begin{equation}
+\nablaS\log m^{+}_{i,b}(\boldsymbol{x})=\frac{1}{b}\sum_{j=1}^{N_{-}}\alpha_{ij}(\boldsymbol{x})\,\log_{\boldsymbol{x}}(\boldsymbol{h}^{-}_{j}),
+\qquad
+\alpha_{ij}(\boldsymbol{x})=\mathrm{softmax}_{j}\!\left[\log a^{-}_{j}-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{h}^{-}_{j})^{2}}{2b}-c_{ji}\right].
+\label{eq:apx-grad-multiplier}
+\end{equation}
+Since $\bar w^{+}_{i}(\boldsymbol{x})=m^{+}_{i,b}(\boldsymbol{x})K_{b}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})/\Psi^{+}_{b}(\boldsymbol{x})$, the product rule applied to $\Psi^{+}_{b}(\boldsymbol{x})$ contributes one term from each kernel and one from each multiplier, and the kernel gradient $\nablaS K_{b}(\boldsymbol{x},\boldsymbol{h})=b^{-1}K_{b}(\boldsymbol{x},\boldsymbol{h})\log_{\boldsymbol{x}}(\boldsymbol{h})$ established in the proof of Lemma~\ref{lem:exact-grad}, together with Eq.~\eqref{eq:apx-grad-multiplier}, supplies both:
+\begin{equation}
+b\,\nablaS\log\Psi^{+}_{b}(\boldsymbol{x})=\sum_{i}\bar w^{+}_{i}(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i})+\sum_{j}\beta_{j}(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}^{-}_{j}),
+\quad
+\beta_{j}(\boldsymbol{x})=\sum_{i}\bar w^{+}_{i}(\boldsymbol{x})\,\alpha_{ij}(\boldsymbol{x}).
+\label{eq:apx-composite-pos}
+\end{equation}
+The negative composite behaves symmetrically, with $\gamma_{i}(\boldsymbol{x})=\sum_{j}\bar w^{-}_{j}(\boldsymbol{x})\,\mathrm{softmax}_{i}\bigl[\log a^{+}_{i}-d_{\Sph}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})^{2}/(2b)-c_{ji}\bigr]$ in place of $\beta_{j}(\boldsymbol{x})$, so that
+\begin{equation}
+b\,\nablaS\log\frac{\Psi^{+}_{b}(\boldsymbol{x})}{\Psi^{-}_{b}(\boldsymbol{x})}
+=\boldsymbol{v}(\boldsymbol{x})\;+\;\sum_{j}\beta_{j}(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}^{-}_{j})\;-\;\sum_{i}\gamma_{i}(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i}).
+\label{eq:apx-omitted}
+\end{equation}
+Both $\beta$ and $\gamma$ are probability vectors, so the term that Eq.~\eqref{eq:apx-omitted} adds to the field is a difference of convex combinations of log-maps with the two clouds interchanged: the omitted term pulls toward $\mathcal{D}^{-}$ and pushes away from $\mathcal{D}^{+}$, opposing the structure of $\boldsymbol{v}$ rather than refining it.
+
+The measured size of the term rules out this identification. An automatic-differentiation check confirms Eqs.~\eqref{eq:apx-grad-multiplier}--\eqref{eq:apx-composite-pos} to a relative error of $6\times10^{-16}$, and the term they supply is not small: on a synthetic spherical problem it carries $1.24$ times the norm of the kept one, and on Llama3.1-8B layer~13 over $128$ real queries the gradient of the composite points $122^{\circ}$ away from the field, at cosine $-0.53$. Ascending $\log(\Psi^{+}_{b}(\boldsymbol{x})/\Psi^{-}_{b}(\boldsymbol{x}))$ would therefore move an activation in roughly the opposite direction, so $\boldsymbol{v}$ is not an approximation to that gradient. The field $\boldsymbol{v}$ is instead the exact gradient of Eq.~\eqref{eq:apx-sample-attached} with the transport multipliers replaced by their query-conditional values, and these values reweight the optimal plan rather than defining a density: substituting the factorization $\pi^{\star}_{ji}=a^{-}_{j}a^{+}_{i}K_{\varepsilon}(\boldsymbol{h}^{-}_{j},\boldsymbol{h}^{+}_{i})$ into Eq.~\eqref{eq:ext-psi} gives
+\begin{equation}
+m^{+}_{i,b}(\boldsymbol{x})=\frac{1}{a^{+}_{i}}\sum_{j=1}^{N_{-}}\pi^{\star}_{ji}\,K_{b}(\boldsymbol{x},\boldsymbol{h}^{-}_{j}),
+\end{equation}
+the mass that the optimal plan delivers into $\boldsymbol{h}^{+}_{i}$ from the kernel neighborhood of $\boldsymbol{x}$, normalized by $a^{+}_{i}$. The change produced by the conditional multipliers is small: over the same $128$ queries the deployed field lies $5.5^{\circ}$ from the direction of Eq.~\eqref{eq:apx-sample-attached}, at cosine $0.995$ with a minimum of $0.994$, and it moves TruthfulQA TxI from $0.610$ to $0.634$ on a single seed.
+
+\subsection{Pseudocode}
+\label{apx:pseudocode}
+
+Algorithm~\ref{alg:cobras} gives the procedure of Section~\ref{sec:method} as implemented, at the single evaluation bandwidth $b$ of the main text. The offline stage is run once per model and layer, and the online stage is run inside the forward pass on the activation of every decoded token, beginning with the last prompt token. The two scalars that set the step size are evaluated at different times. The support gate $g_{q}$ is computed once, on the last prompt activation, and held fixed for the continuation, whereas the side term $s$ is recomputed at each decoded token from that token's projected activation and held fixed across the $K$ Euler steps for that token. Within a step, only the conditional multipliers, the weights and the field are recomputed, each at the current iterate. Recomputing $s$ per token is essential: holding it at its value on the prompt for the whole continuation lowers the truthful-and-informative rate on TruthfulQA (Llama3.1-8B, layer $13$) from $0.636$, averaged over three seeds, to $0.474$ on a single seed. Appendix~\ref{appendix:implementation_details} lists the hyperparameter values used in the experiments.
+
+\begin{algorithm}[t]
+\caption{\Cobras: conditional optimal bridge for Riemannian activation steering}
+\label{alg:cobras}
+\begin{algorithmic}[1]
+\Require contrastive activations $\mathcal{D}^{+},\mathcal{D}^{-}$; held-out in-distribution prompt activations $\mathcal{D}_{\mathrm{ref}}$; steering strength $T$; coverage $p$; Euler steps $K$; Sinkhorn sweeps $n$; concentration $\kappa$
+\Statex \textbf{Offline: solve the bridge and calibrate the gate (once per model and layer)}
+\State $R\gets\mathrm{mean}\{\lVert\boldsymbol{h}\rVert:\boldsymbol{h}\in\mathcal{D}^{+}\cup\mathcal{D}^{-}\}$, then $\boldsymbol{h}\gets R\,\boldsymbol{h}/\lVert\boldsymbol{h}\rVert$ for every $\boldsymbol{h}\in\mathcal{D}^{+}\cup\mathcal{D}^{-}$
+\State $\sigma^{2}\gets\bigl(\operatorname{median}_{\boldsymbol{h}}d_{\Sph}(\boldsymbol{h},\text{fifth nearest neighbor of }\boldsymbol{h})\bigr)^{2}$, and $\varepsilon\gets\sigma^{2}$, $b\gets\sigma^{2}$, $b_{g}\gets\sigma^{2}/256$
+\State $c_{ji}\gets d_{\Sph}(\boldsymbol{h}^{-}_{j},\boldsymbol{h}^{+}_{i})^{2}/(2\varepsilon)$ for all $j,i$
+\State $\log\boldsymbol{a}^{+}\gets\boldsymbol{0}$, then $n$ times: $\log a^{-}_{j}\gets-\log N_{-}-\operatorname{logsumexp}_{i}[\log a^{+}_{i}-c_{ji}]$, then $\log a^{+}_{i}\gets-\log N_{+}-\operatorname{logsumexp}_{j}[\log a^{-}_{j}-c_{ji}]$ \hfill Eq.~\eqref{eq:sinkhorn}
+\State $\boldsymbol{\mu}\gets(\bar{\boldsymbol{h}}^{+}-\bar{\boldsymbol{h}}^{-})/\lVert\bar{\boldsymbol{h}}^{+}-\bar{\boldsymbol{h}}^{-}\rVert$ \hfill Eq.~\eqref{eq:mu}
+\State $U\gets\mathrm{sort}\bigl\{u(R\,\boldsymbol{z}/\lVert\boldsymbol{z}\rVert):\boldsymbol{z}\in\mathcal{D}_{\mathrm{ref}}\bigr\}$, the reference scores at bandwidth $b_{g}$ \hfill Eq.~\eqref{eq:support-score}
+\Statex \textbf{Online: steer the activation $\hquery$ of the current token at layer $\ell$}
+\State $\boldsymbol{x}_{0}\gets R\,\hquery/\lVert\hquery\rVert$ \label{alg:cobras:norm_equation}
+\If{$\hquery$ is the prompt's last token}
+    \State $r\gets\lvert\{u\in U:u<u(\boldsymbol{x}_{0})\}\rvert/\lvert U\rvert$ and $g_{q}\gets\mathrm{clamp}\bigl((1-r)/(1-p),0,1\bigr)$, cached for this prompt \hfill Eq.~\eqref{eq:gate}
+\EndIf
+\State $s\gets\bigl(1+e^{2\kappa\langle\boldsymbol{x}_{0}/R,\;\boldsymbol{\mu}\rangle}\bigr)^{-1}$ \hfill Eq.~\eqref{eq:side}
+\If{$T\,s\,g_{q}=0$}
+    \State \Return $\hquery$ unchanged
+\EndIf
+\State $\Delta\gets\tfrac{\pi}{2}\,T\,s\,g_{q}\,R/K$ \hfill Eq.~\eqref{eq:step}
+\For{$k=0,\dots,K-1$}
+    \State $\log m^{+}_{i,b}(\boldsymbol{x}_{k})\gets\operatorname{logsumexp}_{j}\bigl[\log a^{-}_{j}-d_{\Sph}(\boldsymbol{x}_{k},\boldsymbol{h}^{-}_{j})^{2}/(2b)-c_{ji}\bigr]$, and $\log m^{-}_{j,b}(\boldsymbol{x}_{k})$ symmetrically \hfill Eqs.~\eqref{eq:ext-psi}--\eqref{eq:ext-phi}
+    \State $\bar w^{+}_{i}\gets\mathrm{softmax}_{i}\bigl[\log m^{+}_{i,b}(\boldsymbol{x}_{k})-d_{\Sph}(\boldsymbol{x}_{k},\boldsymbol{h}^{+}_{i})^{2}/(2b)\bigr]$, and $\bar w^{-}_{j}$ symmetrically \hfill Eq.~\eqref{eq:weights-pos}
+    \State $\boldsymbol{v}_{k}\gets\Pi_{\boldsymbol{x}_{k}}\bigl[\sum_{i}\bar w^{+}_{i}\log_{\boldsymbol{x}_{k}}(\boldsymbol{h}^{+}_{i})-\sum_{j}\bar w^{-}_{j}\log_{\boldsymbol{x}_{k}}(\boldsymbol{h}^{-}_{j})\bigr]$ \hfill Eq.~\eqref{eq:cobras-field}
+    \State $\boldsymbol{x}_{k+1}\gets\exp_{\boldsymbol{x}_{k}}\bigl(\Delta\,\boldsymbol{v}_{k}/\lVert\boldsymbol{v}_{k}\rVert\bigr)$ \hfill Eq.~\eqref{eq:expmap}
+\EndFor
+\State \Return $\boldsymbol{x}_{K}\,\lVert\hquery\rVert/R$
+\end{algorithmic}
+\end{algorithm}
+
+\section{Calibration and Properties of the Support Gate}
 \label{apx:ood-gate}
 
+The support gate scales the step size by a single scalar $g(\boldsymbol{x})\in[0,1]$, and its single hyperparameter, the coverage $p$, has the same meaning across models, layers and score scales. The reference scores against which a query is ranked are computed on held-out in-distribution prompt activations rather than on the contrastive question--answer activations that fit the bridge. The rank transform fixes the in-distribution mean of $g$ at $(1+p)/2$ regardless of the distribution of the score. At a small bandwidth the score reduces to a sum of squared nearest-neighbor distances, so the gate smooths a nearest-neighbor rule that the bridge already contains rather than adding an external detector.
+
+\subsection{Reference set and score}
+
+Support is scored by $u(\boldsymbol{x})=-\log\hat p_{b_{g}}(\boldsymbol{x})$ of Eq.~\eqref{eq:support-score}, the product of the two evaluation-time bridge factors read at the common gate bandwidth $b_{g}=\sigma^{2}/256$,
+\[
+u(\boldsymbol{x})
+= -\operatorname{logsumexp}_{j}\!\left[\log a^{-}_{j}-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{h}^{-}_{j})^{2}}{2b_{g}}\right]
+\;-\;\operatorname{logsumexp}_{i}\!\left[\log a^{+}_{i}-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{h}^{+}_{i})^{2}}{2b_{g}}\right],
+\]
+with the duals of Eq.~\eqref{eq:sinkhorn} attached to their own samples. Calibration scores a reference set $\mathcal{D}_{\mathrm{ref}}$ and stores the scores in sorted order, and a query enters Eq.~\eqref{eq:gate} only through its rank $r(\boldsymbol{x})$ among them, so the stored vector is the entire calibration state. Calibration requires one forward pass per reference prompt and is performed once per model and layer.
+
+$\mathcal{D}_{\mathrm{ref}}$ must hold prompt activations taken at the steering layer $\ell$ and at the final prompt position, the layer and position at which the gate is evaluated, and not the contrastive activations that fit the bridge. Prompt activations and contrastive activations have systematically different norms: with $R$ fitted on $\mathcal{D}^{+}\cup\mathcal{D}^{-}$, prompt populations have mean norm between $0.76R$ and $0.88R$ on three of the four models we measure and $1.10R$ on the fourth, and each population is concentrated at its own radius, so the gap is a systematic offset, inward or outward depending on the model, rather than an overlap. A statistic calibrated on the contrastive activations is therefore read at the wrong radius, and the range it leaves usable is correspondingly narrow: the median in-distribution prompt lies at the $96$th percentile of the contrastive nearest-neighbor radii and the median GSM8K prompt at the $99.2$nd, so a percentile threshold read off the contrastive set has to be placed inside a window three percentiles wide. Calibrating on prompts removes the offset by construction, because the reference points and the queries are projected onto $\Sph$ and scored by the same map. In the TruthfulQA experiments $\mathcal{D}_{\mathrm{ref}}$ is the prompt set of the training fold and the gate is applied to the held-out fold. In the out-of-distribution experiments $\mathcal{D}_{\mathrm{ref}}$ is the full set of $817$ TruthfulQA prompts, and no GSM8K, MMLU, NQ or TriviaQA prompt is scored during calibration.
+
+\subsection{The coverage identity}
+
+\begin{lemma}[Coverage]
+\label{lem:coverage}
+Let the reference scores be i.i.d.\ draws from a continuous distribution and let $\boldsymbol{x}$ be an independent draw from the same distribution, so that $r(\boldsymbol{x})$ is uniform on $(0,1)$. Then the gate of Eq.~\eqref{eq:gate} satisfies $\mathbb{E}[g(\boldsymbol{x})]=(1+p)/2$ for every $p\in[0,1)$.
+\end{lemma}
+
+\begin{proof}
+For $r\in[0,1]$ the ratio $(1-r)/(1-p)$ is nonnegative, so the lower clamp never binds, and the upper clamp binds exactly when $r\le p$. Writing $r$ for $r(\boldsymbol{x})$,
+\begin{equation*}
+\mathbb{E}\bigl[g(\boldsymbol{x})\bigr]
+=\int_{0}^{p}\!1\,dr\;+\;\frac{1}{1-p}\int_{p}^{1}(1-r)\,dr
+= p+\frac{1-p}{2}
+= \frac{1+p}{2}. \qedhere
+\end{equation*}
+\end{proof}
+
+Nothing in Lemma~\ref{lem:coverage} refers to the model, the layer, the radius $R$, the bandwidth $b_{g}$, the sample counts $N_{\pm}$ or the units of $u$. The rank transform removes every one of those dependences, and $p$ alone fixes both the fraction of in-distribution prompts that receive the full step and the expected fraction of the full step an in-distribution prompt receives. A threshold placed on $u$ itself has no such invariance, because the scale of $u$ moves with $R$, $b_{g}$, $N_{\pm}$ and the duals, so a threshold must be re-chosen for every model and layer, and choosing that threshold well would require out-of-distribution data. At $p=0.7$ the mean gate over the TruthfulQA prompts is $0.851$ against the predicted $0.850$. A finite reference set confines $r$ to the grid $\{0,1/|\mathcal{D}_{\mathrm{ref}}|,\dots,1\}$, so the identity holds up to an $O(1/|\mathcal{D}_{\mathrm{ref}}|)$ discretization.
+
+\subsection{The small-bandwidth limit of the score}
+
+\begin{lemma}[Nearest-neighbor limit]
+\label{lem:gate-nn}
+Fix $b_{g}>0$ and write $\widehat{\varphi}_{b_g}(\boldsymbol{x})=\sum_{j=1}^{N_{-}}a^{-}_{j}K_{b_{g}}(\boldsymbol{x},\boldsymbol{h}^{-}_{j})$. Let $m(\boldsymbol{x})=\min_{j}d_{\Sph}(\boldsymbol{x},\boldsymbol{h}^{-}_{j})^{2}$, let $\rho=\max_{j}\log a^{-}_{j}-\min_{j}\log a^{-}_{j}$, and set the input-independent offset $M=-b_{g}\bigl(\log N_{-}+\max_{j}\log a^{-}_{j}+\min_{j}\log a^{-}_{j}\bigr)$. Then for every $\boldsymbol{x}\in\Sph$,
+\begin{equation}
+\Bigl\lvert\bigl(-2b_{g}\log\widehat{\varphi}_{b_g}(\boldsymbol{x})-m(\boldsymbol{x})\bigr)-M\Bigr\rvert
+\;\le\; b_{g}\bigl(\log N_{-}+\rho\bigr).
+\label{eq:gate-nn-bound}
+\end{equation}
+The same bound holds for $\widehat{\psi}_{b_g}(\boldsymbol{x})$ with $N_{+}$, the duals $a^{+}_{i}$ and the squared distance to the nearest desired sample in place of $N_{-}$, $a^{-}_{j}$ and $m$.
+\end{lemma}
+
+\begin{proof}
+Abbreviate $m=m(\boldsymbol{x})$, $a^{-}_{\max}=\max_{j}a^{-}_{j}$ and $a^{-}_{\min}=\min_{j}a^{-}_{j}$. Every kernel factor obeys $K_{b_{g}}(\boldsymbol{x},\boldsymbol{h}^{-}_{j})\le e^{-m/(2b_{g})}$, with equality at a nearest negative sample, so retaining only that sample below and bounding all $N_{-}$ terms above gives
+\[
+a^{-}_{\min}\,e^{-m/(2b_{g})}
+\;\le\;\widehat{\varphi}_{b_g}(\boldsymbol{x})\;\le\;
+N_{-}a^{-}_{\max}\,e^{-m/(2b_{g})}.
+\]
+Taking logarithms and multiplying by $-2b_{g}$ reverses the two inequalities:
+\[
+m-2b_{g}\bigl(\log N_{-}+\log a^{-}_{\max}\bigr)
+\;\le\;-2b_{g}\log\widehat{\varphi}_{b_g}(\boldsymbol{x})\;\le\;
+m-2b_{g}\log a^{-}_{\min}.
+\]
+Subtracting $m$ leaves $-2b_{g}\log\widehat{\varphi}_{b_g}(\boldsymbol{x})-m$ in an interval whose midpoint is $M$ and whose half-width is $b_{g}(\log N_{-}+\rho)$, which is Eq.~\eqref{eq:gate-nn-bound}. The argument uses only nonnegativity of the exponents and the cardinality of the index set, so it applies verbatim to $\widehat{\psi}_{b_g}(\boldsymbol{x})$.
+\end{proof}
+
+Both the offset $M$ and the error bound in Eq.~\eqref{eq:gate-nn-bound} are $O(b_{g})$ with constants independent of $\boldsymbol{x}$, so $2b_{g}u(\boldsymbol{x})$ converges uniformly on $\Sph$, as $b_{g}\to0$, to the sum of the squared geodesic distances from $\boldsymbol{x}$ to the nearest undesired and the nearest desired sample. A nearest-neighbor abstention rule is therefore the small-bandwidth limit of the bridge's own score rather than a competing mechanism, and $b_{g}$ interpolates between the distance to the nearest sample and the mass the whole transport plan places near $\boldsymbol{x}$. A nearest-neighbor radius can be attached to any steering method, whereas for \Cobras the gate reads a quantity the bridge already computes. Because the gate reads only the rank of $u$, the offset $M$ and the factor $2b_{g}$ drop out of $g$ entirely, and Lemma~\ref{lem:gate-nn} bounds the disagreement between the gate's ordering of prompts and the nearest-neighbor ordering.
+
+The constant in Eq.~\eqref{eq:gate-nn-bound} is small at the bandwidth used in our experiments and not only in the limit. On Llama3.1-8B layer $13$ fitted to TruthfulQA, $\sigma^{2}=71.7$ and $b_{g}=\sigma^{2}/256=0.280$, with $N_{-}=3318$ and $\rho=0.47$, so Eq.~\eqref{eq:gate-nn-bound} reads $2.40$ in squared-distance units, and over the $817$ TruthfulQA prompts the largest deviation is $2.32$, against a median squared nearest-neighbor distance of $116.8$. The bound is therefore nearly attained, and at two percent of that median it is small relative to the distance the score recovers. The log-range $\rho$ entering the bound is itself bounded: the costs enter Eq.~\eqref{eq:sinkhorn} nonnegatively inside a $\operatorname{logsumexp}$, so $\rho\le c_{\max}$ by Lemma~\ref{lem:log-range}, and here $\rho=0.47$ against $c_{\max}=1.51$.
+
+\subsection{Measured separation}
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Support gate on Llama3.1-8B layer $13$ at coverage $p=0.7$ and gate bandwidth $b_{g}=\sigma^{2}/256$, with $\mathcal{D}_{\mathrm{ref}}$ the $817$ TruthfulQA prompts and the bridge fitted to the TruthfulQA contrastive pairs. The last column is the area under the ROC curve (AUROC) separating the scores $u$ of the in-distribution prompts from those of the listed prompt set. No out-of-distribution prompt is used to calibrate the gate. Lemma~\ref{lem:coverage} predicts a mean gate of $0.850$ in distribution.}
+\label{tab:gate-separation}
+\begin{tabular}{llcc}
+\toprule
+Prompt set & Role & Mean $g$ & AUROC \\
+\midrule
+TruthfulQA & in-distribution & $0.851$ & --- \\
+NQ         & out-of-distribution & $0.499$ & $0.838$ \\
+TriviaQA   & out-of-distribution & $0.305$ & $0.899$ \\
+GSM8K      & out-of-distribution & $0.073$ & $0.978$ \\
+MMLU       & out-of-distribution & $0.000$ & $1.000$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:gate-separation} reports the gate on one in-distribution and four out-of-distribution prompt sets. The mean gate falls monotonically as the prompt population moves away from the contrastive support, and on MMLU the gate is $0$ at every prompt, so the steered model returns the unsteered activation there. The separation is a property of the score rather than of the ramp: the AUROC column compares the raw scores $u$ of the TruthfulQA prompts with those of each out-of-distribution set, and the AUROC exceeds $0.97$ for GSM8K and MMLU, whose few-shot formats share no scaffold with TruthfulQA's, while NQ and TriviaQA reuse TruthfulQA's instruction and QA primer and separate less sharply. Aggregated over the four out-of-distribution sets, the score attains an AUROC of $0.93$ on Llama3.1-8B and $0.97$ on Mistral-7B, so the separation is not specific to one model.
 
 \section{Experimental Details}
 \label{appendix:experimental_details}
@@ -295,7 +551,9 @@ Our base LLMs follow the experimental setup of Zhao~\etal~\cite{zhaoodesteer}. W
 \subsection{Implementation Details}
 
 
-All our experiments are conducted on a machine equipped with 1x H100 80GB. We extend ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement our steering methods and baselines. \Cobras uses the following default values: steering strength of $0.65$, abstention $K$ of $32$, abstention percentile of $98$,  geodesic Euler steps $K$ = 10. 
+\label{appendix:implementation_details}
+
+All our experiments are conducted on a machine equipped with 1x H100 80GB. We extend ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement our steering methods and baselines. In all experiments, $\sigma^{2}$ is the squared median geodesic distance to the fifth nearest neighbor in $\mathcal{D}^{+}\cup\mathcal{D}^{-}$, $\varepsilon=\sigma^{2}$, and Eq.~\eqref{eq:sinkhorn} is solved with five alternating sweeps starting from $\log\boldsymbol{a}^{+}=\boldsymbol{0}$. The bandwidth $b$ is selected per query from the sample set being weighted (Appendix~\ref{app:grad-psi}), $b_{g}=\sigma^{2}/256$, $\kappa=20$ and $K=10$. The in-distribution configuration is ungated, with $g_{q}=1$ and $T=0.5$, and the out-of-distribution configuration uses coverage $p=0.7$ with $T=0.65$. Steering is applied through a forward hook at layer $\ell$ to the last-token activation at every decoding step.
 
 \section{Additional Results}
 
