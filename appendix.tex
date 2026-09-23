@@ -1,62 +1,58 @@
-\section{Connections to Density-Ratio Steering}
+\section{A Unified Log-density Ratio Optimization Framework for Activation Steering}
 \label{apx:ldr-formalize}
 
-A log-density ratio provides a useful way to compare steering \emph{directions}.
-On a manifold $\mathcal M$, the corresponding flow is
+In this section, we show that diverse activation steering methodologies can be unified under a single theoretical framework governed by log-density ratio optimization. Specifically, we analyze how these seemingly disparate techniques implicitly optimize the ratio $\log(p_+ / p_-)$ by reinterpreting them as specific geometric configurations of a continuous global flow. Formally, let $p_{+}$ and $p_{-}$ define a pair of continuous densities corresponding to the contrastive behavior distributions $\mathcal{D}^{+}$ and $\mathcal{D}^{-}$, respectively. Given an initial query activation $\boldsymbol{h}_q$ on an underlying representation manifold $\mathcal{M}$, the steering trajectory is obtained by integrating the continuous-time ordinary differential equation:
+
 \begin{equation}
-\frac{d\boldsymbol{x}_t}{dt}
-=\nabla_{\mathcal M}\log\frac{\pplus(\boldsymbol{x}_t)}{\pminus(\boldsymbol{x}_t)}.
+d\boldsymbol{x}_t = \nabla_{\mathcal{M}}\log\frac{p_{+}(\boldsymbol{x}_{t})}{p_{-}(\boldsymbol{x}_{t})}\,dt, \qquad \boldsymbol{x}_{0} = \hquery,
 \label{eq:global-flow}
 \end{equation}
-As in the Euclidean interpretation of \citet{zhaoodesteer}, the density model determines
-the direction. Table~\ref{tab:steering_framework} extends this comparison to spherical
-updates. A directional correspondence does not identify the full algorithm: normalization,
-step length, gating, and intervention location can differ.
 
-\begin{table}[ht]
+for $K$ steps over a specified time horizon $[0, T]$. Here, $\boldsymbol{x}_{t}$ denotes the steered activation along the flow, initialized as $\boldsymbol{x}_{0} = \hquery$. By systematically varying the manifold geometry $\mathcal{M}$, the step horizon $K$, and the parameterization of the density functions, we can recover prominent steering paradigms from this single formulation~\footnote{\citet{zhaoodesteer} presents a related unification of several of these methods, but their analysis is confined to Euclidean space; by treating the manifold $\mathcal{M}$ as an explicit design choice, however, our framework additionally captures geometry-aware methods such as SS and HPR.}.
+
+For example, the following methods can be recalled from this perspective as summarized in Table~\ref{tab:steering_framework}.
+
+
+
+
+\paragraph{Contrastive Activation Addition (CAA)~\citep{rimsky2024steering}} The  CAA algorithm can be framed as a specific, single-step optimization instantiation of a continuous global flow over the hidden state manifold. Specifically,  CAA simplifies this trajectory by optimizing over a flat Euclidean space $\mathcal{M}=\mathbb{R}^d$ via a single discrete step ($K=1$). By modeling the factual (positive) and counterfactual (negative) activation distributions as isotropic Gaussians sharing an identity covariance $p_{+}=\mathcal{N}(\boldsymbol{\mu}_{+}, \boldsymbol{I}_d)$ and $p_{-}=\mathcal{N}(\boldsymbol{\mu}_{-}, \boldsymbol{I}_d)$, the complex continuous gradient field collapses into a constant shift vector defined by the difference of their respective means  $\nabla_{\mathcal{M}}\log\frac{p_{+}}{p_{-}}=\boldsymbol{\mu}_+ - \boldsymbol{\mu}_-$. Consequently, the empirical practice of injecting a static difference vector during the forward pass is mathematically grounded as an exact, first-order approximation toward maximizing the target likelihood ratio.
+
+\paragraph{Spherical Steering (SS)~\citep{you2026spherical}}
+
+
+To relax the assumption of a flat Euclidean space and account for the directional nature of high-dimensional neural representations, Spherical Steering constrains the optimization trajectory to a unit hypersphere manifold, setting $\mathcal{M}=\mathcal{S}^{d-1}$. Under a single-step discrete horizon ($K=1$), the method models the target positive activations using a von Mises-Fisher (vMF) distribution $p_+=\mathrm{vMF}(\cdot;\boldsymbol{\mu},\kappa)$ which acts as the spherical analogue to an isotropic Gaussian with a mean direction vector $\boldsymbol{\mu}$ and a concentration parameter $\kappa$. Conversely, the negative behavior is modeled as a uniform distribution over the sphere $p_-=\mathrm{Unif}(\mathcal{S})$. The unit prototype towards the positive activations $\boldsymbol{\mu}$ is empirically defined by normalizing the difference between the mean positive and negative activations:
+$$\boldsymbol{\mu}= \frac{\bar{\boldsymbol{h}}^{+} - \bar{\boldsymbol{h}}^{-}}{\|\bar{\boldsymbol{h}}^{+} - \bar{\boldsymbol{h}}^{-}\|}.$$
+
+When evaluating the global flow framework under these spherical constraints, the Riemannian gradient of the likelihood ratio yields a non-linear direction proportional to the logarithmic map on the sphere 
+$\nabla_{\mathcal{S}}\log\tfrac{p_+}{p_-}
+\propto\log_{\boldsymbol{x}}(\boldsymbol{\mu})$ which corresponds to the Slerp direction toward $\boldsymbol{\mu}$ in
+the direction of this Riemannian gradient. By explicitly respecting the spherical geometry of hidden states, SS ensures that the magnitude of the activation vector is preserved, avoiding out-of-distribution distortion while performing directional steering.
+
+\begin{table}[t!]
 \centering
-\small
-\caption{Density-ratio interpretations of steering directions. The last column states
-the scope of each correspondence; the methods need not implement the same flow speed or gating.}
+\caption{Summary of Parameterizations under the Unified Global Flow Framework.}
 \label{tab:steering_framework}
-\begin{tabular}{>{\raggedright\arraybackslash}p{2.3cm}p{5.7cm}p{5.3cm}}
+\small
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l p{2.2cm} p{2cm} p{4.0cm} p{5.8cm}}
 \toprule
-Method & Model and induced direction & Scope \\
+\textbf{Method} & \textbf{Manifold ($\mathcal{M}$)} & \textbf{Horizon ($K$)} & \textbf{Density Ratio $\log(\pplus / \pminus)$} & \textbf{Induced Gradient $\nabla_{\mathcal{M}} \log(\pplus / \pminus)$} \\ 
 \midrule
-CAA\newline\citep{rimsky2024steering}
-& $\mathcal N(\boldsymbol\mu_\pm,\boldsymbol I)$ gives
-$\nabla\log(\pplus/\pminus)=\boldsymbol\mu_+-\boldsymbol\mu_-$.
-& Exact constant-direction interpretation of the additive update. \\ \addlinespace
-ITI\newline\citep{li2023inference}
-& A logistic log-odds model $\boldsymbol\theta^\top\boldsymbol{x}+\beta_0$
-gives the constant gradient $\boldsymbol\theta$.
-& Describes the probe-direction variant; the original work also uses a mean-shift direction. \\ \addlinespace
-Spherical Steering\newline\citep{you2026spherical}
-& A vMF density against uniform gives a gradient proportional to
-$\Pi_{\boldsymbol{x}}\boldsymbol\mu$.
-& Away from the prototype and its antipode, this points along the geodesic toward
-$R\boldsymbol\mu$; the rotation length and confidence gate are separate. \\ \addlinespace
-ODESteer\newline\citep{zhaoodesteer}
-& A fitted nonlinear log-ratio $\boldsymbol w^\top\Phi(\boldsymbol{x})+\beta_0$
-gives $\boldsymbol J_\Phi(\boldsymbol{x})^\top\boldsymbol w$.
-& The method follows the normalized, state-dependent gradient over multiple steps. \\ \addlinespace
-\Cobras
-& Conditional kernel weights give Eq.~\eqref{eq:cobras-field}.
-& A local potential-ratio gradient at fixed bandwidth; the kernel density-ratio field
-is recovered in Proposition~\ref{prop:ldr-limit}. \\
+\textbf{CAA}~\citep{rimsky2024steering} & $\mathbb{R}^d$ & $K=1$ & Isotropic Gaussians:\newline $\mathcal{N}(\boldsymbol{\mu}_{\pm}, \boldsymbol{I}_d)$ & Constant translation:\newline $\boldsymbol{\mu}_+ - \boldsymbol{\mu}_-$ \\ \addlinespace
+\textbf{SS}~\citep{you2026spherical} & $\mathcal{S}^{d-1}$ & $K=1$ & von Mises-Fisher vs. Uniform:\newline $\text{vMF}(\boldsymbol{\mu}, \kappa) / \text{Unif}(\mathcal{S})$ & Slerp direction toward unit prototype $\boldsymbol{\mu}$ \\ \addlinespace
+\textbf{ITI}~\citep{li2023inference} & $\mathbb{R}^d$ & $K=1$ & Discriminative Linear\newline Logistic Probe: $\sigma(\boldsymbol{\theta}^\top \boldsymbol{x})$ & Normal vector to decision boundary: $\boldsymbol{\theta}$ \\ \addlinespace
+\textbf{HPR}~\citep{pham2024householder} & $\mathcal{S}^{d-1}$ & $K=1$ & Linear Probe mapped via Householder Reflector $\boldsymbol{H}$ & Slerp path toward reflected state $\boldsymbol{H}\hat{\boldsymbol{x}}$ \\ \addlinespace
+\textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & $K > 1$ & Polynomial Count-Sketch Feature Map: $\boldsymbol{w}^\top \phi(\boldsymbol{x}) + b$ & State-dependent Jacobian field:\newline $\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w} / \|\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w}\|$ \\
+\textbf{\Cobras~(ours)} & $\mathcal{S}^{d-1}$ & $K > 1$ & Schr\"{o}dinger potentials via spherical KDE:\newline $\hat\psi / \hat\phi$ & Weighted Riemannian mean of log-maps:\newline $\sum_{i}\bar{w}^{+}_{i}\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i}) - \sum_{j}\bar{w}^{-}_{j}\log_{\boldsymbol{x}}(\boldsymbol{h}^{-}_{j})$ \\
 \bottomrule
 \end{tabular}
+}
 \end{table}
 
-For a fitted logistic posterior $p_\theta(+\mid\boldsymbol{x})$, Bayes' rule gives the
-implied log-density ratio
-$\log(\pplus/\pminus)=\operatorname{logit}p_\theta(+\mid\boldsymbol{x})
--\log(P(+)/P(-))$~\citep{sugiyama2012density}. The prior term is constant and does not
-affect the direction. This interpretation does not recover either class density separately.
-Likewise, ODESteer's fitted ratio supplies a direction without a marginal support score.
-\Cobras adds transport-based reweighting and a product score for support. State dependence
-itself is already present in ODESteer, and vMF confidence gating is already present in
-Spherical Steering; these are not unique to \Cobras.
+\paragraph{Inference-Time Intervention (ITI) \citep{li2023inference}} Rather than assuming explicit parametric distributions for the hidden states, ITI leverages a discriminative classifier to implicitly estimate the underlying density ratio. Operating within a single-step horizon ($K=1$) over a flat Euclidean vector space $\mathcal{M} = \mathbb{R}^d$, ITI trains a linear logistic probe, $p_{\boldsymbol{\theta}}(\boldsymbol{x}) = \sigma(\boldsymbol{\theta}^\top \boldsymbol{x})$, to distinguish between positive and negative activation vectors. By invoking the classic equivalence between logistic regression and density ratio estimation, the log-density ratio can be rewritten linearly as $\log \frac{p_+(\boldsymbol{x})}{p_-(\boldsymbol{x})} = \boldsymbol{\theta}^\top \boldsymbol{x} + \log \frac{N_-}{N_+}$, where $N_+$ and $N_-$ represent the respective sample counts. Taking the gradient with respect to the manifold yields a constant vector field defined entirely by the probe's learned weights:$$\nabla_{\mathcal{M}} \log \frac{p_+}{p_-} = \boldsymbol{\theta}$$This formulation reveals a powerful geometric justification for ITI: the orthogonal vector to the classifier's decision boundary acts as the exact gradient direction needed to maximize the factual likelihood ratio. Consequently, shifting activations along the direction of $\boldsymbol{\theta}$ during inference provides a theoretically grounded, first-order trajectory for target behavior optimization.
+\paragraph{Householder Reflection Probe (HPR)~\citep{pham2024householder}}  To reconcile discriminative, probe-based steering with non-Euclidean representation spaces, the HPR method maps the log-density ratio directly onto a hyperspherical manifold ($\mathcal{M} = \mathcal{S}^{d-1}$) under a single-step horizon ($K=1$). Similar to ITI, the method first projects the log-density ratio linearly using a trained linear probe, $\log \frac{p_+(\boldsymbol{x})}{p_-(\boldsymbol{x})} = \boldsymbol{\theta}^\top \boldsymbol{x} + \log \frac{N_-}{N_+}$. To respect the spherical constraints, HPR constructs an orthogonal Householder reflection matrix, $\boldsymbol{H} = \boldsymbol{I} - 2\boldsymbol{u}\boldsymbol{u}^\top$, where $\boldsymbol{u} = \boldsymbol{\theta} / \|\boldsymbol{\theta}\|$ represents the unit normal vector to the probe's decision boundary. By reflecting the normalized activation vector $\hat{\boldsymbol{x}} = \boldsymbol{x} / \|\boldsymbol{x}\|$ across this boundary, the directional gradient on the sphere is formalized as $\nabla_{\mathcal{S}} \log \frac{p_+(\boldsymbol{x})}{p_-(\boldsymbol{x})} \propto \Pi_{\hat{\boldsymbol{x}}}(\boldsymbol{H}\hat{\boldsymbol{x}} - \hat{\boldsymbol{x}})$, where $\Pi_{\hat{\boldsymbol{x}}}$ denotes the projection onto the tangent space at $\hat{\boldsymbol{x}}$. Geometrically, this confirms that the optimal trajectory corresponds to a Spherical Linear Interpolation (Slerp) toward the reflected state $\boldsymbol{H}\hat{\boldsymbol{x}}$. By leveraging a reflection operator, HPR effectively utilizes the probe's decision boundaries to execute directional steering while intrinsically preserving the latent norm of the activation path.
+
+\paragraph{ODESteer~\citep{zhaoodesteer}} Departing from single-step first-order approximations ($K=1$), ODESteer fully embraces the continuous-time formulation of the global flow framework by integrating across multiple steps ($K > 1$) over a flat Euclidean vector space $\mathcal{M} = \mathbb{R}^d$. Rather than adopting simple parametric distributions or linear probes, this approach models complex, non-linear activation dynamics by parameterizing the log-density ratio with a polynomial count-sketch feature map $\phi$ and setting $\log \frac{p_+(\boldsymbol{x})}{p_-(\boldsymbol{x})} = \boldsymbol{w}^\top \phi(\boldsymbol{x}) + b$, where the parameter pair $(\boldsymbol{w}, b)$ is fit empirically over the contrastive dataset. Under this non-linear projection, the steering direction is dictated by a dynamic, normalized vector field:$$\boldsymbol{V}(\boldsymbol{x}) = \frac{\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w}}{\|\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w}\|}$$where $\boldsymbol{J}_{\phi}(\boldsymbol{x})$ denotes the Jacobian matrix of the feature map $\phi$ evaluated at the current state $\boldsymbol{x}$. By evaluating and integrating this state-dependent vector field using discrete Euler steps over the time horizon $[0, T]$, ODESteer traces a curved, non-linear path through the representation space. This multi-step integration allows the model to continuously adapt to the changing manifold geometry during the steering process, providing precise control while tracking complex latent boundaries.
 
 \section{Derivations and Implementation}
 \label{apx:theory}
