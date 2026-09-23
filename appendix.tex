@@ -68,10 +68,12 @@ weights, and support product unchanged.
 \label{apx:static}
 
 \paragraph{Probability flow.}
-The continuous bridge has drift
+For the continuous derivation, assume strictly positive $C^2$ endpoint densities on $\Sph$.
+The reference $Q$ is Brownian motion started uniformly, with generator
+$\tfrac{\sigma^2}{2}\Delta_{\Sph}$, where $\Delta_{\Sph}$ is the spherical Laplacian.
+The bridge retains this diffusion and has drift
 $\boldsymbol u(\boldsymbol{x},t)=\sigma^2\nablaS\log\psi(\boldsymbol{x},t)$
-and diffusion generator $\tfrac{\sigma^2}{2}\Delta_{\Sph}$.
-Its Fokker--Planck equation can be written
+so its Fokker--Planck equation can be written
 \begin{align}
 \partial_t p_t
 &=-\operatorname{div}_{\Sph}(p_t\boldsymbol u)
@@ -232,6 +234,15 @@ its bandwidth. Thus the common-$b$ gradient-ratio identity and
 Proposition~\ref{prop:ldr-limit} describe the fixed-bandwidth construction.
 The gate uses the separate, fixed bandwidth $b_g$.
 
+\paragraph{Interpretation of the steering multiplier.}
+The multiplier in Eq.~\eqref{eq:side} has a probabilistic interpretation under a simple model
+of the two populations. Assign the desired and undesired populations von Mises--Fisher densities
+centered at $\boldsymbol\mu$ and $-\boldsymbol\mu$, respectively, with shared concentration
+$\kappa$ and equal prior probabilities. Their shared normalizer cancels in Bayes' rule, giving
+$s(\boldsymbol{x})$ as the model's probability that an activation belongs to the undesired population.
+We use this quantity to attenuate steering, without assuming that it estimates the probability
+of an undesired generated response.
+
 Algorithm~\ref{alg:cobras} gives the adaptive procedure. Kernel sums and
 normalized weights are evaluated in log space. Implementations also clamp
 cosines away from $\pm1$ and vector norms away from zero for numerical stability.
@@ -300,7 +311,16 @@ training-fold prompts and the gate is applied to the held-out fold.
 For OOD evaluation, it contains all $817$ TruthfulQA prompts. No GSM8K,
 MMLU, NQ, or TriviaQA prompt is used for calibration.
 
-\paragraph{Finite-reference coverage.}
+\paragraph{Interpreting the coverage parameter.}
+The parameter $p$ sets the reference rank threshold below which $g=1$, and the following lemma
+relates this threshold to attenuation on new in-distribution prompts. Under exchangeability
+and absence of ties, the fraction of new prompts with $g=1$ approaches $p$ in expectation,
+and the mean gate approaches $(1+p)/2$ as the reference set grows.
+For example, at $p=0.7$ the gate leaves steering strength unchanged on approximately $70\%$
+of such prompts, with a mean multiplier of $0.85$. Because the result depends only on ranks,
+it interprets the strength control for any score satisfying the assumptions, independently
+of that score's ability to distinguish OOD prompts.
+
 \begin{lemma}[Empirical-rank calibration]
 \label{lem:coverage}
 Let $n$ reference scores and one new score be exchangeable and almost surely
@@ -321,15 +341,16 @@ formulas. The mean tends to
 $\int_0^p1\,dr+(1-p)^{-1}\int_p^1(1-r)\,dr=(1+p)/2$.
 \end{proof}
 
-The expectation averages over both reference and query scores; it is not a
-conditional guarantee for every realized reference set. A score function
-fitted independently of i.i.d.\ reference and query prompts is a sufficient
-condition. Reusing bridge-fitting prompts as references need not satisfy
-that condition, and ties also alter the rank law.
-Moreover, evaluating a reference set against itself gives the deterministic
-ranks $0,1/n,\ldots,(n-1)/n$ when there are no ties. A mean gate near
-$(1+p)/2$ on that set is therefore an arithmetic calibration property,
-not evidence of coverage on unseen prompts or of OOD detection.
+The lemma averages over both reference and query scores, so its interpretation for new prompts
+depends on their exchangeability with the reference set. This holds, for example, when a fixed
+score function is fitted independently of i.i.d.\ reference and query prompts. Reusing
+bridge-fitting prompts as references or allowing score ties requires separate justification,
+and the stated expectation need not hold conditional on a particular reference set.
+
+Evaluating the reference prompts against their own scores instead gives the deterministic ranks
+$0,1/n,\ldots,(n-1)/n$ when there are no ties. Their mean gate is consequently close to
+$(1+p)/2$ by construction, so agreement with this value does not establish coverage on unseen
+prompts. OOD separation depends on the score distributions and is assessed empirically below.
 
 \paragraph{Small-bandwidth interpretation.}
 At fixed samples and scalings, the score approaches a nearest-neighbor rule:
