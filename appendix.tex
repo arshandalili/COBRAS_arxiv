@@ -122,8 +122,8 @@ in Eq.~\eqref{eq:plan}. Sinkhorn fitting alternates the log-space updates
 \operatorname{logsumexp}_j[\log a_j^--c_{ji}].
 \label{eq:sinkhorn}
 \end{align}
-At convergence the plan satisfies both marginals. Five sweeps, as used in the
-implementation, give an approximate fit. The choice of geodesic affinity and subsequent
+At convergence the plan satisfies both marginals, while the finite number of sweeps used in the
+implementation gives an approximate fit. The choice of geodesic affinity and subsequent
 stationary field do not preserve the exact Brownian bridge construction.
 
 \subsection{Kernel gradients and conditional weights}
@@ -223,9 +223,10 @@ population at every iterate:
 \begin{equation}
 b_\pm(\boldsymbol{x})=
 \max\!\left\{\max_{\boldsymbol h\in\mathcal D^\pm}
-d_{\Sph}(\boldsymbol{x},\boldsymbol h)^2,\ (10^{-3}R)^2\right\}.
+d_{\Sph}(\boldsymbol{x},\boldsymbol h)^2,\ b_{\min}\right\}.
 \label{eq:adaptive-bandwidth}
 \end{equation}
+Here $b_{\min}>0$ is a numerical floor.
 Every kernel centered on a desired sample uses $b_+$, including the kernels
 inside $m^-$. Every kernel centered on an undesired sample uses $b_-$,
 including those inside $m^+$. The final field remains the difference of
@@ -253,14 +254,14 @@ cosines away from $\pm1$ and vector norms away from zero for numerical stability
 \small
 \begin{algorithmic}[1]
 \Require $\mathcal D^\pm$; reference prompts $\mathcal D_{\mathrm{ref}}$;
-strength $T$; coverage $p$; steps $K$; Sinkhorn sweeps $n_{\mathrm{S}}$; concentration $\kappa$
+transport scale $\varepsilon$; support bandwidth $b_g$;
+strength $T$; coverage $p$; steps $K$; concentration $\kappa$
 \Statex \textbf{Offline: fit transport and calibrate support}
 \State $R\gets\mathrm{mean}_{\boldsymbol h\in\mathcal D^+\cup\mathcal D^-}\|\boldsymbol h\|$;
 project all contrastive activations onto $\Sph$
-\State $\varepsilon\gets\max\{(\text{median distance to the fifth nearest neighbor})^2,(10^{-3}R)^2\}$
 \State Form $c_{ji}$ using Eq.~\eqref{eq:plan}; fit $\log\boldsymbol a^\pm$
-with $n_{\mathrm S}$ sweeps of Eq.~\eqref{eq:sinkhorn}, starting from $\log\boldsymbol a^+=0$
-\State Compute $\boldsymbol\mu$ using Eq.~\eqref{eq:mu}; set $b_g\gets\varepsilon/256$
+using the Sinkhorn updates in Eq.~\eqref{eq:sinkhorn}
+\State Compute $\boldsymbol\mu$ using Eq.~\eqref{eq:mu}
 \State Store the sorted scores $u(R\boldsymbol z/\|\boldsymbol z\|)$
 for $\boldsymbol z\in\mathcal D_{\mathrm{ref}}$
 \Statex \textbf{Online: edit the current token activation $\hquery$}
@@ -299,8 +300,8 @@ $\Delta\gets\tfrac{\pi}{2}Tsg_qR/K$
 \label{apx:ood-gate}
 
 \paragraph{Reference prompts.}
-The gate uses the product score in Eq.~\eqref{eq:support-score}, with
-$b_g=\varepsilon/256$. Both reference and query activations are taken at the
+The gate uses the product score in Eq.~\eqref{eq:support-score} at a fixed
+bandwidth $b_g$. Both reference and query activations are taken at the
 steering layer and last prompt position, projected onto $\Sph$, and scored
 identically. This avoids assuming that prompt-only and contrastive
 question--answer activations have the same score distribution. A difference
@@ -375,8 +376,8 @@ nearly tied prompts or separation of arbitrary OOD distributions.
 \begin{table}[ht]
 \centering
 \small
-\caption{Support gate on Llama3.1-8B layer $13$, with $p=0.7$ and
-$b_g=\varepsilon/256$. The bridge and reference scores use TruthfulQA.
+\caption{Support gate on Llama3.1-8B layer $13$, with $p=0.7$.
+The bridge and reference scores use TruthfulQA.
 AUROC compares the raw support scores of TruthfulQA and each listed OOD set.
 The TruthfulQA row evaluates the $817$ calibration prompts against their own
 reference scores; its mean is not a held-out coverage estimate.}
@@ -518,7 +519,7 @@ Our base LLMs follow the experimental setup of Zhao~\etal~\cite{zhaoodesteer}. W
 
 \label{appendix:implementation_details}
 
-All experiments use one H100 80GB GPU. We extend the ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement the steering methods and baselines. We set $\varepsilon=\sigma^2$ to the squared median geodesic distance to the fifth nearest neighbor in $\mathcal D^+\cup\mathcal D^-$, with a lower bound of $(10^{-3}R)^2$. We run five alternating Sinkhorn sweeps from $\log\boldsymbol a^+=\boldsymbol0$. The steering bandwidths follow Eq.~\eqref{eq:adaptive-bandwidth}; $b_g=\varepsilon/256$, $\kappa=20$, and $K=10$. The in-distribution configuration is ungated, with $g_q=1$ and $T=0.5$. The OOD configuration uses $p=0.7$ and $T=0.65$. Steering acts through a forward hook at layer $\ell$ on the last-token activation at every decoding step. Our ITI baseline uses the normalized logistic-probe direction implemented in this codebase.
+All experiments use one H100 80GB GPU. We extend the ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement the steering methods and baselines. We set $\varepsilon=\sigma^2$ from geodesic neighborhood distances in $\mathcal D^+\cup\mathcal D^-$. The steering bandwidths follow Eq.~\eqref{eq:adaptive-bandwidth}, and we use $K=10$ integration steps. The accompanying code specifies the bandwidth settings, Sinkhorn initialization and iteration count, concentration $\kappa$, and numerical safeguards. The in-distribution configuration is ungated, with $g_q=1$ and $T=0.5$. The OOD configuration uses $p=0.7$ and $T=0.65$. Steering acts through a forward hook at layer $\ell$ on the last-token activation at every decoding step. Our ITI baseline uses the normalized logistic-probe direction implemented in this codebase.
 
 \section{Additional Results}
 
