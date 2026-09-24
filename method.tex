@@ -58,69 +58,41 @@ use their continuous limits.
 \section{LLM Steering as a Schr\"{o}dinger Bridge}
 \label{sec:method}
 
-\Cobras uses contrastive activations to decide \emph{where} to steer and \emph{how much} to intervene.
-It fits a transport plan from undesired to desired activations to construct a direction that combines
-attraction toward desired samples with repulsion from undesired samples near the current activation.
-The intervention follows this direction through norm-preserving geodesic updates. We reduce their size
-when the current activation aligns with the desired direction or the prompt has low support near
-the contrastive data.
+\Cobras uses contrastive activations to decide \emph{where} to steer and \emph{how much} to intervene. It fits a transport plan from undesired to desired activations to construct a direction that combines attraction toward desired samples with repulsion from undesired samples near the current activation. The intervention follows this direction through norm-preserving geodesic updates. We reduce their size when the current activation aligns with the desired direction or the prompt has low support near the contrastive data.
 
-We first derive the continuous bridge identities that motivate this construction
-(Section~\ref{subsec:sb}), then give the finite-sample direction, strength controls, and inference
-procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction}
-establishes the connection to density-ratio steering.
+We first derive the continuous bridge identities that motivate this construction (Section~\ref{subsec:sb}), then give the finite-sample direction, strength controls, and inference procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction} establishes the connection to density-ratio steering.
 
 \begin{figure}[!tb]
     \centering
     \includegraphics[width=0.8\linewidth]{figures/cobras_overview.pdf}
-    \caption{Overview of \Cobras. \textbf{(a)} Contrastive activations are projected onto $\Sph$.
-    \textbf{(b)} Entropic transport connects the undesired and desired populations; these connections
-    reweight attraction and repulsion at each steering step. \textbf{(c--d)} Direction and strength
-    depend on the input, and the support gate can leave unfamiliar prompts unchanged.
-    \textbf{(e)} Example generations on TruthfulQA and an OOD GSM8K question.
-    The figure's $q_k$ and $\hat p_0$ correspond to $\boldsymbol{x}_k$ and $\hat p_{b_g}$ in the text.}
+    \caption{Overview of \Cobras. \textbf{(a)} Contrastive activations are projected onto $\Sph$.     \textbf{(b)} Entropic transport connects the undesired and desired populations; these connections     reweight attraction and repulsion at each steering step. \textbf{(c--d)} Direction and strength     depend on the input, and the support gate can leave unfamiliar prompts unchanged.     \textbf{(e)} Example generations on TruthfulQA and an OOD GSM8K question.     The figure's $q_k$ and $\hat p_0$ correspond to $\boldsymbol{x}_k$ and $\hat p_{b_g}$ in the text.}
     \label{fig:overview}
 \end{figure}
 
 \subsection{A transport objective and its steering direction}
 \label{subsec:sb}
 
-A Schr\"{o}dinger bridge describes how one distribution evolves into another while staying as close
-as possible to a reference random motion. Here the reference $Q$ is Brownian motion on $\Sph$,
-which moves randomly along the sphere with diffusion scale $\sigma^2$, starting from a uniform
-distribution. We seek a distribution $P$ over continuous trajectories that carries the undesired
-population $\pminus$ to the desired population $\pplus$. Writing $P_t$ for the activation
-distribution at time $t$, the bridge solves
+A Schr\"{o}dinger bridge describes how one distribution evolves into another while staying as close as possible to a reference random motion. Here the reference $Q$ is Brownian motion on $\Sph$, which moves randomly along the sphere with diffusion scale $\sigma^2$, starting from a uniform distribution. We seek a distribution $P$ over continuous trajectories that carries the undesired population $\pminus$ to the desired population $\pplus$. Writing $P_t$ for the activation distribution at time $t$, the bridge solves
 \begin{equation}
 P^\star=\operatorname*{arg\,min}_{P}\KL(P\,\Vert\,Q)
 \qquad\text{s.t.}\qquad P_0=\pminus,\quad P_1=\pplus.
 \label{eq:sb}
 \end{equation}
-Thus the endpoint constraints specify the desired population change, and relative entropy selects
-the evolution closest to the reference motion. The time variable $t\in[0,1]$ indexes this population
-transport independently of token positions in the generated sequence.
+Thus the endpoint constraints specify the desired population change, and relative entropy selects the evolution closest to the reference motion. The time variable $t\in[0,1]$ indexes this population transport independently of token positions in the generated sequence.
 
-The solution is characterized by two positive Schr\"{o}dinger potentials,
-$\varphi(\boldsymbol{x},t)$ and $\psi(\boldsymbol{x},t)$, which propagate information from the
-undesired and desired endpoints, respectively~\citep{leonard2013survey}.
-Together they determine the bridge density through their product,
+The solution is characterized by two positive Schr\"{o}dinger potentials, $\varphi(\boldsymbol{x},t)$ and $\psi(\boldsymbol{x},t)$, which propagate information from the undesired and desired endpoints, respectively~\citep{leonard2013survey}. Together they determine the bridge density through their product,
 \begin{equation}
 p_t(\boldsymbol{x})\propto\varphi(\boldsymbol{x},t)\psi(\boldsymbol{x},t).
 \label{eq:product}
 \end{equation}
-Starting from $\pminus$, a deterministic flow can reproduce the bridge's activation distribution
-at every time $t$~\citep{song2020score}. Its direction follows the gradient of the log-ratio of
-the two potentials,
+Starting from $\pminus$, a deterministic flow can reproduce the bridge's activation distribution at every time $t$~\citep{song2020score}. Its direction follows the gradient of the log-ratio of the two potentials,
 \begin{equation}
 \frac{d\boldsymbol{x}_t}{dt}
 =\frac{\sigma^2}{2}\nablaS\log
 \frac{\psi(\boldsymbol{x}_t,t)}{\varphi(\boldsymbol{x}_t,t)}.
 \label{eq:ldr}
 \end{equation}
-These identities, derived in Appendix~\ref{apx:static}, motivate a potential \emph{ratio} for the
-steering direction and a potential \emph{product} for support. Since the potentials describe the
-intermediate bridge rather than the endpoint densities, the connection to ordinary density-ratio
-steering requires the limiting argument in Section~\ref{subsec:reduction}.
+These identities, derived in Appendix~\ref{apx:static}, motivate a potential \emph{ratio} for the steering direction and a potential \emph{product} for support. Since the potentials describe the intermediate bridge rather than the endpoint densities, the connection to ordinary density-ratio steering requires the limiting argument in Section~\ref{subsec:reduction}.
 
 \subsection{Computing the direction from contrastive samples}
 \label{subsec:estimation}
@@ -133,24 +105,17 @@ K_b(\boldsymbol{x},\boldsymbol{y})
 \qquad b>0.
 \label{eq:kernel}
 \end{equation}
-The bandwidth $b$ sets the squared-distance scale of this affinity, whose form is motivated by the
-leading short-time exponential behavior of the heat kernel~\citep{chen2023logarithmic}.
-Using it as a surrogate for the spherical Brownian transition density in a discrete entropic
-transport problem gives the plan
+The bandwidth $b$ sets the squared-distance scale of this affinity, whose form is motivated by the leading short-time exponential behavior of the heat kernel~\citep{chen2023logarithmic}. Using it as a surrogate for the spherical Brownian transition density in a discrete entropic transport problem gives the plan
 \begin{equation}
 \pi^\star_{ji}=a_j^-a_i^+e^{-c_{ji}},
 \qquad
 c_{ji}=\frac{d_{\Sph}(\boldsymbol h_j^-,\boldsymbol h_i^+)^2}{2\varepsilon}.
 \label{eq:plan}
 \end{equation}
-The entry $\pi^\star_{ji}$ assigns mass from undesired sample $j$ to desired sample $i$, with
-$\varepsilon$ controlling the cost--entropy tradeoff. The positive scalings $a_j^-,a_i^+$ enforce
-uniform row and column marginals and are fitted using Sinkhorn updates~\citep{cuturi2013sinkhorn},
-as detailed in Appendix~\ref{apx:static}.
+The entry $\pi^\star_{ji}$ assigns mass from undesired sample $j$ to desired sample $i$, with $\varepsilon$ controlling the cost--entropy tradeoff. The positive scalings $a_j^-,a_i^+$ enforce uniform row and column marginals and are fitted using Sinkhorn updates~\citep{cuturi2013sinkhorn}, as detailed in Appendix~\ref{apx:static}.
 
 \paragraph{Use local transport connections to weight the direction.}
-At an activation $\boldsymbol{x}$, a desired sample should contribute according to both its proximity
-to $\boldsymbol{x}$ and its connections to nearby undesired samples. We encode the second quantity by
+At an activation $\boldsymbol{x}$, a desired sample should contribute according to both its proximity to $\boldsymbol{x}$ and its connections to nearby undesired samples. We encode the second quantity by
 \begin{align}
 m^+_{i,b}(\boldsymbol{x})
 &=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol h_j^-)\,e^{-c_{ji}},
@@ -159,11 +124,7 @@ m^-_{j,b}(\boldsymbol{x})
 &=\sum_i a_i^+K_b(\boldsymbol{x},\boldsymbol h_i^+)\,e^{-c_{ji}}.
 \label{eq:ext-phi}
 \end{align}
-For example, $a_i^+m^+_{i,b}(\boldsymbol{x})
-=\sum_j\pi^\star_{ji}K_b(\boldsymbol{x},\boldsymbol h_j^-)$ is the transport mass arriving
-at desired sample $i$, weighted by the source samples' proximity to $\boldsymbol{x}$.
-We divide this mass by $a_i^+$ to obtain the reweighting coefficient $m^+_{i,b}$, then combine
-it with the desired sample's own proximity to form the normalized weight
+For example, $a_i^+m^+_{i,b}(\boldsymbol{x}) =\sum_j\pi^\star_{ji}K_b(\boldsymbol{x},\boldsymbol h_j^-)$ is the transport mass arriving at desired sample $i$, weighted by the source samples' proximity to $\boldsymbol{x}$. We divide this mass by $a_i^+$ to obtain the reweighting coefficient $m^+_{i,b}$, then combine it with the desired sample's own proximity to form the normalized weight
 \begin{equation}
 \bar w_i^+(\boldsymbol{x})
 =\frac{m^+_{i,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol h_i^+)}
@@ -177,36 +138,19 @@ with $\bar w_j^-$ defined symmetrically. The steering field is
 -\underbrace{\sum_j\bar w_j^-(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol h_j^-)}_{\text{repulsion}}.
 \label{eq:cobras-field}
 \end{equation}
-Each logarithm map is a tangent vector toward a sample. Its weight depends on distances within
-both populations and the fitted connections between them.
+Each logarithm map is a tangent vector toward a sample. Its weight depends on distances within both populations and the fitted connections between them.
 
-The link to Eq.~\eqref{eq:ldr} is the kernel identity
-$b\nablaS\log\sum_i m_iK_b(\boldsymbol{x},\boldsymbol h_i)
-=\sum_i w_i\log_{\boldsymbol{x}}(\boldsymbol h_i)$ for fixed positive coefficients $m_i$
-(Appendix~\ref{app:grad-psi}). \Cobras applies this identity with the conditional multipliers
-evaluated and held fixed at each iterate, giving the gradient of a locally defined potential ratio.
-Differentiating through the multipliers would introduce the additional terms derived in
-Appendix~\ref{apx:omitted-term} and therefore produce a different field.
+The link to Eq.~\eqref{eq:ldr} is the kernel identity $b\nablaS\log\sum_i m_iK_b(\boldsymbol{x},\boldsymbol h_i) =\sum_i w_i\log_{\boldsymbol{x}}(\boldsymbol h_i)$ for fixed positive coefficients $m_i$ (Appendix~\ref{app:grad-psi}). \Cobras applies this identity with the conditional multipliers evaluated and held fixed at each iterate, giving the gradient of a locally defined potential ratio. Differentiating through the multipliers would introduce the additional terms derived in Appendix~\ref{apx:omitted-term} and therefore produce a different field.
 
-We present the construction at a fixed bandwidth $b$ to make its density-ratio limit explicit,
-while the implementation selects a separate distance-based bandwidth for each population and
-current activation (Appendix~\ref{apx:bandwidth}). Because the resulting stationary field does
-not assign a bridge time to the token, it does not inherit the continuous bridge's endpoint-matching
-guarantee.
+We present the construction at a fixed bandwidth $b$ to make its density-ratio limit explicit, while the implementation selects a separate distance-based bandwidth for each population and current activation (Appendix~\ref{apx:bandwidth}). Because the resulting stationary field does not assign a bridge time to the token, it does not inherit the continuous bridge's endpoint-matching guarantee.
 
 \subsection{Controlling when and how much to steer}
 \label{subsec:strength}
 
-Normalizing $\boldsymbol v$ before each update separates its direction from the intervention
-strength. We scale each token's update by a steering multiplier $s$, which decreases as the
-activation aligns with the desired direction, and a support gate $g$, which reduces steering
-on unfamiliar prompts.
+Normalizing $\boldsymbol v$ before each update separates its direction from the intervention strength. We scale each token's update by a steering multiplier $s$, which decreases as the activation aligns with the desired direction, and a support gate $g$, which reduces steering on unfamiliar prompts.
 
 \paragraph{Steering multiplier.}
-We measure alignment with the desired direction using the normalized difference between the
-desired and undesired mean activations. Let $\bar{\boldsymbol h}^{\pm}$ be the means of the
-projected samples. Following the attenuation rule used in spherical steering~\citep{you2026spherical},
-we define
+We measure alignment with the desired direction using the normalized difference between the desired and undesired mean activations. Let $\bar{\boldsymbol h}^{\pm}$ be the means of the projected samples. Following the attenuation rule used in spherical steering~\citep{you2026spherical}, we define
 \begin{align}
 \boldsymbol\mu
 &=\frac{\bar{\boldsymbol h}^+-\bar{\boldsymbol h}^-}
@@ -216,22 +160,17 @@ s(\boldsymbol{x})
 &=\left(1+e^{2\kappa\langle\boldsymbol{x}/R,\boldsymbol\mu\rangle}\right)^{-1}.
 \label{eq:side}
 \end{align}
-The inner product measures alignment with $\boldsymbol\mu$, and $\kappa>0$ controls how sharply
-the multiplier changes. At zero alignment, $s=1/2$. As alignment with $\boldsymbol\mu$ increases,
-$s$ decreases toward zero, reducing the intervention on activations already oriented in the
-desired direction. Appendix~\ref{apx:pseudocode} gives a probabilistic interpretation of this rule.
+The inner product measures alignment with $\boldsymbol\mu$, and $\kappa>0$ controls how sharply the multiplier changes. At zero alignment, $s=1/2$. As alignment with $\boldsymbol\mu$ increases, $s$ decreases toward zero, reducing the intervention on activations already oriented in the desired direction. Appendix~\ref{apx:pseudocode} gives a probabilistic interpretation of this rule.
 
 \paragraph{Support gate.}
-Alignment with $\boldsymbol\mu$ alone does not establish proximity to the contrastive data.
-To assess this proximity, we extend the fitted Sinkhorn scalings into two kernel factors,
+Alignment with $\boldsymbol\mu$ alone does not establish proximity to the contrastive data. To assess this proximity, we extend the fitted Sinkhorn scalings into two kernel factors,
 \begin{equation}
 \widehat\varphi_b(\boldsymbol{x})=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol h_j^-),
 \qquad
 \widehat\psi_b(\boldsymbol{x})=\sum_i a_i^+K_b(\boldsymbol{x},\boldsymbol h_i^+).
 \label{eq:frozen-factors}
 \end{equation}
-Following the product form of the bridge density in Eq.~\eqref{eq:product}, we define an
-unnormalized support score at bandwidth $b_g$,
+Following the product form of the bridge density in Eq.~\eqref{eq:product}, we define an unnormalized support score at bandwidth $b_g$,
 \begin{equation}
 \hat p_{b_g}(\boldsymbol{x})
 =\widehat\varphi_{b_g}(\boldsymbol{x})\widehat\psi_{b_g}(\boldsymbol{x}),
@@ -239,15 +178,9 @@ unnormalized support score at bandwidth $b_g$,
 u(\boldsymbol{x})=-\log\hat p_{b_g}(\boldsymbol{x}).
 \label{eq:support-score}
 \end{equation}
-At the chosen bandwidth, this product serves as a kernel proxy for the bridge marginal,
-with larger values of its negative logarithm $u$ indicating lower support.
+At the chosen bandwidth, this product serves as a kernel proxy for the bridge marginal, with larger values of its negative logarithm $u$ indicating lower support.
 
-We calibrate $u$ using only in-distribution prompt activations
-$\mathcal D_{\mathrm{ref}}$, held out from evaluation and projected onto $\Sph$.
-Taking these activations at the steering layer and last prompt position matches the inputs
-encountered by the gate during generation, since contrastive question--answer activations may
-follow a different score distribution. For $n=|\mathcal D_{\mathrm{ref}}|$, we rank a query's score
-against the reference scores and convert its rank into the gate
+We calibrate $u$ using only in-distribution prompt activations $\mathcal D_{\mathrm{ref}}$, held out from evaluation and projected onto $\Sph$. Taking these activations at the steering layer and last prompt position matches the inputs encountered by the gate during generation, since contrastive question--answer activations may follow a different score distribution. For $n=|\mathcal D_{\mathrm{ref}}|$, we rank a query's score against the reference scores and convert its rank into the gate
 \begin{equation}
 r(\boldsymbol{x})
 =\frac{|\{\boldsymbol z\in\mathcal D_{\mathrm{ref}}:u(\boldsymbol z)<u(\boldsymbol{x})\}|}{n},
@@ -255,19 +188,12 @@ r(\boldsymbol{x})
 g(\boldsymbol{x})=\min\!\left\{1,\frac{1-r(\boldsymbol{x})}{1-p}\right\}.
 \label{eq:gate}
 \end{equation}
-With coverage parameter $p\in(0,1)$, the gate applies full strength up to the reference
-$p$-quantile and then decreases linearly with rank, reaching zero for scores above all reference scores.
-Appendix~\ref{apx:ood-gate} explains how $p$ controls in-distribution steering strength and
-evaluates how well the support scores separate OOD prompts.
+With coverage parameter $p\in(0,1)$, the gate applies full strength up to the reference $p$-quantile and then decreases linearly with rank, reaching zero for scores above all reference scores. Appendix~\ref{apx:ood-gate} explains how $p$ controls in-distribution steering strength and evaluates how well the support scores separate OOD prompts.
 
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
 
-For each incoming token activation $\hquery$, set
-$\boldsymbol{x}_0=R\hquery/\|\hquery\|$ and evaluate $s(\boldsymbol{x}_0)$.
-The prompt's support gate $g_q$ is computed once on its last token and cached throughout generation,
-with $g_q=1$ in the ungated configuration. Using this gate and a steering strength $T\ge0$,
-we integrate the direction over $K$ geodesic Euler steps,
+For each incoming token activation $\hquery$, set $\boldsymbol{x}_0=R\hquery/\|\hquery\|$ and evaluate $s(\boldsymbol{x}_0)$. The prompt's support gate $g_q$ is computed once on its last token and cached throughout generation, with $g_q=1$ in the ungated configuration. Using this gate and a steering strength $T\ge0$, we integrate the direction over $K$ geodesic Euler steps,
 \begin{equation}
 \Delta=\frac{\pi}{2}T\,s(\boldsymbol{x}_0)g_q\frac{R}{K},
 \qquad
@@ -277,44 +203,16 @@ we integrate the direction over $K$ geodesic Euler steps,
 \right).
 \label{eq:step}
 \end{equation}
-During each token's integration, we recompute the direction at every iterate while keeping
-$s$ and $g_q$ fixed, then return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the original norm.
-The total path length is at most $\tfrac{\pi}{2}TR$, so $T$ measures the steering budget in
-quarter-great-circle units. A zero field produces no update,
-while $g_q=0$ disables steering throughout the prompt's generation.
+During each token's integration, we recompute the direction at every iterate while keeping $s$ and $g_q$ fixed, then return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the original norm. The total path length is at most $\tfrac{\pi}{2}TR$, so $T$ measures the steering budget in quarter-great-circle units. A zero field produces no update, while $g_q=0$ disables steering throughout the prompt's generation.
 
-After computing the transport costs, scalings, mean-difference direction, and calibration scores offline,
-each steered token requires $K$ field evaluations at a cost of
-$O(N_-N_+ + d(N_-+N_+))$ per evaluation. Algorithm~\ref{alg:cobras} summarizes the
-adaptive-bandwidth procedure, with experimental settings given in
-Appendix~\ref{appendix:implementation_details}.
+After computing the transport costs, scalings, mean-difference direction, and calibration scores offline, each steered token requires $K$ field evaluations at a cost of $O(N_-N_+ + d(N_-+N_+))$ per evaluation. Algorithm~\ref{alg:cobras} summarizes the adaptive-bandwidth procedure, with experimental settings given in Appendix~\ref{appendix:implementation_details}.
 
 \subsection{Connection to density-ratio steering}
 \label{subsec:reduction}
 
-Several steering directions can be understood through the objective
-\begin{equation}
-\boldsymbol v(\boldsymbol{x})\propto
-\nabla\log\frac{\pplus(\boldsymbol{x})}{\pminus(\boldsymbol{x})}.
-\label{eq:ldr-ideal}
-\end{equation}
-For Gaussians with identity covariance, this gradient is the difference between the desired and undesired means
-used by CAA~\citep{rimsky2024steering}. ODESteer fits the log-ratio directly and follows
-its state-dependent gradient~\citep{zhaoodesteer}, as discussed alongside other
-parameterizations in Appendix~\ref{apx:ldr-formalize}.
+Several steering directions can be understood through the objective \begin{equation} \boldsymbol v(\boldsymbol{x})\propto \nabla\log\frac{\pplus(\boldsymbol{x})}{\pminus(\boldsymbol{x})}. \label{eq:ldr-ideal} \end{equation} For Gaussians with identity covariance, this gradient is the difference between the desired and undesired means used by CAA~\citep{rimsky2024steering}. ODESteer fits the log-ratio directly and follows its state-dependent gradient~\citep{zhaoodesteer}, as discussed alongside other parameterizations in Appendix~\ref{apx:ldr-formalize}.
 
-For \Cobras, ordinary kernel density-ratio steering appears when the transport costs vanish.
-At a fixed evaluation bandwidth $b$, define
-\begin{equation}
-\hat p_b^\pm(\boldsymbol{x})=\frac{1}{N_\pm}\sum_k K_b(\boldsymbol{x},\boldsymbol h_k^\pm),
-\qquad
-\boldsymbol v_b^{\mathrm{kde}}(\boldsymbol{x})
-=b\nablaS\log\frac{\hat p_b^+(\boldsymbol{x})}{\hat p_b^-(\boldsymbol{x})}.
-\label{eq:ldr-kde}
-\end{equation}
-The kernel's common density normalizer cancels in this ratio. As $\varepsilon\to\infty$,
-the fitted coupling approaches the independent plan and the conditional multipliers become
-uniform within each population. The following bound makes the field reduction precise.
+For \Cobras, ordinary kernel density-ratio steering appears when the transport costs vanish. At a fixed evaluation bandwidth $b$, define \begin{equation} \hat p_b^\pm(\boldsymbol{x})=\frac{1}{N_\pm}\sum_k K_b(\boldsymbol{x},\boldsymbol h_k^\pm), \qquad \boldsymbol v_b^{\mathrm{kde}}(\boldsymbol{x}) =b\nablaS\log\frac{\hat p_b^+(\boldsymbol{x})}{\hat p_b^-(\boldsymbol{x})}. \label{eq:ldr-kde} \end{equation} The kernel's common density normalizer cancels in this ratio. As $\varepsilon\to\infty$, the fitted coupling approaches the independent plan and the conditional multipliers become uniform within each population. The following bound makes the field reduction precise.
 
 \begin{proposition}[Reduction to the kernel density-ratio field]
 \label{prop:ldr-limit}
@@ -330,9 +228,4 @@ Since $c_{\max}\le\pi^2R^2/(2\varepsilon)$, the unnormalized field converges uni
 to $\boldsymbol v_b^{\mathrm{kde}}$ as $\varepsilon\to\infty$ at fixed samples and bandwidth.
 \end{proposition}
 
-The proof in Appendix~\ref{apx:proof-ldr-limit} uses only positivity of the scalings, so the
-$O(1/\varepsilon)$ limit also covers finitely many Sinkhorn iterations. This fixed-sample
-comparison concerns transport reweighting, with population-density consistency requiring a
-separate statistical argument. Convergence of normalized directions additionally requires
-control near zeros of the limiting field, and the asymptotic rate need not yield a useful
-numerical bound at the experimental transport scale.
+The proof in Appendix~\ref{apx:proof-ldr-limit} uses only positivity of the scalings, so the $O(1/\varepsilon)$ limit also covers finitely many Sinkhorn iterations. This fixed-sample comparison concerns transport reweighting, with population-density consistency requiring a separate statistical argument. Convergence of normalized directions additionally requires control near zeros of the limiting field, and the asymptotic rate need not yield a useful numerical bound at the experimental transport scale.
