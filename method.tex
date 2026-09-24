@@ -95,7 +95,7 @@ These identities, derived in Appendix~\ref{apx:static}, motivate a potential \em
 \subsection{Computing the direction from contrastive samples}
 \label{subsec:estimation}
 
-In this section, we use contrastive samples to compute a steering direction from the log-ratio of the potentials.
+Motivated by the bridge formulation, we construct a steering direction from contrastive activations.
 
 \paragraph{Transport plan estimation.}
 Project $\mathcal D^\pm$ onto $\Sph$ and define the kernel
@@ -138,9 +138,7 @@ with $\bar w_j^-$ defined symmetrically. The steering field is
 -\underbrace{\sum_j\bar w_j^-(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol h_j^-)}_{\text{repulsion}}.
 \label{eq:cobras-field}
 \end{equation}
-The field combines attraction toward desired activations $\boldsymbol h_i^+$ with repulsion from undesired activations $\boldsymbol h_j^-$. For a shared fixed bandwidth $b$, it is proportional to the gradient of a local log-ratio of kernel sums, with coefficients $m^\pm$ recomputed at each steering step (Appendix~\ref{app:grad-psi}). This provides a local connection to Eq.~\eqref{eq:ldr}, but does not establish the continuous bridge's guarantee of transporting $\pminus$ to $\pplus$.
-
-The implementation uses separate distance-based bandwidths for the desired and undesired activations at each steering step (Appendix~\ref{apx:bandwidth}). The local gradient identity and the density-ratio limit in Section~\ref{subsec:reduction} apply to the shared fixed-bandwidth construction.
+The field combines attraction toward desired activations $\boldsymbol h_i^+$ with repulsion from undesired activations $\boldsymbol h_j^-$, with weights recomputed at each steering step. Appendix~\ref{app:grad-psi} explains its relationship to the potential-ratio formulation. The implementation uses separate adaptive bandwidths for the two populations, as detailed in Appendix~\ref{apx:bandwidth}.
 
 \subsection{Controlling when and how much to steer}
 \label{subsec:strength}
