@@ -140,10 +140,10 @@ with $\bar w_j^-$ defined symmetrically. The steering field is
 \end{equation}
 The field combines attraction toward desired activations $\boldsymbol h_i^+$ with repulsion from undesired activations $\boldsymbol h_j^-$, with weights recomputed at each steering step. Appendix~\ref{app:grad-psi} explains its relationship to the potential-ratio formulation. The implementation uses separate adaptive bandwidths for the two populations, as detailed in Appendix~\ref{apx:bandwidth}.
 
-\subsection{Controlling when and how much to steer}
+\subsection{Adaptive steering strength}
 \label{subsec:strength}
 
-Normalizing $\boldsymbol v$ before each update separates its direction from the intervention strength. We scale each token's update by a steering multiplier $s$, which decreases as the activation aligns with the desired direction, and a support gate $g$, which reduces steering on unfamiliar prompts.
+We normalize $\boldsymbol v$ to separate the steering direction from the update size. The steering multiplier $s$ reduces this size as the activation aligns with the difference between desired and undesired mean activations, while the support gate $g$ attenuates steering for prompts with low support under the contrastive data.
 
 \paragraph{Steering attenuation.}
 We measure alignment with the desired direction using the normalized difference between the desired and undesired mean activations. Let $\bar{\boldsymbol h}^{\pm}$ be the means of the projected samples. Following the attenuation rule used in spherical steering~\citep{you2026spherical}, we define
