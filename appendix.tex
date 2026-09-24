@@ -180,6 +180,20 @@ potential ratio or exactly solves Eq.~\eqref{eq:sb}.
 \subsection{Proof of Proposition~\ref{prop:ldr-limit}}
 \label{apx:proof-ldr-limit}
 
+Because $K_b$ depends only on geodesic distance, its integral over $\Sph$ is independent
+of the kernel center. The kernel estimates in Eq.~\eqref{eq:ldr-kde} therefore share
+a normalizing constant, which cancels in their ratio.
+
+Fix the projected contrastive activations and a shared bandwidth $b>0$, and let
+$c_{\max}=\max_{j,i}c_{ji}$. For any positive scalings in
+Eqs.~\eqref{eq:ext-psi}--\eqref{eq:ext-phi}, the following bound holds away from
+the contrastive activations' antipodes:
+\begin{equation}
+\|\boldsymbol v(\boldsymbol{x})-\boldsymbol v_b^{\mathrm{kde}}(\boldsymbol{x})\|
+\le 2\pi R(e^{c_{\max}}-1).
+\label{eq:prop1-bound}
+\end{equation}
+
 \begin{proof}
 Write $S_-(\boldsymbol{x})=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol h_j^-)$.
 Since $0\le c_{ji}\le c_{\max}$, every desired multiplier satisfies
@@ -209,10 +223,12 @@ Finally, $c_{\max}\le\pi^2R^2/(2\varepsilon)$ gives uniform convergence and the
 $O(1/\varepsilon)$ rate at fixed $b$.
 \end{proof}
 
-The bound concerns unnormalized fields. Normalized directions also converge
+The argument uses only positivity of the scalings, so the bound also applies
+after finitely many Sinkhorn iterations. It concerns unnormalized fields. Normalized directions also converge
 where the limiting field's norm is bounded away from zero, but this need not
 hold near stationary points. The proposition is a transport-scale limit
-on a fixed dataset, not a statistical consistency result.
+on a fixed dataset, not a statistical consistency result. The asymptotic rate need not
+yield a useful numerical bound at the experimental transport scale.
 
 \subsection{Adaptive bandwidths and pseudocode}
 \label{apx:bandwidth}

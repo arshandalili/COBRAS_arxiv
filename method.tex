@@ -204,22 +204,30 @@ At each step, we recompute the direction $\boldsymbol v(\boldsymbol{x}_k)$ while
 \subsection{Connection to density-ratio steering}
 \label{subsec:reduction}
 
-Several steering directions can be understood through the objective \begin{equation} \boldsymbol v(\boldsymbol{x})\propto \nabla\log\frac{\pplus(\boldsymbol{x})}{\pminus(\boldsymbol{x})}. \label{eq:ldr-ideal} \end{equation} For Gaussians with identity covariance, this gradient is the difference between the desired and undesired means used by CAA~\citep{rimsky2024steering}. ODESteer fits the log-ratio directly and follows its state-dependent gradient~\citep{zhaoodesteer}, as discussed alongside other parameterizations in Appendix~\ref{apx:ldr-formalize}.
+Log-density-ratio steering favors regions where desired activations have higher density relative to undesired activations, using the direction
+\begin{equation}
+\boldsymbol v(\boldsymbol{x})\propto \nabla\log\frac{\pplus(\boldsymbol{x})}{\pminus(\boldsymbol{x})}.
+\label{eq:ldr-ideal}
+\end{equation}
+For Gaussian models with identity covariance, this gradient gives the mean difference used by CAA~\citep{rimsky2024steering}. ODESteer estimates the log-ratio directly and follows its gradient~\citep{zhaoodesteer}, with further baseline interpretations in Appendix~\ref{apx:ldr-formalize}.
 
-For \Cobras, ordinary kernel density-ratio steering appears when the transport costs vanish. At a fixed evaluation bandwidth $b$, define \begin{equation} \hat p_b^\pm(\boldsymbol{x})=\frac{1}{N_\pm}\sum_k K_b(\boldsymbol{x},\boldsymbol h_k^\pm), \qquad \boldsymbol v_b^{\mathrm{kde}}(\boldsymbol{x}) =b\nablaS\log\frac{\hat p_b^+(\boldsymbol{x})}{\hat p_b^-(\boldsymbol{x})}. \label{eq:ldr-kde} \end{equation} The kernel's common density normalizer cancels in this ratio. As $\varepsilon\to\infty$, the fitted coupling approaches the independent plan and the conditional multipliers become uniform within each population. The following bound makes the field reduction precise.
+With the contrastive activations and a shared evaluation bandwidth $b>0$ fixed, taking $\varepsilon\to\infty$ sends $c_{ji}\to0$ and $e^{-c_{ji}}\to1$ while leaving the proximity kernels $K_b$ unchanged. In this limit, the coefficients $m^+_{i,b}$ no longer vary across desired activations, and likewise for $m^-_{j,b}$ across undesired activations. They therefore cancel during weight normalization, leaving weights determined only by proximity to $\boldsymbol{x}$.
+
+The resulting field follows the log-ratio gradient of kernel estimates summarizing the two contrastive populations,
+\begin{equation}
+\hat p_b^\pm(\boldsymbol{x})=\frac{1}{N_\pm}\sum_k K_b(\boldsymbol{x},\boldsymbol h_k^\pm),
+\qquad
+\boldsymbol v_b^{\mathrm{kde}}(\boldsymbol{x})
+=b\nablaS\log\frac{\hat p_b^+(\boldsymbol{x})}{\hat p_b^-(\boldsymbol{x})}.
+\label{eq:ldr-kde}
+\end{equation}
 
 \begin{proposition}[Reduction to the kernel density-ratio field]
 \label{prop:ldr-limit}
-Fix the projected samples and $b>0$. For any positive scalings in
-Eqs.~\eqref{eq:ext-psi}--\eqref{eq:ext-phi}, let $c_{\max}=\max_{j,i}c_{ji}$.
-Away from the samples' antipodes,
-\begin{equation}
-\|\boldsymbol v(\boldsymbol{x})-\boldsymbol v_b^{\mathrm{kde}}(\boldsymbol{x})\|
-\le 2\pi R(e^{c_{\max}}-1).
-\label{eq:prop1-bound}
-\end{equation}
-Since $c_{\max}\le\pi^2R^2/(2\varepsilon)$, the unnormalized field converges uniformly
-to $\boldsymbol v_b^{\mathrm{kde}}$ as $\varepsilon\to\infty$ at fixed samples and bandwidth.
+Fix the contrastive activations on $\Sph$ and a shared bandwidth $b>0$.
+As $\varepsilon\to\infty$, the unnormalized field $\boldsymbol v$ converges to
+$\boldsymbol v_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$, uniformly away from
+the contrastive activations' antipodes.
 \end{proposition}
 
-The proof in Appendix~\ref{apx:proof-ldr-limit} uses only positivity of the scalings, so the $O(1/\varepsilon)$ limit also covers finitely many Sinkhorn iterations. This fixed-sample comparison concerns transport reweighting, with population-density consistency requiring a separate statistical argument. Convergence of normalized directions additionally requires control near zeros of the limiting field, and the asymptotic rate need not yield a useful numerical bound at the experimental transport scale.
+Proposition~\ref{prop:ldr-limit} shows that, at a shared fixed bandwidth, the \Cobras field converges to a kernel density-ratio field on the sphere as $\varepsilon\to\infty$. This recovers the steering principle represented by Gaussian densities in the interpretation of CAA and by a directly fitted log-ratio in ODESteer. At finite $\varepsilon$, transport connections reweight the attraction and repulsion contributions of individual contrastive activations. The proof is in Appendix~\ref{apx:proof-ldr-limit}.
