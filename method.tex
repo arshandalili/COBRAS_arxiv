@@ -143,7 +143,7 @@ The field combines attraction toward desired activations $\boldsymbol h_i^+$ wit
 \subsection{Adaptive steering strength}
 \label{subsec:strength}
 
-We normalize $\boldsymbol v$ to separate the steering direction from the update size. The steering multiplier $s$ reduces this size as the activation aligns with the difference between desired and undesired mean activations, while the support gate $g$ attenuates steering for prompts with low support under the contrastive data.
+We normalize $\boldsymbol v$ to separate the steering direction from the update size. The attenuation coefficient $s$ reduces this size as the activation aligns with the desired activations, while the support gate $g$ attenuates steering for prompts with low support under the contrastive data.
 
 \paragraph{Steering attenuation.}
 We measure alignment with the desired direction using the normalized difference between the desired and undesired mean activations. Let $\bar{\boldsymbol h}^{\pm}$ be the means of the projected samples. Following the attenuation rule used in spherical steering~\citep{you2026spherical}, we define
@@ -156,10 +156,10 @@ s(\boldsymbol{x})
 &=\left(1+e^{2\kappa\langle\boldsymbol{x}/R,\boldsymbol\mu\rangle}\right)^{-1}.
 \label{eq:side}
 \end{align}
-The inner product measures alignment with $\boldsymbol\mu$, and $\kappa>0$ controls how sharply the multiplier changes. At zero alignment, $s=1/2$. As alignment with $\boldsymbol\mu$ increases, $s$ decreases toward zero, reducing the intervention on activations already oriented in the desired direction. Appendix~\ref{apx:pseudocode} gives a probabilistic interpretation of this rule.
+The attenuation coefficient $s$ decreases as $\boldsymbol{x}$ aligns with $\boldsymbol\mu$, with $\kappa>0$ controlling how sharply steering is reduced.
 
 \paragraph{Support estimation and gate calibration.}
-Alignment with $\boldsymbol\mu$ alone does not establish proximity to the contrastive data. To assess this proximity, we extend the fitted Sinkhorn scalings into two kernel factors,
+Alignment with $\boldsymbol\mu$ alone does not establish proximity to the contrastive data. To limit steering on out-of-distribution (OOD) prompts, we therefore assess the proximity of a prompt activation $\boldsymbol{x}$ to each contrastive population using the weighted kernel sums
 \begin{equation}
 \widehat\varphi_b(\boldsymbol{x})=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol h_j^-),
 \qquad
@@ -174,9 +174,9 @@ Following the product form of the bridge density in Eq.~\eqref{eq:product}, we d
 u(\boldsymbol{x})=-\log\hat p_{b_g}(\boldsymbol{x}).
 \label{eq:support-score}
 \end{equation}
-At the chosen bandwidth, this product serves as a kernel proxy for the bridge marginal, with larger values of its negative logarithm $u$ indicating lower support.
+Larger values of $u$ indicate lower support.
 
-We calibrate $u$ using only in-distribution prompt activations $\mathcal D_{\mathrm{ref}}$, held out from evaluation and projected onto $\Sph$. Taking these activations at the steering layer and last prompt position matches the inputs encountered by the gate during generation, since contrastive question--answer activations may follow a different score distribution. For $n=|\mathcal D_{\mathrm{ref}}|$, we rank a query's score against the reference scores and convert its rank into the gate
+We calibrate $u$ using a reference set $\mathcal D_{\mathrm{ref}}$ of in-distribution prompt activations held out from evaluation. Both reference and query activations are extracted from the last prompt token at the steering layer and projected onto $\Sph$. For $n=|\mathcal D_{\mathrm{ref}}|$, we rank a query prompt's score against the reference scores and convert its rank into the gate
 \begin{equation}
 r(\boldsymbol{x})
 =\frac{|\{\boldsymbol z\in\mathcal D_{\mathrm{ref}}:u(\boldsymbol z)<u(\boldsymbol{x})\}|}{n},
@@ -184,7 +184,7 @@ r(\boldsymbol{x})
 g(\boldsymbol{x})=\min\!\left\{1,\frac{1-r(\boldsymbol{x})}{1-p}\right\}.
 \label{eq:gate}
 \end{equation}
-With coverage parameter $p\in(0,1)$, the gate applies full strength up to the reference $p$-quantile and then decreases linearly with rank, reaching zero for scores above all reference scores. Appendix~\ref{apx:ood-gate} explains how $p$ controls in-distribution steering strength and evaluates how well the support scores separate OOD prompts.
+With coverage parameter $p\in(0,1)$, the gate leaves the steering strength unchanged up to the reference $p$-quantile and then decreases linearly with rank, reaching zero for scores above all reference scores. Appendix~\ref{apx:ood-gate} explains how $p$ controls in-distribution steering strength and evaluates how well the support scores separate OOD prompts.
 
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
