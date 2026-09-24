@@ -189,7 +189,7 @@ With coverage parameter $p\in(0,1)$, the gate leaves the steering strength uncha
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
 
-For each incoming token activation $\hquery$, set $\boldsymbol{x}_0=R\hquery/\|\hquery\|$ and evaluate $s(\boldsymbol{x}_0)$. The prompt's support gate $g_q$ is computed once on its last token and cached throughout generation, with $g_q=1$ in the ungated configuration. Using this gate and a steering strength $T\ge0$, we integrate the direction over $K$ geodesic Euler steps,
+We combine the steering field $\boldsymbol v$ with the attenuation coefficient $s$ and support gate $g$ to update activations during generation. We compute the support gate $g_q$ once from the last prompt token's activation and reuse it throughout generation. For each incoming token activation $\hquery$ at layer $\ell$, we project it onto $\Sph$ as $\boldsymbol{x}_0=R\hquery/\|\hquery\|$ and evaluate the attenuation coefficient $s(\boldsymbol{x}_0)$. We then apply $K$ geodesic Euler steps with steering strength $T\ge0$,
 \begin{equation}
 \Delta=\frac{\pi}{2}T\,s(\boldsymbol{x}_0)g_q\frac{R}{K},
 \qquad
@@ -199,9 +199,7 @@ For each incoming token activation $\hquery$, set $\boldsymbol{x}_0=R\hquery/\|\
 \right).
 \label{eq:step}
 \end{equation}
-During each token's integration, we recompute the direction at every iterate while keeping $s$ and $g_q$ fixed, then return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the original norm. The total path length is at most $\tfrac{\pi}{2}TR$, so $T$ measures the steering budget in quarter-great-circle units. A zero field produces no update, while $g_q=0$ disables steering throughout the prompt's generation.
-
-After computing the transport costs, scalings, mean-difference direction, and calibration scores offline, each steered token requires $K$ field evaluations at a cost of $O(N_-N_+ + d(N_-+N_+))$ per evaluation. Algorithm~\ref{alg:cobras} summarizes the adaptive-bandwidth procedure, with experimental settings given in Appendix~\ref{appendix:implementation_details}.
+At each step, we recompute the direction $\boldsymbol v(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. We skip steps with a zero field, while $g_q=0$ disables steering throughout generation. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. The total path length on $\Sph$ is at most $\tfrac{\pi}{2}TR$, so $T$ bounds how far the activation can move along the sphere. Algorithm~\ref{alg:cobras} summarizes the procedure, with experimental settings given in Appendix~\ref{appendix:implementation_details}.
 
 \subsection{Connection to density-ratio steering}
 \label{subsec:reduction}

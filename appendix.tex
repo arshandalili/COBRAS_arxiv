@@ -248,6 +248,14 @@ Algorithm~\ref{alg:cobras} gives the adaptive procedure. Kernel sums and
 normalized weights are evaluated in log space. Implementations also clamp
 cosines away from $\pm1$ and vector norms away from zero for numerical stability.
 
+\paragraph{Computational cost.}
+Transport fitting and reference-score computation are performed offline. With pairwise
+transport costs and Sinkhorn scalings precomputed, each steered token requires $K$ field
+evaluations, each costing $O(N_-N_+ + d(N_-+N_+))$. The $N_-N_+$ term comes from combining
+connections between the contrastive populations, while $d(N_-+N_+)$ covers distances and
+tangent vectors in activation space. This expression describes steering integration and
+excludes the language model's forward pass. The support gate is evaluated once per prompt.
+
 \begin{algorithm}[t]
 \caption{\Cobras with adaptive bandwidths}
 \label{alg:cobras}
