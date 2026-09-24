@@ -115,7 +115,7 @@ c_{ji}=\frac{d_{\Sph}(\boldsymbol h_j^-,\boldsymbol h_i^+)^2}{2\varepsilon}.
 The entry $\pi^\star_{ji}$ assigns mass from undesired sample $j$ to desired sample $i$, with $\varepsilon$ controlling the cost--entropy tradeoff. The positive scalings $a_j^-,a_i^+$ enforce uniform row and column marginals and are fitted using Sinkhorn updates~\citep{cuturi2013sinkhorn}, as detailed in Appendix~\ref{apx:static}.
 
 \paragraph{Transport weights and steering direction.}
-At an activation $\boldsymbol{x}$, a desired sample should contribute according to both its proximity to $\boldsymbol{x}$ and its connections to nearby undesired samples. We encode the second quantity by
+For the current token activation $\boldsymbol{x}$ being steered, we weight each desired contrastive activation $\boldsymbol h_i^+$ by both its proximity to $\boldsymbol{x}$ and its transport connections to undesired contrastive activations $\boldsymbol h_j^-$ near $\boldsymbol{x}$. We encode these connections by
 \begin{align}
 m^+_{i,b}(\boldsymbol{x})
 &=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol h_j^-)\,e^{-c_{ji}},
@@ -124,7 +124,7 @@ m^-_{j,b}(\boldsymbol{x})
 &=\sum_i a_i^+K_b(\boldsymbol{x},\boldsymbol h_i^+)\,e^{-c_{ji}}.
 \label{eq:ext-phi}
 \end{align}
-For example, $a_i^+m^+_{i,b}(\boldsymbol{x}) =\sum_j\pi^\star_{ji}K_b(\boldsymbol{x},\boldsymbol h_j^-)$ is the transport mass arriving at desired sample $i$, weighted by the source samples' proximity to $\boldsymbol{x}$. We divide this mass by $a_i^+$ to obtain the reweighting coefficient $m^+_{i,b}$, then combine it with the desired sample's own proximity to form the normalized weight
+The coefficient $m^+_{i,b}(\boldsymbol{x})$ combines the proximity of undesired activations $\boldsymbol h_j^-$ to $\boldsymbol{x}$ with their transport costs to the desired activation $\boldsymbol h_i^+$, weighted by the fitted scalings $a_j^-$. Multiplying by $K_b(\boldsymbol{x},\boldsymbol h_i^+)$ accounts for the desired activation's proximity, and normalization gives
 \begin{equation}
 \bar w_i^+(\boldsymbol{x})
 =\frac{m^+_{i,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol h_i^+)}
