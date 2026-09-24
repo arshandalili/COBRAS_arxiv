@@ -211,7 +211,7 @@ Log-density-ratio steering favors regions where desired activations have higher 
 \end{equation}
 For Gaussian models with identity covariance, this gradient gives the mean difference used by CAA~\citep{rimsky2024steering}. ODESteer estimates the log-ratio directly and follows its gradient~\citep{zhaoodesteer}, with further baseline interpretations in Appendix~\ref{apx:ldr-formalize}.
 
-With the contrastive activations and a shared evaluation bandwidth $b>0$ fixed, taking $\varepsilon\to\infty$ sends $c_{ji}\to0$ and $e^{-c_{ji}}\to1$ while leaving the proximity kernels $K_b$ unchanged. In this limit, the coefficients $m^+_{i,b}$ no longer vary across desired activations, and likewise for $m^-_{j,b}$ across undesired activations. They therefore cancel during weight normalization, leaving weights determined only by proximity to $\boldsymbol{x}$.
+With the contrastive activations and a shared evaluation bandwidth $b>0$ fixed, taking $\varepsilon\to\infty$ yields $c_{ji}\to0$ and $e^{-c_{ji}}\to1$ while leaving the proximity kernels $K_b$ unchanged. In this limit, the coefficients $m^+_{i,b}$ no longer vary across desired activations, and likewise for $m^-_{j,b}$ across undesired activations. They therefore cancel during weight normalization, leaving weights determined only by proximity to $\boldsymbol{x}$.
 
 The resulting field follows the log-ratio gradient of kernel estimates summarizing the two contrastive populations,
 \begin{equation}
