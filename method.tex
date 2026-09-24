@@ -58,9 +58,7 @@ use their continuous limits.
 \section{LLM Steering as a Schr\"{o}dinger Bridge}
 \label{sec:method}
 
-\Cobras uses contrastive activations to decide \emph{where} to steer and \emph{how much} to intervene. It fits a transport plan from undesired to desired activations to construct a direction that combines attraction toward desired samples with repulsion from undesired samples near the current activation. The intervention follows this direction through norm-preserving geodesic updates. We reduce their size when the current activation aligns with the desired direction or the prompt has low support near the contrastive data.
-
-We first derive the continuous bridge identities that motivate this construction (Section~\ref{subsec:sb}), then give the finite-sample direction, strength controls, and inference procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction} establishes the connection to density-ratio steering.
+In this section, we first cast steering as a transportation problem and then derive our method, \Cobras. We first derive the continuous bridge identities that motivate this construction (Section~\ref{subsec:sb}), then give the finite-sample direction, strength controls, and inference procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction} establishes the connection to density-ratio steering.
 
 \begin{figure}[!tb]
     \centering
@@ -92,10 +90,12 @@ Starting from $\pminus$, a deterministic flow can reproduce the bridge's activat
 \frac{\psi(\boldsymbol{x}_t,t)}{\varphi(\boldsymbol{x}_t,t)}.
 \label{eq:ldr}
 \end{equation}
-These identities, derived in Appendix~\ref{apx:static}, motivate a potential \emph{ratio} for the steering direction and a potential \emph{product} for support. Since the potentials describe the intermediate bridge rather than the endpoint densities, the connection to ordinary density-ratio steering requires the limiting argument in Section~\ref{subsec:reduction}.
+These identities, derived in Appendix~\ref{apx:static}, motivate a potential \emph{ratio} for the steering direction and a potential \emph{product} for support. Since the potentials describe the intermediate bridge rather than the endpoint densities, the connection to ordinary density-ratio steering requires the analysis of it in the limit, as done in Section~\ref{subsec:reduction}.
 
 \subsection{Computing the direction from contrastive samples}
 \label{subsec:estimation}
+
+In this section, we focus on determining the steering direction using the ratio of the potentials.
 
 \paragraph{Fit the transport plan once.}
 Project $\mathcal D^\pm$ onto $\Sph$ and define the affinity kernel
