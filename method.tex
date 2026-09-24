@@ -95,17 +95,17 @@ These identities, derived in Appendix~\ref{apx:static}, motivate a potential \em
 \subsection{Computing the direction from contrastive samples}
 \label{subsec:estimation}
 
-In this section, we focus on determining the steering direction using the ratio of the potentials.
+In this section, we use contrastive samples to compute a steering direction from the log-ratio of the potentials.
 
-\paragraph{Fit the transport plan once.}
-Project $\mathcal D^\pm$ onto $\Sph$ and define the affinity kernel
+\paragraph{Transport plan estimation.}
+Project $\mathcal D^\pm$ onto $\Sph$ and define the kernel
 \begin{equation}
 K_b(\boldsymbol{x},\boldsymbol{y})
 =\exp\!\left[-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{y})^2}{2b}\right],
 \qquad b>0.
 \label{eq:kernel}
 \end{equation}
-The bandwidth $b$ sets the squared-distance scale of this affinity, whose form is motivated by the leading short-time exponential behavior of the heat kernel~\citep{chen2023logarithmic}. Using it as a surrogate for the spherical Brownian transition density in a discrete entropic transport problem gives the plan
+The bandwidth $b$ sets the scale of this kernel, whose form is motivated by the leading short-time exponential behavior of the heat kernel~\citep{chen2023logarithmic}. Using it as a surrogate for the spherical Brownian transition density in a discrete entropic transport problem gives the plan
 \begin{equation}
 \pi^\star_{ji}=a_j^-a_i^+e^{-c_{ji}},
 \qquad
@@ -114,7 +114,7 @@ c_{ji}=\frac{d_{\Sph}(\boldsymbol h_j^-,\boldsymbol h_i^+)^2}{2\varepsilon}.
 \end{equation}
 The entry $\pi^\star_{ji}$ assigns mass from undesired sample $j$ to desired sample $i$, with $\varepsilon$ controlling the cost--entropy tradeoff. The positive scalings $a_j^-,a_i^+$ enforce uniform row and column marginals and are fitted using Sinkhorn updates~\citep{cuturi2013sinkhorn}, as detailed in Appendix~\ref{apx:static}.
 
-\paragraph{Use local transport connections to weight the direction.}
+\paragraph{Transport weights and steering direction.}
 At an activation $\boldsymbol{x}$, a desired sample should contribute according to both its proximity to $\boldsymbol{x}$ and its connections to nearby undesired samples. We encode the second quantity by
 \begin{align}
 m^+_{i,b}(\boldsymbol{x})
@@ -149,7 +149,7 @@ We present the construction at a fixed bandwidth $b$ to make its density-ratio l
 
 Normalizing $\boldsymbol v$ before each update separates its direction from the intervention strength. We scale each token's update by a steering multiplier $s$, which decreases as the activation aligns with the desired direction, and a support gate $g$, which reduces steering on unfamiliar prompts.
 
-\paragraph{Steering multiplier.}
+\paragraph{Steering attenuation.}
 We measure alignment with the desired direction using the normalized difference between the desired and undesired mean activations. Let $\bar{\boldsymbol h}^{\pm}$ be the means of the projected samples. Following the attenuation rule used in spherical steering~\citep{you2026spherical}, we define
 \begin{align}
 \boldsymbol\mu
@@ -162,7 +162,7 @@ s(\boldsymbol{x})
 \end{align}
 The inner product measures alignment with $\boldsymbol\mu$, and $\kappa>0$ controls how sharply the multiplier changes. At zero alignment, $s=1/2$. As alignment with $\boldsymbol\mu$ increases, $s$ decreases toward zero, reducing the intervention on activations already oriented in the desired direction. Appendix~\ref{apx:pseudocode} gives a probabilistic interpretation of this rule.
 
-\paragraph{Support gate.}
+\paragraph{Support estimation and gate calibration.}
 Alignment with $\boldsymbol\mu$ alone does not establish proximity to the contrastive data. To assess this proximity, we extend the fitted Sinkhorn scalings into two kernel factors,
 \begin{equation}
 \widehat\varphi_b(\boldsymbol{x})=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol h_j^-),
