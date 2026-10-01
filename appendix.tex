@@ -57,12 +57,10 @@ the direction of this Riemannian gradient. By explicitly respecting the spherica
 \section{Derivations and Implementation}
 \label{apx:theory}
 
-This appendix derives the continuous bridge field, explains the discrete transport fit,
-and verifies the finite-sample direction and its density-ratio limit. All geodesic gradients
-are taken away from sample antipodes, where squared geodesic distance is not differentiable.
-The gauge change $(\boldsymbol a^-,\boldsymbol a^+)\mapsto
-(\lambda\boldsymbol a^-,\lambda^{-1}\boldsymbol a^+)$ leaves the coupling, steering
-weights, and support product unchanged.
+This appendix derives the continuous bridge field and discrete transport fit,
+explains the gradient form of the steering direction, and proves its density-ratio
+limit. Kernel gradients are taken away from
+sample antipodes, where squared geodesic distance is not differentiable.
 
 \subsection{Continuous bridge and discrete transport}
 \label{apx:static}
@@ -88,8 +86,9 @@ $\boldsymbol u-\tfrac{\sigma^2}{2}\nablaS\log p_t
 =\tfrac{\sigma^2}{2}\nablaS\log(\psi/\varphi)$, proving Eq.~\eqref{eq:ldr}.
 
 \paragraph{Static formulation.}
-Disintegrating a path law into its endpoint coupling $P_{01}$ and its conditional
-path laws $P_{\mid01}$ gives~\citep{leonard2013survey}
+Conditioning trajectories on their starting and ending activations separates a path
+law $P$ into its endpoint coupling $P_{01}$ and conditional path laws $P_{\mid01}$.
+The corresponding relative-entropy decomposition is~\citep{leonard2013survey}
 \begin{equation}
 \KL(P\,\Vert\,Q)
 =\KL(P_{01}\,\Vert\,Q_{01})
@@ -98,8 +97,8 @@ path laws $P_{\mid01}$ gives~\citep{leonard2013survey}
 \end{equation}
 For any endpoint coupling, the second term is minimized by retaining the reference
 bridges. Thus the continuous problem reduces to entropy minimization over endpoint couplings.
-Atomic empirical endpoints would have infinite relative entropy against Brownian endpoints;
-we therefore discretize the static problem rather than impose empirical measures directly
+Atomic empirical endpoints have infinite relative entropy against Brownian endpoints.
+We therefore discretize the static problem rather than impose empirical measures directly
 in Eq.~\eqref{eq:sb}.
 
 Choose discrete reference weights proportional to $e^{-c_{ji}}$ and normalize them
@@ -123,13 +122,14 @@ in Eq.~\eqref{eq:plan}. Sinkhorn fitting alternates the log-space updates
 \label{eq:sinkhorn}
 \end{align}
 At convergence the plan satisfies both marginals, while the finite number of sweeps used in the
-implementation gives an approximate fit. The choice of geodesic affinity and subsequent
+implementation gives an approximate fit. The geodesic kernel and subsequent
 stationary field do not preserve the exact Brownian bridge construction.
 
 \subsection{Kernel gradients and conditional weights}
 \label{app:grad-psi}
 
-For $\theta=d_{\Sph}(\boldsymbol{x},\boldsymbol h)/R<\pi$, differentiating
+The weighted logarithm maps in Eq.~\eqref{eq:cobras-field} arise from differentiating
+kernel sums at a fixed bandwidth $b$. For $\theta=d_{\Sph}(\boldsymbol{x},\boldsymbol h)/R<\pi$, differentiating
 $R^2\arccos^2(R^{-2}\boldsymbol{x}^\top\boldsymbol h)$ and projecting onto the tangent space gives
 \[
 \nablaS d_{\Sph}(\boldsymbol{x},\boldsymbol h)^2
@@ -150,9 +150,11 @@ w_i(\boldsymbol{x})=
 Taking $m_i=a_i^+$ or $m_j=a_j^-$ gives the log-gradients of the fitted kernel
 factors. Uniform $m_i$ gives the corresponding kernel density-estimate gradient.
 
-\paragraph{What is held fixed in the conditional field.}
+\paragraph{Gradient interpretation of the steering field.}
 \label{apx:omitted-term}
-At a steering iterate $\boldsymbol q\in\Sph$, define the local objective
+At the current iterate $\boldsymbol q\in\Sph$, evaluate the conditional coefficients
+$m^+_{i,b}(\boldsymbol q)$ and $m^-_{j,b}(\boldsymbol q)$. Let $\boldsymbol y\in\Sph$ denote the point at
+which the kernels are evaluated, and define
 \begin{equation}
 F_{\boldsymbol q}(\boldsymbol y)=
 \log\frac{\sum_i m^+_{i,b}(\boldsymbol q)K_b(\boldsymbol y,\boldsymbol h_i^+)}
@@ -161,11 +163,16 @@ F_{\boldsymbol q}(\boldsymbol y)=
 \end{equation}
 Equation~\eqref{eq:grad-psi} gives
 $\boldsymbol v(\boldsymbol q)=b\nabla_{\boldsymbol y}F_{\boldsymbol q}(\boldsymbol y)
-|_{\boldsymbol y=\boldsymbol q}$. The coefficients are fixed during this differentiation
-and recomputed at the next iterate. This is an exact local interpretation.
+|_{\boldsymbol y=\boldsymbol q}$. Differentiation is with respect to $\boldsymbol y$,
+with the coefficients evaluated at $\boldsymbol q$ and recomputed at the next iterate.
 
-In contrast, let $\Psi^\pm_b(\boldsymbol{x})$ use the same activation in both the
-multipliers and the kernels. Differentiating these composites gives
+Using the same variable $\boldsymbol{x}$ in both the coefficients and the kernels gives
+\[
+\Psi_b^+(\boldsymbol{x})=\sum_i m^+_{i,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol h_i^+),
+\qquad
+\Psi_b^-(\boldsymbol{x})=\sum_j m^-_{j,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol h_j^-).
+\]
+Differentiating their log-ratio yields
 \begin{equation}
 b\nablaS\log\frac{\Psi_b^+}{\Psi_b^-}
 =\boldsymbol v
@@ -173,9 +180,8 @@ b\nablaS\log\frac{\Psi_b^+}{\Psi_b^-}
 -b\sum_j\bar w_j^-\nablaS\log m^-_{j,b},
 \label{eq:apx-omitted}
 \end{equation}
-with every term evaluated at $\boldsymbol{x}$. The extra terms need not vanish.
-We therefore make no claim that the conditional field follows a single global
-potential ratio or exactly solves Eq.~\eqref{eq:sb}.
+with every term evaluated at $\boldsymbol{x}$. The additional terms need not vanish,
+so this gradient generally differs from $\boldsymbol v$.
 
 \subsection{Proof of Proposition~\ref{prop:ldr-limit}}
 \label{apx:proof-ldr-limit}
@@ -223,17 +229,16 @@ Finally, $c_{\max}\le\pi^2R^2/(2\varepsilon)$ gives uniform convergence and the
 $O(1/\varepsilon)$ rate at fixed $b$.
 \end{proof}
 
-The argument uses only positivity of the scalings, so the bound also applies
-after finitely many Sinkhorn iterations. It concerns unnormalized fields. Normalized directions also converge
-where the limiting field's norm is bounded away from zero, but this need not
-hold near stationary points. The proposition is a transport-scale limit
-on a fixed dataset, not a statistical consistency result. The asymptotic rate need not
-yield a useful numerical bound at the experimental transport scale.
+The bound requires only positive scalings and thus also holds after finitely many
+Sinkhorn iterations. It describes the unnormalized field on a fixed dataset at a
+shared fixed bandwidth. Normalized directions converge wherever the limiting
+field's norm is bounded away from zero.
 
-\subsection{Adaptive bandwidths and pseudocode}
+\subsection{Implementation details}
 \label{apx:bandwidth}
 \label{apx:pseudocode}
 
+\paragraph{Bandwidth selection.}
 The implementation selects a squared-distance scale separately for each
 population at every iterate:
 \begin{equation}
@@ -246,20 +251,12 @@ Here $b_{\min}>0$ is a numerical floor.
 Every kernel centered on a desired sample uses $b_+$, including the kernels
 inside $m^-$. Every kernel centered on an undesired sample uses $b_-$,
 including those inside $m^+$. The final field remains the difference of
-weighted log-maps in Eq.~\eqref{eq:cobras-field}; neither branch is divided by
-its bandwidth. Thus the common-$b$ gradient-ratio identity and
+weighted log-maps in Eq.~\eqref{eq:cobras-field}, without dividing either branch
+by its bandwidth. Thus the common-$b$ gradient-ratio identity and
 Proposition~\ref{prop:ldr-limit} describe the fixed-bandwidth construction.
 The gate uses the separate, fixed bandwidth $b_g$.
 
-\paragraph{Interpretation of the attenuation coefficient.}
-The attenuation coefficient $s$ in Eq.~\eqref{eq:side} has a probabilistic interpretation under a simple model
-of the two populations. Assign the desired and undesired populations von Mises--Fisher densities
-centered at $\boldsymbol\mu$ and $-\boldsymbol\mu$, respectively, with shared concentration
-$\kappa$ and equal prior probabilities. Their shared normalizer cancels in Bayes' rule, giving
-$s(\boldsymbol{x})$ as the model's probability that an activation belongs to the undesired population.
-We use this quantity to attenuate steering, without assuming that it estimates the probability
-of an undesired generated response.
-
+\paragraph{Numerical evaluation.}
 Algorithm~\ref{alg:cobras} gives the adaptive procedure. Kernel sums and
 normalized weights are evaluated in log space. Implementations also clamp
 cosines away from $\pm1$ and vector norms away from zero for numerical stability.
@@ -323,13 +320,14 @@ $\Delta\gets\tfrac{\pi}{2}Tsg_qR/K$
 \section{Calibration and Properties of the Support Gate}
 \label{apx:ood-gate}
 
-\paragraph{Reference prompts.}
+\paragraph{Support score and reference prompts.}
 The gate uses the product score in Eq.~\eqref{eq:support-score} at a fixed
-bandwidth $b_g$. Both reference and query activations are taken at the
+bandwidth $b_g$. Its two factors summarize weighted proximity to desired and
+undesired activations, so the score depends on support from both populations.
+Both reference and query activations are taken at the
 steering layer and last prompt position, projected onto $\Sph$, and scored
 identically. This avoids assuming that prompt-only and contrastive
-question--answer activations have the same score distribution. A difference
-in raw activation norms alone cannot explain a score shift after projection.
+question--answer activations have the same score distribution.
 
 In the TruthfulQA gate analysis, $\mathcal D_{\mathrm{ref}}$ contains the
 training-fold prompts and the gate is applied to the held-out fold.
@@ -337,72 +335,32 @@ For OOD evaluation, it contains all $817$ TruthfulQA prompts. No GSM8K,
 MMLU, NQ, or TriviaQA prompt is used for calibration.
 
 \paragraph{Interpreting the coverage parameter.}
-The parameter $p$ sets the reference rank threshold below which $g=1$, and the following lemma
-relates this threshold to attenuation on new in-distribution prompts. Under exchangeability
-and absence of ties, the fraction of new prompts with $g=1$ approaches $p$ in expectation,
-and the mean gate approaches $(1+p)/2$ as the reference set grows.
-For example, at $p=0.7$ the gate leaves steering strength unchanged on approximately $70\%$
-of such prompts, with a mean multiplier of $0.85$. Because the result depends only on ranks,
-it interprets the strength control for any score satisfying the assumptions, independently
-of that score's ability to distinguish OOD prompts.
-
-\begin{lemma}[Empirical-rank calibration]
-\label{lem:coverage}
-Let $n$ reference scores and one new score be exchangeable and almost surely
-distinct. For the empirical rank $r$ and gate in Eq.~\eqref{eq:gate},
+The parameter $p$ sets the reference rank threshold at or below which $g=1$.
+If $n$ reference scores and one new score are exchangeable and almost surely
+distinct, the new score's rank $nr$ is uniform on $\{0,\ldots,n\}$. Consequently,
 \begin{equation}
-\Pr(g=1)=\frac{\lfloor np\rfloor+1}{n+1},
-\qquad
-\mathbb E[g]=\frac{1}{n+1}\sum_{j=0}^{n}
-\min\!\left\{1,\frac{1-j/n}{1-p}\right\}.
+\Pr(g=1)=\frac{\lfloor np\rfloor+1}{n+1}.
 \label{eq:gate-finite-coverage}
 \end{equation}
-For fixed $p<1$, these converge to $p$ and $(1+p)/2$, respectively.
-\end{lemma}
-\begin{proof}
-Exchangeability and absence of ties make the new score's position among the
-$n+1$ scores uniform. Thus $nr$ is uniform on $\{0,\ldots,n\}$, giving both
-formulas. The mean tends to
+As $n$ grows at fixed $p<1$, this probability tends to $p$, and the mean gate tends to
 $\int_0^p1\,dr+(1-p)^{-1}\int_p^1(1-r)\,dr=(1+p)/2$.
-\end{proof}
+At $p=0.7$, these limits correspond to no gate attenuation on $70\%$ of new
+in-distribution prompts and a mean gate of $0.85$, under the stated assumptions.
 
-The lemma averages over both reference and query scores, so its interpretation for new prompts
-depends on their exchangeability with the reference set. This holds, for example, when a fixed
-score function is fitted independently of i.i.d.\ reference and query prompts. Reusing
-bridge-fitting prompts as references or allowing score ties requires separate justification,
-and the stated expectation need not hold conditional on a particular reference set.
+These statements average over both reference and query scores. Our calibration
+reuses bridge-training prompts, for which exchangeability with new-query scores
+has not been established. The calculation therefore interprets $p$ under the
+stated assumptions without providing a coverage guarantee for this fitted gate.
 
-Evaluating the reference prompts against their own scores instead gives the deterministic ranks
-$0,1/n,\ldots,(n-1)/n$ when there are no ties. Their mean gate is consequently close to
-$(1+p)/2$ by construction, so agreement with this value does not establish coverage on unseen
-prompts. OOD separation depends on the score distributions and is assessed empirically below.
-
-\paragraph{Small-bandwidth interpretation.}
-At fixed samples and scalings, the score approaches a nearest-neighbor rule:
-\begin{equation}
-2b_g u(\boldsymbol{x})\longrightarrow
-\min_j d_{\Sph}(\boldsymbol{x},\boldsymbol h_j^-)^2+
-\min_i d_{\Sph}(\boldsymbol{x},\boldsymbol h_i^+)^2
-\quad\text{as }b_g\to0.
-\label{eq:gate-nn-limit}
-\end{equation}
-To see this, let $D_-=\min_j d_{\Sph}(\boldsymbol{x},\boldsymbol h_j^-)^2$.
-Then
-$a^-_{\min}e^{-D_-/(2b_g)}
-\le\widehat\varphi_{b_g}(\boldsymbol{x})
-\le(\sum_j a_j^-)e^{-D_-/(2b_g)}$.
-Taking $-2b_g\log$ bounds the error by constants times $b_g$, uniformly in
-$\boldsymbol{x}$; the desired factor is identical. This explains the
-score's proximity interpretation. It does not guarantee the ordering of
-nearly tied prompts or separation of arbitrary OOD distributions.
-
-\paragraph{Measured separation.}
+\paragraph{OOD separation.}
+We assess OOD separation empirically using the support scores and resulting gate
+values in Table~\ref{tab:gate-separation}.
 \begin{table}[ht]
 \centering
 \small
 \caption{Support gate on Llama3.1-8B layer $13$, with $p=0.7$.
 The bridge and reference scores use TruthfulQA.
-AUROC compares the raw support scores of TruthfulQA and each listed OOD set.
+AUROC compares TruthfulQA and each listed OOD set using the score $u$.
 The TruthfulQA row evaluates the $817$ calibration prompts against their own
 reference scores; its mean is not a held-out coverage estimate.}
 \label{tab:gate-separation}
