@@ -385,6 +385,141 @@ primer; these measurements therefore do not isolate task content from prompt
 format. Across the four OOD sets, the reported aggregate AUROC is $0.93$
 on Llama3.1-8B and $0.97$ on Mistral-7B.
 
+\subsection{Nearest-neighbor gate as an external module}
+\label{apx:knn-gate}
+
+The product score $\hat p_{b_g}$ in Eq.~\eqref{eq:support-score} measures support
+using the same fitted transport scalings that enter the \Cobras direction.
+This follows the continuous bridge formulation in Section~\ref{subsec:sb},
+where the potential ratio determines the flow and the potential product describes
+its density. A related implementation measures support directly through
+geodesic $k$-nearest-neighbor (kNN) distances on $\Sph$, following the use of
+nearest-neighbor distances for OOD detection~\citep{sun2022out}.
+
+Let $\rho_k(\boldsymbol{x};\mathcal D^-)$
+be the distance from $\boldsymbol{x}\in\Sph$ to its $k$-th nearest sample in
+$\mathcal D^-$. We set a reference radius from the within-population distances,
+excluding each sample itself,
+\begin{equation}
+\begin{aligned}
+\rho_{\mathrm{ref}}
+&=\operatorname{Quantile}_{\tau}\!\left(
+\left\{\rho_k(\boldsymbol h_j^-;\mathcal D^-\setminus\{\boldsymbol h_j^-\})\right\}_{j=1}^{N_-}
+\right),\\
+g_{\mathrm{kNN}}(\boldsymbol{x})
+&=\left[1+\left(\frac{\rho_k(\boldsymbol{x};\mathcal D^-)}{\rho_{\mathrm{ref}}}\right)^\gamma\right]^{-1}.
+\end{aligned}
+\label{eq:knn-gate}
+\end{equation}
+The quantile $\tau\in(0,1)$ sets the distance scale at which steering is reduced,
+and $\gamma>0$ controls the sharpness of that reduction. We use $k=32$,
+$\tau=0.98$, and $\gamma=50$ as the default settings for this variant. As the
+query moves farther from the negative samples, its gate decreases smoothly,
+reaching $1/2$ at $\rho_{\mathrm{ref}}$. Thus $\tau$ selects the radius at which
+steering is halved, whereas $p$ in Eq.~\eqref{eq:gate} sets the reference rank
+up to which steering remains at full strength.
+
+For \Cobras, we evaluate $g_{\mathrm{kNN}}$ at the last prompt activation and
+reuse it throughout the continuation, replacing $g_q$ in Eq.~\eqref{eq:step}.
+Because the kNN gate requires only reference activations and distances, it can
+also serve as an external module for other steering methods. The same
+prompt-level gate then scales each method's intervention strength, allowing
+support control to be applied across different steering directions.
+
+\paragraph{Connection to the product score.}
+\label{apx:knn-connection}
+
+The connection to kNN follows directly from the kernel factors
+$\widehat\varphi_{b_g}$ and $\widehat\psi_{b_g}$ in Eq.~\eqref{eq:frozen-factors}.
+For the negative factor, setting $k=1$ in the distance defined above gives
+$\rho_1(\boldsymbol{x};\mathcal D^-)
+=\min_j d_{\Sph}(\boldsymbol{x},\boldsymbol h_j^-)$.
+Every kernel in $\widehat\varphi_{b_g}$ is at most
+$\exp[-\rho_1(\boldsymbol{x};\mathcal D^-)^2/(2b_g)]$, with equality for a nearest
+sample. Bounding its weight below by $\min_j a_j^-$ and the total weight above
+by $\sum_j a_j^-$ gives
+\begin{equation}
+0\le -2b_g\log\frac{\widehat\varphi_{b_g}(\boldsymbol{x})}{\sum_j a_j^-}
+-\rho_1(\boldsymbol{x};\mathcal D^-)^2
+\le 2b_g\log\frac{\sum_j a_j^-}{\min_j a_j^-}.
+\label{eq:knn-kernel-bound}
+\end{equation}
+With the fitted positive scalings $a_j^-$ held fixed, the upper bound vanishes
+as $b_g\to0$. The scaled negative log of $\widehat\varphi_{b_g}$ therefore
+approaches the nearest squared distance, up to the displayed normalization.
+Applying the same argument to $\widehat\psi_{b_g}$, with
+$\rho_1(\boldsymbol{x};\mathcal D^+)=\min_i d_{\Sph}(\boldsymbol{x},\boldsymbol h_i^+)$,
+gives the corresponding limit for their product when both sets of scalings are
+held fixed,
+\begin{equation}
+-2b_g\log\frac{\hat p_{b_g}(\boldsymbol{x})}
+{(\sum_j a_j^-)(\sum_i a_i^+)}
+\longrightarrow
+\rho_1(\boldsymbol{x};\mathcal D^-)^2
++\rho_1(\boldsymbol{x};\mathcal D^+)^2
+\quad\text{as }b_g\to0.
+\label{eq:knn-product-limit}
+\end{equation}
+The normalizing sums are independent of the query and only shift the log score,
+so they preserve the ranks used in Eq.~\eqref{eq:gate}.
+
+This limit connects the support score supplied by the bridge formulation to
+nearest-neighbor distances. The product measures proximity to both contrastive
+populations through the sum of their nearest squared distances. The kNN gate
+uses the distance to the $k$-th negative sample as its support statistic.
+The two implementations thus share a notion of local support while using
+different populations, neighbors, and calibration rules.
+
+\subsection{Calibration and sensitivity of the nearest-neighbor gate}
+\label{apx:knn-calibration}
+The behavior of the distance gate depends on the population used to set its
+reference radius. In Eq.~\eqref{eq:knn-gate}, this population consists of
+contrastive question--answer activations, whereas inference evaluates activations
+at the last prompt token. These different token positions can occupy different
+parts of the distance distribution. In the
+Llama3.1-8B calibration diagnostic, the median TruthfulQA prompt lies at the
+$96$th percentile of the reference distances and the median GSM8K prompt at
+the $99.2$nd, leaving a narrow useful range for $\tau$.
+
+Table~\ref{tab:abstain-results} shows the resulting sensitivity to $\tau$ and $k$.
+Raising $\tau$ increases the reference radius and permits stronger steering,
+improving TruthfulQA True$\times$Info but sometimes reducing GSM8K accuracy.
+The trade-off is particularly pronounced for Llama3.1-8B at the $99.5$th
+percentile. Changing $k$ also alters the relative query and reference radii,
+with effects that vary across models. These observations motivate calibrating
+the product-score gate on prompt activations at the same position used for
+evaluation, as described in Section~\ref{subsec:strength}.
+
+\begin{table}[ht]
+\centering
+\small
+\caption{Sensitivity of the kNN support gate in Eq.~\eqref{eq:knn-gate}.
+Percentile ablations fix $k=32$. Neighborhood ablations fix $\tau=0.98$.
+The neighborhood size $k$ is distinct from the number of integration steps $K$.
+}
+\label{tab:abstain-results}
+\begin{tabular}{lccccc}
+\toprule
+\multirow{2}{*}{Ablation} & \multirow{2}{*}{Value}
+& \multicolumn{2}{c}{Llama3.1-8B-Base} & \multicolumn{2}{c}{Mistral-7B-Base} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+& & TQA T$\times$I (\%) & GSM8K (\%) & TQA T$\times$I (\%) & GSM8K (\%) \\
+\midrule
+\multirow{4}{*}{Percentile ($100\tau$)}
+& $90.0$ & 44.67 & 48.67 & 36.23 & 36.89 \\
+& $95.0$ & 54.83 & 48.90 & 37.08 & 36.31 \\
+& $98.0$ & 65.48 & 47.53 & 42.71 & 36.23 \\
+& $99.5$ & 69.15 & 11.59 & 59.48 & 35.53 \\
+\midrule
+\multirow{3}{*}{Neighbors ($k$)}
+& $32$ & 65.48 & 47.53 & 42.71 & 36.23 \\
+& $128$ & 68.91 & 25.92 & 49.81 & 36.51 \\
+& $256$ & 69.40 & 15.08 & 52.50 & 36.90 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
 \section{Experimental Details}
 \label{appendix:experimental_details}
 

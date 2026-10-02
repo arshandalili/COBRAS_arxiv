@@ -145,18 +145,23 @@ The field combines attraction toward desired activations $\boldsymbol h_i^+$ wit
 
 We normalize $\boldsymbol v$ to separate the steering direction from the update size. The attenuation coefficient $s$ reduces this size as the activation aligns with the desired activations, while the support gate $g$ attenuates steering for prompts with low support under the contrastive data.
 
-\paragraph{Steering attenuation.}
-We measure alignment with the desired direction using the normalized difference between the desired and undesired mean activations. Let $\bar{\boldsymbol h}^{\pm}$ be the means of the projected samples. Following the attenuation rule used in spherical steering~\citep{you2026spherical}, we define
-\begin{align}
+\paragraph{vMF attenuation.}
+Following Spherical Steering~\citep{you2026spherical}, we use antipodal von Mises--Fisher (vMF) prototypes to measure alignment with the contrastive axis. Let $\bar{\boldsymbol h}^{\pm}$ be the means of the projected samples and define the desired prototype
+\begin{equation}
 \boldsymbol\mu
-&=\frac{\bar{\boldsymbol h}^+-\bar{\boldsymbol h}^-}
-{\|\bar{\boldsymbol h}^+-\bar{\boldsymbol h}^-\|},
-\label{eq:mu}\\
+=\frac{\bar{\boldsymbol h}^+-\bar{\boldsymbol h}^-}
+{\|\bar{\boldsymbol h}^+-\bar{\boldsymbol h}^-\|}.
+\label{eq:mu}
+\end{equation}
+The prototypes $\boldsymbol\mu$ and $-\boldsymbol\mu$ have vMF scores proportional to $e^{\pm\kappa\langle\boldsymbol{x}/R,\boldsymbol\mu\rangle}$, with shared concentration $\kappa>0$. We use the normalized score of the undesired prototype as the strength coefficient,
+\begin{equation}
 s(\boldsymbol{x})
-&=\left(1+e^{2\kappa\langle\boldsymbol{x}/R,\boldsymbol\mu\rangle}\right)^{-1}.
+=\frac{e^{-\kappa\langle\boldsymbol{x}/R,\boldsymbol\mu\rangle}}
+{e^{\kappa\langle\boldsymbol{x}/R,\boldsymbol\mu\rangle}+e^{-\kappa\langle\boldsymbol{x}/R,\boldsymbol\mu\rangle}}
+=\left(1+e^{2\kappa\langle\boldsymbol{x}/R,\boldsymbol\mu\rangle}\right)^{-1}.
 \label{eq:side}
-\end{align}
-The attenuation coefficient $s$ decreases as $\boldsymbol{x}$ aligns with $\boldsymbol\mu$, with $\kappa>0$ controlling how sharply steering is reduced.
+\end{equation}
+Thus $s$ decreases as the activation aligns with $\boldsymbol\mu$, reducing the intervention on activations already oriented toward the desired prototype. We apply this smooth score directly, with $\kappa$ controlling the sharpness of the attenuation.
 
 \paragraph{Support estimation and gate calibration.}
 Alignment with $\boldsymbol\mu$ alone does not establish proximity to the contrastive data. To limit steering on out-of-distribution (OOD) prompts, we therefore assess the proximity of a prompt activation $\boldsymbol{x}$ to each contrastive population using the weighted kernel sums
@@ -185,6 +190,8 @@ g(\boldsymbol{x})=\min\!\left\{1,\frac{1-r(\boldsymbol{x})}{1-p}\right\}.
 \label{eq:gate}
 \end{equation}
 With coverage parameter $p\in(0,1)$, the gate leaves the steering strength unchanged up to the reference $p$-quantile and then decreases linearly with rank, reaching zero for scores above all reference scores. Appendix~\ref{apx:ood-gate} explains how $p$ controls in-distribution steering strength and evaluates how well the support scores separate OOD prompts.
+
+We can also implement support control with a $k$-nearest-neighbor (kNN) distance gate. This alternative can be attached as an external module to other steering methods. Appendix~\ref{apx:knn-gate} relates this distance gate to the product score and discusses its calibration and sensitivity.
 
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
