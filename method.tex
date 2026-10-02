@@ -30,7 +30,7 @@ The steering field derived below is a weighted sum of logarithm maps toward the 
 \section{LLM Steering as a Schr\"{o}dinger Bridge}
 \label{sec:method}
 
-In this section, we first cast steering as a transportation problem and then derive our method, \Cobras. We first derive the continuous bridge identities that motivate this construction (Section~\ref{subsec:sb}), then give the finite-sample direction, strength controls, and inference procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction} establishes the connection to density-ratio steering.
+In this section, we first cast steering as a transportation problem and then derive our method, \Cobras. We first derive the continuous bridge identities that motivate our construction (Section~\ref{subsec:sb}), then derive the direction, strength controls, and inference procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction} establishes the connection to density-ratio steering, which is prior works implicitly optimized.
 
 \begin{figure}[!tb]
     \centering
@@ -39,10 +39,10 @@ In this section, we first cast steering as a transportation problem and then der
     \label{fig:overview}
 \end{figure}
 
-\subsection{A transport objective and its steering direction}
+\subsection{Schr\"{o}dinger Bridge and transport objective}
 \label{subsec:sb}
 
-A Schr\"{o}dinger bridge describes how one distribution evolves into another while staying as close as possible to a reference random motion. Here the reference $Q$ is Brownian motion on $\Sph$, which moves randomly along the sphere with diffusion scale $\sigma^2$, starting from a uniform distribution. We seek a distribution $P$ over continuous trajectories that carries the undesired population $\pminus$ to the desired population $\pplus$. Writing $P_t$ for the activation distribution at time $t$, the bridge solves
+A Schr\"{o}dinger bridge describes how one distribution evolves into another while staying as close as possible to a reference random motion~\citep{de2021diffusion}. Here, we define our reference $Q$ as a Brownian motion on $\Sph$ that moves randomly along the sphere with diffusion scale $\sigma^2$, starting from a uniform distribution. We seek a distribution $P$ over continuous trajectories that carries the undesired population $\pminus$ to the desired population $\pplus$. Writing $P_t$ for the activation distribution at time $t$, the bridge solves
 \begin{equation}
 P^\star=\operatorname*{arg\,min}_{P}\KL(P\,\Vert\,Q)
 \qquad\text{s.t.}\qquad P_0=\pminus,\quad P_1=\pplus.
