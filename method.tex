@@ -24,7 +24,7 @@ sphere $\Sph=\{\boldsymbol{x}\in\mathbb{R}^{d}:\lVert\boldsymbol{x}\rVert=R\}$ o
 over $\mathcal{D}^{+}\cup\mathcal{D}^{-}$, and restore the original norm of $\hquery$ after steering, so that
 the intervention changes only the direction of the activation.
 
-\begin{figure}[!ht]
+\begin{figure}[t!]
 \centering
 \includegraphics[width=\textwidth]{figures/norm_concentration.pdf}
 \caption{Last-token residual-stream norms across layers on TruthfulQA for four LLMs, each divided by its
@@ -159,6 +159,7 @@ s(\boldsymbol{x})
 The attenuation coefficient $s$ decreases as $\boldsymbol{x}$ aligns with $\boldsymbol\mu$, with $\kappa>0$ controlling how sharply steering is reduced.
 
 \paragraph{Support estimation and gate calibration.}
+\textcolor{blue}{
 Alignment with $\boldsymbol\mu$ alone does not establish proximity to the contrastive data. To limit steering on out-of-distribution (OOD) prompts, we therefore assess the proximity of a prompt activation $\boldsymbol{x}$ to each contrastive population using the weighted kernel sums
 \begin{equation}
 \widehat\varphi_b(\boldsymbol{x})=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol h_j^-),
@@ -174,9 +175,9 @@ Following the product form of the bridge density in Eq.~\eqref{eq:product}, we d
 u(\boldsymbol{x})=-\log\hat p_{b_g}(\boldsymbol{x}).
 \label{eq:support-score}
 \end{equation}
-Larger values of $u$ indicate lower support.
+Larger values of $u$ indicate lower support.}
 
-We calibrate $u$ using a reference set $\mathcal D_{\mathrm{ref}}$ of in-distribution prompt activations held out from evaluation. Both reference and query activations are extracted from the last prompt token at the steering layer and projected onto $\Sph$. For $n=|\mathcal D_{\mathrm{ref}}|$, we rank a query prompt's score against the reference scores and convert its rank into the gate
+\textcolor{blue}{We calibrate $u$ using a reference set $\mathcal D_{\mathrm{ref}}$ of in-distribution prompt activations held out from evaluation. Both reference and query activations are extracted from the last prompt token at the steering layer and projected onto $\Sph$. For $n=|\mathcal D_{\mathrm{ref}}|$, we rank a query prompt's score against the reference scores and convert its rank into the gate
 \begin{equation}
 r(\boldsymbol{x})
 =\frac{|\{\boldsymbol z\in\mathcal D_{\mathrm{ref}}:u(\boldsymbol z)<u(\boldsymbol{x})\}|}{n},
@@ -184,7 +185,7 @@ r(\boldsymbol{x})
 g(\boldsymbol{x})=\min\!\left\{1,\frac{1-r(\boldsymbol{x})}{1-p}\right\}.
 \label{eq:gate}
 \end{equation}
-With coverage parameter $p\in(0,1)$, the gate leaves the steering strength unchanged up to the reference $p$-quantile and then decreases linearly with rank, reaching zero for scores above all reference scores. Appendix~\ref{apx:ood-gate} explains how $p$ controls in-distribution steering strength and evaluates how well the support scores separate OOD prompts.
+With coverage parameter $p\in(0,1)$, the gate leaves the steering strength unchanged up to the reference $p$-quantile and then decreases linearly with rank, reaching zero for scores above all reference scores. Appendix~\ref{apx:ood-gate} explains how $p$ controls in-distribution steering strength and evaluates how well the support scores separate OOD prompts.}
 
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
