@@ -130,6 +130,16 @@ SphericalSteer &  & -7.203 {\tiny $\pm$ 0.208} & 4.309 {\tiny $\pm$ 0.192} & 43.
 }
 \label{tab:main_results}
 \end{table*}
+
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{figures/within_task_ood.png}
+    \caption{Performance of steering methods in Within-task OOD: TriviaQA~\cite{joshi2017triviaqa} and NQ~\cite{kwiatkowski2019natural} performance. We skipped Falcon-7B because the original model's performance was low.}
+    \label{fig:within_task_ood}\vspace{-3mm}
+\end{figure}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{RQ1: How does \Cobras compare to other steering methods on in-distribution tasks?} 
 
@@ -156,14 +166,7 @@ Activation steering can be brittle under distribution shift, with prior work sho
 %     \label{fig:ood}\vspace{-3mm}
 % \end{figure}
 
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[width=\linewidth]{figures/within_task_ood.png}
-    \caption{Performance of steering methods in Within-task OOD: TriviaQA~\cite{joshi2017triviaqa} and NQ~\cite{kwiatkowski2019natural} performance. We skipped Falcon-7B because the original model's performance was low.}
-    \label{fig:within_task_ood}\vspace{-3mm}
-\end{figure}
-
-\begin{figure}[!ht]
+\begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figures/cross_task_ood.png}
     \caption{Performance of steering methods in Cross-task OOD: MMLU~\cite{hendrycks2020measuring} and GSM8K~\cite{cobbe2021gsm8k} performance. We skipped Falcon-7B because the original model's performance was low.}
