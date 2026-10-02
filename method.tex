@@ -191,14 +191,16 @@ g(\boldsymbol{x})=\min\!\left\{1,\frac{1-r(\boldsymbol{x})}{1-p}\right\}.
 \end{equation}
 With coverage parameter $p\in(0,1)$, the gate leaves the steering strength unchanged up to the reference $p$-quantile and then decreases linearly with rank, reaching zero for scores above all reference scores. Appendix~\ref{apx:ood-gate} explains how $p$ controls in-distribution steering strength and evaluates how well the support scores separate OOD prompts.
 
-We also implement another variant of support control with a $k$-nearest-neighbor (kNN) distance gate. This alternative can be attached as an external module to other steering methods. Appendix~\ref{apx:knn-gate} relates this distance gate to the product score and discusses its calibration and sensitivity.
+A simpler distance gate, based on the $k$-th nearest undesired activation, can replace this score. As the bandwidth $b_g$ shrinks, $u$ approaches the sum of the squared nearest-neighbor distances to the two populations, so the distance gate is a one-sided relative of the product score. Because it needs only distances, it can also gate other steering methods. Appendix~\ref{apx:knn-gate} derives this limit, reports the distance gate attached to baseline methods, and explains why we calibrate the product score on prompt activations instead.
 
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
 
 We combine the steering field $\boldsymbol v$ with the attenuation coefficient $s$ and support gate $g$ to update activations during generation. We compute the support gate $g_q$ once from the last prompt token's activation and reuse it throughout generation. For each incoming token activation $\hquery$ at layer $\ell$, we project it onto $\Sph$ as $\boldsymbol{x}_0=R\hquery/\|\hquery\|$ and evaluate the attenuation coefficient $s(\boldsymbol{x}_0)$. We then apply $K$ geodesic Euler steps with steering strength $T\ge0$,
 \begin{equation}
-\Delta=\frac{\pi}{2}T\,s(\boldsymbol{x}_0)g_q\frac{R}{K},
+\Delta=T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0\frac{R}{K},
+\qquad
+\theta_0=\arccos\langle\boldsymbol{x}_0/R,\boldsymbol\mu\rangle,
 \qquad
 \boldsymbol{x}_{k+1}
 =\exp_{\boldsymbol{x}_k}\!\left(
@@ -206,7 +208,7 @@ We combine the steering field $\boldsymbol v$ with the attenuation coefficient $
 \right).
 \label{eq:step}
 \end{equation}
-At each step, we recompute the direction $\boldsymbol v(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. We skip steps with a zero field, while $g_q=0$ disables steering throughout generation. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. The total path length on $\Sph$ is at most $\tfrac{\pi}{2}TR$, so $T$ bounds how far the activation can move along the sphere. Algorithm~\ref{alg:cobras} summarizes the procedure, with experimental settings given in Appendix~\ref{appendix:implementation_details}.
+At each step, we recompute the direction $\boldsymbol v(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. We skip steps with a zero field, while $g_q=0$ disables steering throughout generation. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. Here $\theta_0R$ is the geodesic distance from $\boldsymbol{x}_0$ to the desired prototype $R\boldsymbol\mu$ of Eq.~\eqref{eq:mu}, so the total path length on $\Sph$ is $T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0R\le T\theta_0R$: the strength $T$ sets the largest fraction of that distance the activation can travel. Algorithm~\ref{alg:cobras} summarizes the procedure, with experimental settings given in Appendix~\ref{appendix:implementation_details}.
 
 \subsection{Connection to density-ratio steering}
 \label{subsec:reduction}
