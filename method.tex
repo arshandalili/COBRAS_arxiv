@@ -42,7 +42,7 @@ In this section, we first cast steering as a transportation problem and then der
 \subsection{A transport objective and its steering direction}
 \label{subsec:sb}
 
-A Schr\"{o}dinger bridge describes how one distribution evolves into another while staying as close as possible to a reference random motion. Here the reference $Q$ is Brownian motion on $\Sph$, which moves randomly along the sphere with diffusion scale $\sigma^2$, starting from a uniform distribution. We seek a distribution $P$ over continuous trajectories that carries the undesired population $\pminus$ to the desired population $\pplus$. Writing $P_t$ for the activation distribution at time $t$, the bridge solves
+We formulate steering as transporting the undesired activation distribution $\pminus$ to the desired distribution $\pplus$ on $\Sph$. Let $P$ be a probability distribution over continuous activation trajectories, and let $P_t$ denote the distribution of activations at transport time $t\in[0,1]$ when trajectories are drawn from $P$. To choose among transports with these endpoints, we compare $P$ with a reference trajectory distribution $Q$. We take $Q$ to describe Brownian motion on $\Sph$ with diffusion scale $\sigma^2$ and a uniform initial distribution, providing random motion without a preferred direction on the sphere. The Schr\"{o}dinger bridge~\citep{schrodinger1932theorie} is the trajectory distribution that matches the two endpoints while minimizing the Kullback--Leibler (KL) divergence from $Q$,
 \begin{equation}
 P^\star=\operatorname*{arg\,min}_{P}\KL(P\,\Vert\,Q)
 \qquad\text{s.t.}\qquad P_0=\pminus,\quad P_1=\pplus.
