@@ -2,46 +2,20 @@
 \label{sec:bg}
 
 \paragraph{Setup and notation.}
-We fix a decoder-only transformer of residual width $d$ and a layer index $\ell$, and write
-$\boldsymbol{h}\in\mathbb{R}^{d}$ for the layer-$\ell$ residual-stream activation at the last token position.
-Two populations of inputs are given, one exhibiting a desired behavior and one an undesired behavior, with
-activation distributions $\pplus$ and $\pminus$ observed through i.i.d.\ samples
-$\mathcal{D}^{+}=\{\boldsymbol{h}^{+}_{i}\}_{i=1}^{N_{+}}\sim\pplus$ and
-$\mathcal{D}^{-}=\{\boldsymbol{h}^{-}_{j}\}_{j=1}^{N_{-}}\sim\pminus$, whose empirical measures we denote
-$\pplushat$ and $\pminushat$. At inference, a steering map is applied to the layer-$\ell$ activation of each
-decoded token, beginning with the last prompt token, and $\hquery$ denotes the activation currently being
-steered. The map should move $\hquery$ toward regions of high density under $\pplus$ and low density under
-$\pminus$, and it modifies no other activation. Vectors and vector fields are set in bold.
+We fix a decoder-only transformer of residual width $d$ and a layer index $\ell$, and write $\boldsymbol{h}\in\mathbb{R}^{d}$ for the layer-$\ell$ residual-stream activation at the last token position. Two populations of inputs are given, one exhibiting a desired behavior and one an undesired behavior, with activation distributions $\pplus$ and $\pminus$ observed through i.i.d.\ samples $\mathcal{D}^{+}=\{\boldsymbol{h}^{+}_{i}\}_{i=1}^{N_{+}}\sim\pplus$ and $\mathcal{D}^{-}=\{\boldsymbol{h}^{-}_{j}\}_{j=1}^{N_{-}}\sim\pminus$, whose empirical measures we denote $\pplushat$ and $\pminushat$. At inference, a steering map is applied to the layer-$\ell$ activation of each decoded token, beginning with the last prompt token, and $\hquery$ denotes the activation currently being steered. The map should move $\hquery$ toward regions of high density under $\pplus$ and low density under $\pminus$, and it modifies no other activation. Vectors and vector fields are set in bold.
 
 \paragraph{Spherical geometry of activations.}
-Residual-stream norms concentrate tightly across inputs at a fixed layer, both
-empirically~\citep{pham2024householder, you2026spherical} and as a consequence of the residual
-architecture~\citep{yang2023spectral, xie2026controlled}. Figure~\ref{fig:norm-concentration} shows this
-for the four models we study, for which the coefficient of variation of the layer-normalized last-token norm
-lies between $2.5\%$ and $7.3\%$, and Appendix~\ref{appendix:norm_concentration} reports the same
-measurement layer by layer and for four further architectures. We therefore model the state space as the
-sphere $\Sph=\{\boldsymbol{x}\in\mathbb{R}^{d}:\lVert\boldsymbol{x}\rVert=R\}$ of radius $R$, the mean norm
-over $\mathcal{D}^{+}\cup\mathcal{D}^{-}$, and restore the original norm of $\hquery$ after steering, so that
-the intervention changes only the direction of the activation.
+Residual-stream norms concentrate tightly across inputs at a fixed layer, both empirically~\citep{pham2024householder, you2026spherical} and as a consequence of the residual architecture~\citep{yang2023spectral, xie2026controlled}. Figure~\ref{fig:norm-concentration} shows this for the four models we study, for which the coefficient of variation of the layer-normalized last-token norm lies between $2.5\%$ and $7.3\%$, and Appendix~\ref{appendix:norm_concentration} reports the same measurement layer by layer and for four further architectures. We therefore model the state space as the sphere $\Sph=\{\boldsymbol{x}\in\mathbb{R}^{d}:\lVert\boldsymbol{x}\rVert=R\}$ of radius $R$, the mean norm over $\mathcal{D}^{+}\cup\mathcal{D}^{-}$, and restore the original norm of $\hquery$ after steering, so that the intervention changes only the direction of the activation.
 
 \begin{figure}[t!]
 \centering
 \includegraphics[width=\textwidth]{figures/norm_concentration.pdf}
-\caption{Last-token residual-stream norms across layers on TruthfulQA for four LLMs, each divided by its
-layer-wise mean. Dark and light bands show the 25th--75th percentiles. The coefficient of variation (CoV) is
-reported per model.}
+\caption{Last-token residual-stream norms across layers on TruthfulQA for four LLMs, each divided by its layer-wise mean. Dark and light bands show the 25th--75th percentiles. The coefficient of variation (CoV) is reported per model.}
 \label{fig:norm-concentration}
 \end{figure}
 
 \paragraph{Operations on $\Sph$.}
-We write $\Pi_{\boldsymbol{x}}=\boldsymbol{I}-R^{-2}\boldsymbol{x}\boldsymbol{x}^{\top}$ for the projector
-onto the tangent space at $\boldsymbol{x}$, $\nablaS f=\Pi_{\boldsymbol{x}}\nabla f$ for the Riemannian
-gradient, and $d_{\Sph}(\boldsymbol{x},\boldsymbol{y})=R\arccos(R^{-2}\boldsymbol{x}^{\top}\boldsymbol{y})$
-for the geodesic distance. The exponential map $\exp_{\boldsymbol{x}}(\boldsymbol{v})$ moves from
-$\boldsymbol{x}$ along the tangent vector $\boldsymbol{v}$ for a geodesic arc of length
-$\lVert\boldsymbol{v}\rVert$, and its inverse $\log_{\boldsymbol{x}}(\boldsymbol{y})$, defined for
-$\boldsymbol{y}\neq-\boldsymbol{x}$, is the tangent vector at $\boldsymbol{x}$ that points toward
-$\boldsymbol{y}$ with norm $d_{\Sph}(\boldsymbol{x},\boldsymbol{y})$:
+We write $\Pi_{\boldsymbol{x}}=\boldsymbol{I}-R^{-2}\boldsymbol{x}\boldsymbol{x}^{\top}$ for the projector onto the tangent space at $\boldsymbol{x}$, $\nablaS f=\Pi_{\boldsymbol{x}}\nabla f$ for the Riemannian gradient, and $d_{\Sph}(\boldsymbol{x},\boldsymbol{y})=R\arccos(R^{-2}\boldsymbol{x}^{\top}\boldsymbol{y})$ for the geodesic distance. The exponential map $\exp_{\boldsymbol{x}}(\boldsymbol{v})$ moves from $\boldsymbol{x}$ along the tangent vector $\boldsymbol{v}$ for a geodesic arc of length $\lVert\boldsymbol{v}\rVert$, and its inverse $\log_{\boldsymbol{x}}(\boldsymbol{y})$, defined for $\boldsymbol{y}\neq-\boldsymbol{x}$, is the tangent vector at $\boldsymbol{x}$ that points toward $\boldsymbol{y}$ with norm $d_{\Sph}(\boldsymbol{x},\boldsymbol{y})$:
 \begin{equation}
 \exp_{\boldsymbol{x}}(\boldsymbol{v})
 = \cos\!\left(\frac{\lVert\boldsymbol{v}\rVert}{R}\right)\boldsymbol{x}
@@ -51,9 +25,7 @@ $\boldsymbol{y}$ with norm $d_{\Sph}(\boldsymbol{x},\boldsymbol{y})$:
 \quad \theta = \frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{y})}{R}.
 \label{eq:expmap}
 \end{equation}
-The steering field derived below is a weighted sum of logarithm maps toward the contrastive samples, and
-each steering step is an exponential map. At zero tangent length or zero angular separation, the formulas
-use their continuous limits.
+The steering field derived below is a weighted sum of logarithm maps toward the contrastive samples, and each steering step is an exponential map. At zero tangent length or zero angular separation, the formulas use their continuous limits.
 
 \section{LLM Steering as a Schr\"{o}dinger Bridge}
 \label{sec:method}
@@ -233,10 +205,7 @@ The resulting field follows the log-ratio gradient of kernel estimates summarizi
 
 \begin{proposition}[Reduction to the kernel density-ratio field]
 \label{prop:ldr-limit}
-Fix the contrastive activations on $\Sph$ and a shared bandwidth $b>0$.
-As $\varepsilon\to\infty$, the unnormalized field $\boldsymbol v$ converges to
-$\boldsymbol v_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$, uniformly away from
-the contrastive activations' antipodes.
+Fix the contrastive activations on $\Sph$ and a shared bandwidth $b>0$. As $\varepsilon\to\infty$, the unnormalized field $\boldsymbol v$ converges to $\boldsymbol v_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$, uniformly away from the contrastive activations' antipodes.
 \end{proposition}
 
 Proposition~\ref{prop:ldr-limit} shows that, at a shared fixed bandwidth, the \Cobras field converges to a kernel density-ratio field on the sphere as $\varepsilon\to\infty$. This recovers the steering principle represented by Gaussian densities in the interpretation of CAA and by a directly fitted log-ratio in ODESteer. At finite $\varepsilon$, transport connections reweight the attraction and repulsion contributions of individual contrastive activations. The proof is in Appendix~\ref{apx:proof-ldr-limit}.

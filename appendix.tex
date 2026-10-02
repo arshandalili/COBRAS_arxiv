@@ -20,13 +20,9 @@ For example, the following methods can be recalled from this perspective as summ
 \paragraph{Spherical Steering (SS)~\citep{you2026spherical}}
 
 
-To relax the assumption of a flat Euclidean space and account for the directional nature of high-dimensional neural representations, Spherical Steering constrains the optimization trajectory to a unit hypersphere manifold, setting $\mathcal{M}=\mathcal{S}^{d-1}$. Under a single-step discrete horizon ($K=1$), the method models the target positive activations using a von Mises-Fisher (vMF) distribution $p_+=\mathrm{vMF}(\cdot;\boldsymbol{\mu},\kappa)$ which acts as the spherical analogue to an isotropic Gaussian with a mean direction vector $\boldsymbol{\mu}$ and a concentration parameter $\kappa$. Conversely, the negative behavior is modeled as a uniform distribution over the sphere $p_-=\mathrm{Unif}(\mathcal{S})$. The unit prototype towards the positive activations $\boldsymbol{\mu}$ is empirically defined by normalizing the difference between the mean positive and negative activations:
-$$\boldsymbol{\mu}= \frac{\bar{\boldsymbol{h}}^{+} - \bar{\boldsymbol{h}}^{-}}{\|\bar{\boldsymbol{h}}^{+} - \bar{\boldsymbol{h}}^{-}\|}.$$
+To relax the assumption of a flat Euclidean space and account for the directional nature of high-dimensional neural representations, Spherical Steering constrains the optimization trajectory to a unit hypersphere manifold, setting $\mathcal{M}=\mathcal{S}^{d-1}$. Under a single-step discrete horizon ($K=1$), the method models the target positive activations using a von Mises-Fisher (vMF) distribution $p_+=\mathrm{vMF}(\cdot;\boldsymbol{\mu},\kappa)$ which acts as the spherical analogue to an isotropic Gaussian with a mean direction vector $\boldsymbol{\mu}$ and a concentration parameter $\kappa$. Conversely, the negative behavior is modeled as a uniform distribution over the sphere $p_-=\mathrm{Unif}(\mathcal{S})$. The unit prototype towards the positive activations $\boldsymbol{\mu}$ is empirically defined by normalizing the difference between the mean positive and negative activations: $$\boldsymbol{\mu}= \frac{\bar{\boldsymbol{h}}^{+} - \bar{\boldsymbol{h}}^{-}}{\|\bar{\boldsymbol{h}}^{+} - \bar{\boldsymbol{h}}^{-}\|}.$$
 
-When evaluating the global flow framework under these spherical constraints, the Riemannian gradient of the likelihood ratio yields a non-linear direction proportional to the logarithmic map on the sphere 
-$\nabla_{\mathcal{S}}\log\tfrac{p_+}{p_-}
-\propto\log_{\boldsymbol{x}}(\boldsymbol{\mu})$ which corresponds to the Slerp direction toward $\boldsymbol{\mu}$ in
-the direction of this Riemannian gradient. By explicitly respecting the spherical geometry of hidden states, SS ensures that the magnitude of the activation vector is preserved, avoiding out-of-distribution distortion while performing directional steering.
+When evaluating the global flow framework under these spherical constraints, the Riemannian gradient of the likelihood ratio yields a non-linear direction proportional to the logarithmic map on the sphere $\nabla_{\mathcal{S}}\log\tfrac{p_+}{p_-} \propto\log_{\boldsymbol{x}}(\boldsymbol{\mu})$ which corresponds to the Slerp direction toward $\boldsymbol{\mu}$ in the direction of this Riemannian gradient. By explicitly respecting the spherical geometry of hidden states, SS ensures that the magnitude of the activation vector is preserved, avoiding out-of-distribution distortion while performing directional steering.
 
 \begin{table}[t!]
 \centering
@@ -57,21 +53,13 @@ the direction of this Riemannian gradient. By explicitly respecting the spherica
 \section{Derivations and Implementation}
 \label{apx:theory}
 
-This appendix derives the continuous bridge field and discrete transport fit,
-explains the gradient form of the steering direction, and proves its density-ratio
-limit. Kernel gradients are taken away from
-sample antipodes, where squared geodesic distance is not differentiable.
+This appendix derives the continuous bridge field and discrete transport fit, explains the gradient form of the steering direction, and proves its density-ratio limit. Kernel gradients are taken away from sample antipodes, where squared geodesic distance is not differentiable.
 
 \subsection{Continuous bridge and discrete transport}
 \label{apx:static}
 
 \paragraph{Probability flow.}
-For the continuous derivation, assume strictly positive $C^2$ endpoint densities on $\Sph$.
-The reference $Q$ is Brownian motion started uniformly, with generator
-$\tfrac{\sigma^2}{2}\Delta_{\Sph}$, where $\Delta_{\Sph}$ is the spherical Laplacian.
-The bridge retains this diffusion and has drift
-$\boldsymbol u(\boldsymbol{x},t)=\sigma^2\nablaS\log\psi(\boldsymbol{x},t)$
-so its Fokker--Planck equation can be written
+For the continuous derivation, assume strictly positive $C^2$ endpoint densities on $\Sph$. The reference $Q$ is Brownian motion started uniformly, with generator $\tfrac{\sigma^2}{2}\Delta_{\Sph}$, where $\Delta_{\Sph}$ is the spherical Laplacian. The bridge retains this diffusion and has drift $\boldsymbol u(\boldsymbol{x},t)=\sigma^2\nablaS\log\psi(\boldsymbol{x},t)$ so its Fokker--Planck equation can be written
 \begin{align}
 \partial_t p_t
 &=-\operatorname{div}_{\Sph}(p_t\boldsymbol u)
@@ -80,29 +68,19 @@ so its Fokker--Planck equation can be written
 p_t\left(\boldsymbol u-\frac{\sigma^2}{2}\nablaS\log p_t\right)\right].
 \label{eq:apx-continuity}
 \end{align}
-This is the continuity equation for a deterministic field with the same marginals,
-initialized from $\pminus$. Substituting $p_t\propto\varphi\psi$ gives
-$\boldsymbol u-\tfrac{\sigma^2}{2}\nablaS\log p_t
-=\tfrac{\sigma^2}{2}\nablaS\log(\psi/\varphi)$, proving Eq.~\eqref{eq:ldr}.
+This is the continuity equation for a deterministic field with the same marginals, initialized from $\pminus$. Substituting $p_t\propto\varphi\psi$ gives $\boldsymbol u-\tfrac{\sigma^2}{2}\nablaS\log p_t =\tfrac{\sigma^2}{2}\nablaS\log(\psi/\varphi)$, proving Eq.~\eqref{eq:ldr}.
 
 \paragraph{Static formulation.}
-Conditioning trajectories on their starting and ending activations separates a path
-law $P$ into its endpoint coupling $P_{01}$ and conditional path laws $P_{\mid01}$.
-The corresponding relative-entropy decomposition is~\citep{leonard2013survey}
+Conditioning trajectories on their starting and ending activations separates a path law $P$ into its endpoint coupling $P_{01}$ and conditional path laws $P_{\mid01}$. The corresponding relative-entropy decomposition is~\citep{leonard2013survey}
 \begin{equation}
 \KL(P\,\Vert\,Q)
 =\KL(P_{01}\,\Vert\,Q_{01})
 +\mathbb E_{P_{01}}\!\left[\KL(P_{\mid01}\,\Vert\,Q_{\mid01})\right].
 \label{eq:apx-disint}
 \end{equation}
-For any endpoint coupling, the second term is minimized by retaining the reference
-bridges. Thus the continuous problem reduces to entropy minimization over endpoint couplings.
-Atomic empirical endpoints have infinite relative entropy against Brownian endpoints.
-We therefore discretize the static problem rather than impose empirical measures directly
-in Eq.~\eqref{eq:sb}.
+For any endpoint coupling, the second term is minimized by retaining the reference bridges. Thus the continuous problem reduces to entropy minimization over endpoint couplings. Atomic empirical endpoints have infinite relative entropy against Brownian endpoints. We therefore discretize the static problem rather than impose empirical measures directly in Eq.~\eqref{eq:sb}.
 
-Choose discrete reference weights proportional to $e^{-c_{ji}}$ and normalize them
-to sum to one. Their relative entropy objective differs by a constant from
+Choose discrete reference weights proportional to $e^{-c_{ji}}$ and normalize them to sum to one. Their relative entropy objective differs by a constant from
 \begin{equation}
 \pi^\star=\operatorname*{arg\,min}_{\pi\in\mathcal U}
 \sum_{j,i}\pi_{ji}c_{ji}+\sum_{j,i}\pi_{ji}\log\pi_{ji},
@@ -112,8 +90,7 @@ to sum to one. Their relative entropy objective differs by a constant from
 \sum_j\pi_{ji}=\frac1{N_+}\right\}.
 \label{eq:e-ot}
 \end{equation}
-The strictly positive kernel gives a unique optimal coupling with the factorization
-in Eq.~\eqref{eq:plan}. Sinkhorn fitting alternates the log-space updates
+The strictly positive kernel gives a unique optimal coupling with the factorization in Eq.~\eqref{eq:plan}. Sinkhorn fitting alternates the log-space updates
 \begin{align}
 \log a_j^-&=-\log N_- -
 \operatorname{logsumexp}_i[\log a_i^+-c_{ji}],\nonumber\\
@@ -121,23 +98,18 @@ in Eq.~\eqref{eq:plan}. Sinkhorn fitting alternates the log-space updates
 \operatorname{logsumexp}_j[\log a_j^--c_{ji}].
 \label{eq:sinkhorn}
 \end{align}
-At convergence the plan satisfies both marginals, while the finite number of sweeps used in the
-implementation gives an approximate fit. The geodesic kernel and subsequent
-stationary field do not preserve the exact Brownian bridge construction.
+At convergence the plan satisfies both marginals, while the finite number of sweeps used in the implementation gives an approximate fit. The geodesic kernel and subsequent stationary field do not preserve the exact Brownian bridge construction.
 
 \subsection{Kernel gradients and conditional weights}
 \label{app:grad-psi}
 
-The weighted logarithm maps in Eq.~\eqref{eq:cobras-field} arise from differentiating
-kernel sums at a fixed bandwidth $b$. For $\theta=d_{\Sph}(\boldsymbol{x},\boldsymbol h)/R<\pi$, differentiating
-$R^2\arccos^2(R^{-2}\boldsymbol{x}^\top\boldsymbol h)$ and projecting onto the tangent space gives
+The weighted logarithm maps in Eq.~\eqref{eq:cobras-field} arise from differentiating kernel sums at a fixed bandwidth $b$. For $\theta=d_{\Sph}(\boldsymbol{x},\boldsymbol h)/R<\pi$, differentiating $R^2\arccos^2(R^{-2}\boldsymbol{x}^\top\boldsymbol h)$ and projecting onto the tangent space gives
 \[
 \nablaS d_{\Sph}(\boldsymbol{x},\boldsymbol h)^2
 =-\frac{2\theta}{\sin\theta}\Pi_{\boldsymbol{x}}\boldsymbol h
 =-2\log_{\boldsymbol{x}}(\boldsymbol h).
 \]
-At $\boldsymbol{x}=\boldsymbol h$, use the continuous limit, which is zero.
-For fixed positive $m_i$, the chain rule therefore yields
+At $\boldsymbol{x}=\boldsymbol h$, use the continuous limit, which is zero. For fixed positive $m_i$, the chain rule therefore yields
 \begin{equation}
 b\nablaS\log\sum_i m_iK_b(\boldsymbol{x},\boldsymbol h_i)
 =\sum_i w_i(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol h_i),
@@ -147,24 +119,18 @@ w_i(\boldsymbol{x})=
 {\sum_{i'}m_{i'}K_b(\boldsymbol{x},\boldsymbol h_{i'})}.
 \label{eq:grad-psi}
 \end{equation}
-Taking $m_i=a_i^+$ or $m_j=a_j^-$ gives the log-gradients of the fitted kernel
-factors. Uniform $m_i$ gives the corresponding kernel density-estimate gradient.
+Taking $m_i=a_i^+$ or $m_j=a_j^-$ gives the log-gradients of the fitted kernel factors. Uniform $m_i$ gives the corresponding kernel density-estimate gradient.
 
 \paragraph{Gradient interpretation of the steering field.}
 \label{apx:omitted-term}
-At the current iterate $\boldsymbol q\in\Sph$, evaluate the conditional coefficients
-$m^+_{i,b}(\boldsymbol q)$ and $m^-_{j,b}(\boldsymbol q)$. Let $\boldsymbol y\in\Sph$ denote the point at
-which the kernels are evaluated, and define
+At the current iterate $\boldsymbol q\in\Sph$, evaluate the conditional coefficients $m^+_{i,b}(\boldsymbol q)$ and $m^-_{j,b}(\boldsymbol q)$. Let $\boldsymbol y\in\Sph$ denote the point at which the kernels are evaluated, and define
 \begin{equation}
 F_{\boldsymbol q}(\boldsymbol y)=
 \log\frac{\sum_i m^+_{i,b}(\boldsymbol q)K_b(\boldsymbol y,\boldsymbol h_i^+)}
 {\sum_j m^-_{j,b}(\boldsymbol q)K_b(\boldsymbol y,\boldsymbol h_j^-)}.
 \label{eq:local-objective}
 \end{equation}
-Equation~\eqref{eq:grad-psi} gives
-$\boldsymbol v(\boldsymbol q)=b\nabla_{\boldsymbol y}F_{\boldsymbol q}(\boldsymbol y)
-|_{\boldsymbol y=\boldsymbol q}$. Differentiation is with respect to $\boldsymbol y$,
-with the coefficients evaluated at $\boldsymbol q$ and recomputed at the next iterate.
+Equation~\eqref{eq:grad-psi} gives $\boldsymbol v(\boldsymbol q)=b\nabla_{\boldsymbol y}F_{\boldsymbol q}(\boldsymbol y) |_{\boldsymbol y=\boldsymbol q}$. Differentiation is with respect to $\boldsymbol y$, with the coefficients evaluated at $\boldsymbol q$ and recomputed at the next iterate.
 
 Using the same variable $\boldsymbol{x}$ in both the coefficients and the kernels gives
 \[
@@ -180,20 +146,14 @@ b\nablaS\log\frac{\Psi_b^+}{\Psi_b^-}
 -b\sum_j\bar w_j^-\nablaS\log m^-_{j,b},
 \label{eq:apx-omitted}
 \end{equation}
-with every term evaluated at $\boldsymbol{x}$. The additional terms need not vanish,
-so this gradient generally differs from $\boldsymbol v$.
+with every term evaluated at $\boldsymbol{x}$. The additional terms need not vanish, so this gradient generally differs from $\boldsymbol v$.
 
 \subsection{Proof of Proposition~\ref{prop:ldr-limit}}
 \label{apx:proof-ldr-limit}
 
-Because $K_b$ depends only on geodesic distance, its integral over $\Sph$ is independent
-of the kernel center. The kernel estimates in Eq.~\eqref{eq:ldr-kde} therefore share
-a normalizing constant, which cancels in their ratio.
+Because $K_b$ depends only on geodesic distance, its integral over $\Sph$ is independent of the kernel center. The kernel estimates in Eq.~\eqref{eq:ldr-kde} therefore share a normalizing constant, which cancels in their ratio.
 
-Fix the projected contrastive activations and a shared bandwidth $b>0$, and let
-$c_{\max}=\max_{j,i}c_{ji}$. For any positive scalings in
-Eqs.~\eqref{eq:ext-psi}--\eqref{eq:ext-phi}, the following bound holds away from
-the contrastive activations' antipodes:
+Fix the projected contrastive activations and a shared bandwidth $b>0$, and let $c_{\max}=\max_{j,i}c_{ji}$. For any positive scalings in Eqs.~\eqref{eq:ext-psi}--\eqref{eq:ext-phi}, the following bound holds away from the contrastive activations' antipodes:
 \begin{equation}
 \|\boldsymbol v(\boldsymbol{x})-\boldsymbol v_b^{\mathrm{kde}}(\boldsymbol{x})\|
 \le 2\pi R(e^{c_{\max}}-1).
@@ -201,73 +161,43 @@ the contrastive activations' antipodes:
 \end{equation}
 
 \begin{proof}
-Write $S_-(\boldsymbol{x})=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol h_j^-)$.
-Since $0\le c_{ji}\le c_{\max}$, every desired multiplier satisfies
+Write $S_-(\boldsymbol{x})=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol h_j^-)$. Since $0\le c_{ji}\le c_{\max}$, every desired multiplier satisfies
 \[
 e^{-c_{\max}}S_-(\boldsymbol{x})
 \le m^+_{i,b}(\boldsymbol{x})\le S_-(\boldsymbol{x}).
 \]
-Its log-range across $i$ is therefore at most $c_{\max}$, independently of the
-positive scalings. The undesired multipliers obey the same bound.
+Its log-range across $i$ is therefore at most $c_{\max}$, independently of the positive scalings. The undesired multipliers obey the same bound.
 
-For a probability vector $u$, reweighting by positive multipliers of log-range
-at most $c_{\max}$ gives $w_i=u_i m_i/\sum_k u_km_k$. After a common rescaling,
-both $m_i$ and their $u$-weighted mean lie in $[1,e^{c_{\max}}]$. Consequently,
-$\|w-u\|_1\le e^{c_{\max}}-1$.
-Apply this to the kernel-only weights
-$u_i^+\propto K_b(\boldsymbol{x},\boldsymbol h_i^+)$ and the conditional weights
-$\bar w_i^+$. Each log-map has norm at most $\pi R$, so
+For a probability vector $u$, reweighting by positive multipliers of log-range at most $c_{\max}$ gives $w_i=u_i m_i/\sum_k u_km_k$. After a common rescaling, both $m_i$ and their $u$-weighted mean lie in $[1,e^{c_{\max}}]$. Consequently, $\|w-u\|_1\le e^{c_{\max}}-1$. Apply this to the kernel-only weights $u_i^+\propto K_b(\boldsymbol{x},\boldsymbol h_i^+)$ and the conditional weights $\bar w_i^+$. Each log-map has norm at most $\pi R$, so
 \[
 \left\|\sum_i(\bar w_i^+-u_i^+)
 \log_{\boldsymbol{x}}(\boldsymbol h_i^+)\right\|
 \le\pi R(e^{c_{\max}}-1).
 \]
-The negative branch contributes the same bound. Equation~\eqref{eq:grad-psi}
-identifies their kernel-only difference with $\boldsymbol v_b^{\mathrm{kde}}$,
-proving Eq.~\eqref{eq:prop1-bound}.
-Finally, $c_{\max}\le\pi^2R^2/(2\varepsilon)$ gives uniform convergence and the
-$O(1/\varepsilon)$ rate at fixed $b$.
+The negative branch contributes the same bound. Equation~\eqref{eq:grad-psi} identifies their kernel-only difference with $\boldsymbol v_b^{\mathrm{kde}}$, proving Eq.~\eqref{eq:prop1-bound}. Finally, $c_{\max}\le\pi^2R^2/(2\varepsilon)$ gives uniform convergence and the $O(1/\varepsilon)$ rate at fixed $b$.
 \end{proof}
 
-The bound requires only positive scalings and thus also holds after finitely many
-Sinkhorn iterations. It describes the unnormalized field on a fixed dataset at a
-shared fixed bandwidth. Normalized directions converge wherever the limiting
-field's norm is bounded away from zero.
+The bound requires only positive scalings and thus also holds after finitely many Sinkhorn iterations. It describes the unnormalized field on a fixed dataset at a shared fixed bandwidth. Normalized directions converge wherever the limiting field's norm is bounded away from zero.
 
 \subsection{Implementation details}
 \label{apx:bandwidth}
 \label{apx:pseudocode}
 
 \paragraph{Bandwidth selection.}
-The implementation selects a squared-distance scale separately for each
-population at every iterate:
+The implementation selects a squared-distance scale separately for each population at every iterate:
 \begin{equation}
 b_\pm(\boldsymbol{x})=
 \max\!\left\{\max_{\boldsymbol h\in\mathcal D^\pm}
 d_{\Sph}(\boldsymbol{x},\boldsymbol h)^2,\ b_{\min}\right\}.
 \label{eq:adaptive-bandwidth}
 \end{equation}
-Here $b_{\min}>0$ is a numerical floor.
-Every kernel centered on a desired sample uses $b_+$, including the kernels
-inside $m^-$. Every kernel centered on an undesired sample uses $b_-$,
-including those inside $m^+$. The final field remains the difference of
-weighted log-maps in Eq.~\eqref{eq:cobras-field}, without dividing either branch
-by its bandwidth. Thus the common-$b$ gradient-ratio identity and
-Proposition~\ref{prop:ldr-limit} describe the fixed-bandwidth construction.
-The gate uses the separate, fixed bandwidth $b_g$.
+Here $b_{\min}>0$ is a numerical floor. Every kernel centered on a desired sample uses $b_+$, including the kernels inside $m^-$. Every kernel centered on an undesired sample uses $b_-$, including those inside $m^+$. The final field remains the difference of weighted log-maps in Eq.~\eqref{eq:cobras-field}, without dividing either branch by its bandwidth. Thus the common-$b$ gradient-ratio identity and Proposition~\ref{prop:ldr-limit} describe the fixed-bandwidth construction. The gate uses the separate, fixed bandwidth $b_g$.
 
 \paragraph{Numerical evaluation.}
-Algorithm~\ref{alg:cobras} gives the adaptive procedure. Kernel sums and
-normalized weights are evaluated in log space. Implementations also clamp
-cosines away from $\pm1$ and vector norms away from zero for numerical stability.
+Algorithm~\ref{alg:cobras} gives the adaptive procedure. Kernel sums and normalized weights are evaluated in log space. Implementations also clamp cosines away from $\pm1$ and vector norms away from zero for numerical stability.
 
 \paragraph{Computational cost.}
-Transport fitting and reference-score computation are performed offline. With pairwise
-transport costs and Sinkhorn scalings precomputed, each steered token requires $K$ field
-evaluations, each costing $O(N_-N_+ + d(N_-+N_+))$. The $N_-N_+$ term comes from combining
-connections between the contrastive populations, while $d(N_-+N_+)$ covers distances and
-tangent vectors in activation space. This expression describes steering integration and
-excludes the language model's forward pass. The support gate is evaluated once per prompt.
+Transport fitting and reference-score computation are performed offline. With pairwise transport costs and Sinkhorn scalings precomputed, each steered token requires $K$ field evaluations, each costing $O(N_-N_+ + d(N_-+N_+))$. The $N_-N_+$ term comes from combining connections between the contrastive populations, while $d(N_-+N_+)$ covers distances and tangent vectors in activation space. This expression describes steering integration and excludes the language model's forward pass. The support gate is evaluated once per prompt.
 
 \begin{algorithm}[t]
 \caption{\Cobras with adaptive bandwidths}
@@ -322,48 +252,26 @@ $\Delta\gets Tsg_q\theta_0R/K$
 \label{apx:ood-gate}
 
 \paragraph{Support score and reference prompts.}
-The gate uses the product score in Eq.~\eqref{eq:support-score} at a fixed
-bandwidth $b_g$. Its two factors summarize weighted proximity to desired and
-undesired activations, so the score depends on support from both populations.
-Both reference and query activations are taken at the
-steering layer and last prompt position, projected onto $\Sph$, and scored
-identically. This avoids assuming that prompt-only and contrastive
-question--answer activations have the same score distribution.
+The gate uses the product score in Eq.~\eqref{eq:support-score} at a fixed bandwidth $b_g$. Its two factors summarize weighted proximity to desired and undesired activations, so the score depends on support from both populations. Both reference and query activations are taken at the steering layer and last prompt position, projected onto $\Sph$, and scored identically. This avoids assuming that prompt-only and contrastive question--answer activations have the same score distribution.
 
-In the TruthfulQA gate analysis, $\mathcal D_{\mathrm{ref}}$ contains the
-training-fold prompts and the gate is applied to the held-out fold.
-For OOD evaluation, it contains all $817$ TruthfulQA prompts. No GSM8K,
-MMLU, NQ, or TriviaQA prompt is used for calibration.
+In the TruthfulQA gate analysis, $\mathcal D_{\mathrm{ref}}$ contains the training-fold prompts and the gate is applied to the held-out fold. For OOD evaluation, it contains all $817$ TruthfulQA prompts. No GSM8K, MMLU, NQ, or TriviaQA prompt is used for calibration.
 
 \paragraph{Interpreting the coverage parameter.}
-The parameter $p$ sets the reference rank threshold at or below which $g=1$.
-If $n$ reference scores and one new score are exchangeable and almost surely
-distinct, the new score's rank $nr$ is uniform on $\{0,\ldots,n\}$. Consequently,
+The parameter $p$ sets the reference rank threshold at or below which $g=1$. If $n$ reference scores and one new score are exchangeable and almost surely distinct, the new score's rank $nr$ is uniform on $\{0,\ldots,n\}$. Consequently,
 \begin{equation}
 \Pr(g=1)=\frac{\lfloor np\rfloor+1}{n+1}.
 \label{eq:gate-finite-coverage}
 \end{equation}
-As $n$ grows at fixed $p<1$, this probability tends to $p$, and the mean gate tends to
-$\int_0^p1\,dr+(1-p)^{-1}\int_p^1(1-r)\,dr=(1+p)/2$.
-At $p=0.7$, these limits correspond to no gate attenuation on $70\%$ of new
-in-distribution prompts and a mean gate of $0.85$, under the stated assumptions.
+As $n$ grows at fixed $p<1$, this probability tends to $p$, and the mean gate tends to $\int_0^p1\,dr+(1-p)^{-1}\int_p^1(1-r)\,dr=(1+p)/2$. At $p=0.7$, these limits correspond to no gate attenuation on $70\%$ of new in-distribution prompts and a mean gate of $0.85$, under the stated assumptions.
 
-These statements average over both reference and query scores. Our calibration
-reuses bridge-training prompts, for which exchangeability with new-query scores
-has not been established. The calculation therefore interprets $p$ under the
-stated assumptions without providing a coverage guarantee for this fitted gate.
+These statements average over both reference and query scores. Our calibration reuses bridge-training prompts, for which exchangeability with new-query scores has not been established. The calculation therefore interprets $p$ under the stated assumptions without providing a coverage guarantee for this fitted gate.
 
 \paragraph{OOD separation.}
-We assess OOD separation empirically using the support scores and resulting gate
-values in Table~\ref{tab:gate-separation}.
+We assess OOD separation empirically using the support scores and resulting gate values in Table~\ref{tab:gate-separation}.
 \begin{table}[ht]
 \centering
 \small
-\caption{Support gate on Llama3.1-8B layer $13$, with $p=0.7$.
-The bridge and reference scores use TruthfulQA.
-AUROC compares TruthfulQA and each listed OOD set using the score $u$.
-The TruthfulQA row evaluates the $817$ calibration prompts against their own
-reference scores; its mean is not a held-out coverage estimate.}
+\caption{Support gate on Llama3.1-8B layer $13$, with $p=0.7$. The bridge and reference scores use TruthfulQA. AUROC compares TruthfulQA and each listed OOD set using the score $u$. The TruthfulQA row evaluates the $817$ calibration prompts against their own reference scores; its mean is not a held-out coverage estimate.}
 \label{tab:gate-separation}
 \begin{tabular}{llcc}
 \toprule
@@ -378,13 +286,7 @@ MMLU       & out-of-distribution & $0.000$ & $1.000$ \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:gate-separation} shows strong separation for GSM8K and MMLU
-and weaker separation for NQ and TriviaQA. The gate is zero on every MMLU
-prompt in this evaluation. GSM8K and MMLU also use different few-shot
-formats, whereas NQ and TriviaQA reuse the TruthfulQA instruction and QA
-primer; these measurements therefore do not isolate task content from prompt
-format. Across the four OOD sets, the reported aggregate AUROC is $0.93$
-on Llama3.1-8B and $0.97$ on Mistral-7B.
+Table~\ref{tab:gate-separation} shows strong separation for GSM8K and MMLU and weaker separation for NQ and TriviaQA. The gate is zero on every MMLU prompt in this evaluation. GSM8K and MMLU also use different few-shot formats, whereas NQ and TriviaQA reuse the TruthfulQA instruction and QA primer; these measurements therefore do not isolate task content from prompt format. Across the four OOD sets, the reported aggregate AUROC is $0.93$ on Llama3.1-8B and $0.97$ on Mistral-7B.
 
 \subsection{Nearest-neighbor gate as an external module}
 \label{apx:knn-gate}
