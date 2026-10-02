@@ -30,7 +30,7 @@ The steering field derived below is a weighted sum of logarithm maps toward the 
 \section{LLM Steering as a Schr\"{o}dinger Bridge}
 \label{sec:method}
 
-In this section, we first cast steering as a transportation problem and then derive our method, \Cobras. We first derive the continuous bridge identities that motivate this construction (Section~\ref{subsec:sb}), then give the finite-sample direction, strength controls, and inference procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction} establishes the connection to density-ratio steering.
+In this section, we first cast steering as a transportation problem and then derive our method, \Cobras. We first derive the continuous bridge identities that motivate our construction (Section~\ref{subsec:sb}), then derive the direction, strength controls, and inference procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction} establishes the connection to density-ratio steering, which is prior works implicitly optimized.
 
 \begin{figure}[!tb]
     \centering
@@ -39,7 +39,7 @@ In this section, we first cast steering as a transportation problem and then der
     \label{fig:overview}
 \end{figure}
 
-\subsection{A transport objective and its steering direction}
+\subsection{Schr\"{o}dinger Bridge and transport objective}
 \label{subsec:sb}
 
 We formulate steering as transporting the undesired activation distribution $\pminus$ to the desired distribution $\pplus$ on $\Sph$. Let $P$ be a probability distribution over continuous activation trajectories, and let $P_t$ denote the distribution of activations at transport time $t\in[0,1]$ when trajectories are drawn from $P$. To choose among transports with these endpoints, we compare $P$ with a reference trajectory distribution $Q$. We take $Q$ to describe Brownian motion on $\Sph$ with diffusion scale $\sigma^2$ and a uniform initial distribution, providing random motion without a preferred direction on the sphere. The Schr\"{o}dinger bridge~\citep{schrodinger1932theorie} is the trajectory distribution that matches the two endpoints while minimizing the Kullback--Leibler (KL) divergence from $Q$,
