@@ -34,7 +34,7 @@ In this section, we first cast steering as a transportation problem and then der
 
 \begin{figure}[!tb]
     \centering
-    \includegraphics[width=0.8\linewidth]{figures/cobras_overview.pdf}
+    \includegraphics[width=\linewidth]{figures/cobras_overview.pdf}
     \caption{Overview of \Cobras. \textbf{(a)} Contrastive activations are projected onto $\Sph$.     \textbf{(b)} Entropic transport connects the undesired and desired populations; these connections     reweight attraction and repulsion at each steering step. \textbf{(c--d)} Direction and strength     depend on the input, and the support gate can leave unfamiliar prompts unchanged.     \textbf{(e)} Example generations on TruthfulQA and an OOD GSM8K question.     The figure's $q_k$ and $\hat p_0$ correspond to $\boldsymbol{x}_k$ and $\hat p_{b_g}$ in the text.}
     \label{fig:overview}
 \end{figure}
@@ -163,7 +163,7 @@ g(\boldsymbol{x})=\min\!\left\{1,\frac{1-r(\boldsymbol{x})}{1-p}\right\}.
 \end{equation}
 With coverage parameter $p\in(0,1)$, the gate leaves the steering strength unchanged up to the reference $p$-quantile and then decreases linearly with rank, reaching zero for scores above all reference scores. Appendix~\ref{apx:ood-gate} explains how $p$ controls in-distribution steering strength and evaluates how well the support scores separate OOD prompts.
 
-A simpler distance gate, based on the $k$-th nearest undesired activation, can replace this score. As the bandwidth $b_g$ shrinks, $u$ approaches the sum of the squared nearest-neighbor distances to the two populations, so the distance gate is a one-sided relative of the product score. Because it needs only distances, it can also gate other steering methods. Appendix~\ref{apx:knn-gate} derives this limit, reports the distance gate attached to baseline methods, and explains why we calibrate the product score on prompt activations instead.
+We also implement a simpler distance gate based on the $k$-th nearest undesired activation to obtain this score. Because it needs only distances, it can also be used to gate other steering methods. Appendix~\ref{apx:knn-gate} discusses this kNN variant, its relation to the product score in the limit, and reports its sensitivity and performance for \Cobras and the baseline methods.
 
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
