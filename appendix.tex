@@ -4,7 +4,7 @@
 In this section, we show that diverse activation steering methodologies can be unified under a single theoretical framework governed by log-density ratio optimization. Specifically, we analyze how these seemingly disparate techniques implicitly optimize the ratio $\log(p_+ / p_-)$ by reinterpreting them as specific geometric configurations of a continuous global flow. Formally, let $p_{+}$ and $p_{-}$ define a pair of continuous densities corresponding to the contrastive behavior distributions $\mathcal{D}^{+}$ and $\mathcal{D}^{-}$, respectively. Given an initial query activation $\boldsymbol{h}_q$ on an underlying representation manifold $\mathcal{M}$, the steering trajectory is obtained by integrating the continuous-time ordinary differential equation:
 
 \begin{equation}
-d\boldsymbol{x}_t = \nabla_{\mathcal{M}}\log\frac{p_{+}(\boldsymbol{x}_{t})}{p_{-}(\boldsymbol{x}_{t})}\,dt, \qquad \boldsymbol{x}_{0} = \hquery,
+\mathrm{d}\boldsymbol{x}_t = \nabla_{\mathcal{M}}\log\frac{p_{+}(\boldsymbol{x}_{t})}{p_{-}(\boldsymbol{x}_{t})}\,\mathrm{d}t, \qquad \boldsymbol{x}_{0} = \hquery,
 \label{eq:global-flow}
 \end{equation}
 
@@ -77,7 +77,7 @@ When evaluating the global flow framework under these spherical constraints, the
 \[
 \textcolor{blue}{\displaystyle
 \begin{aligned}
-\frac{d\boldsymbol{x}_t}{dt}
+\frac{\mathrm{d}\boldsymbol{x}_t}{\mathrm{d}t}
 &=\sigma^2\nablaS\log\psi(\boldsymbol{x}_t,t)
 -\frac{\sigma^2}{2}\nablaS\log\!\left[\varphi(\boldsymbol{x}_t,t)\psi(\boldsymbol{x}_t,t)\right]\\
 &=\frac{\sigma^2}{2}\nablaS\log\frac{\psi(\boldsymbol{x}_t,t)}{\varphi(\boldsymbol{x}_t,t)}.
@@ -220,7 +220,7 @@ The parameter $p$ sets the reference rank threshold at or below which $g=1$. If 
 \Pr(g=1)=\frac{\lfloor np\rfloor+1}{n+1}.
 \label{eq:gate-finite-coverage}
 \end{equation}
-As $n$ grows at fixed $p<1$, this probability tends to $p$, and the mean gate tends to $\int_0^p1\,dr+(1-p)^{-1}\int_p^1(1-r)\,dr=(1+p)/2$. At $p=0.7$, these limits correspond to no gate attenuation on $70\%$ of new in-distribution prompts and a mean gate of $0.85$, under the stated assumptions.
+As $n$ grows at fixed $p<1$, this probability tends to $p$, and the mean gate tends to $\int_0^p1\,\mathrm{d}r+(1-p)^{-1}\int_p^1(1-r)\,\mathrm{d}r=(1+p)/2$. At $p=0.7$, these limits correspond to no gate attenuation on $70\%$ of new in-distribution prompts and a mean gate of $0.85$, under the stated assumptions.
 
 These statements average over both reference and query scores. Our calibration reuses bridge-training prompts, for which exchangeability with new-query scores has not been established. The calculation therefore interprets $p$ under the stated assumptions without providing a coverage guarantee for this fitted gate.
 
