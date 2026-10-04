@@ -50,7 +50,7 @@ P^\star=\operatorname*{arg\,min}_{P}\KL(P\,\Vert\,Q)
 \end{equation}
 Thus the endpoint constraints specify the desired population change, and relative entropy selects the evolution closest to the reference motion. The time variable $t\in[0,1]$ indexes this population transport independently of token positions in the generated sequence.
 
-\textcolor{blue}{The trajectory optimization in Eq.~\eqref{eq:sb} reduces to finding an endpoint coupling, the joint distribution of starting and ending activations. For a fixed coupling, the KL divergence is minimized by using the reference Brownian motion conditioned on each pair of endpoints. We use the resulting endpoint problem to motivate the discrete transport formulation in Section~\ref{subsec:estimation}. Appendix~\ref{apx:static} derives the reduction.}
+\textcolor{blue}{The trajectory optimization in Eq.~\eqref{eq:sb} reduces to finding an endpoint coupling, the joint distribution of starting and ending activations. For a fixed coupling, the KL divergence is minimized by using the reference Brownian motion conditioned on each pair of endpoints. We use the resulting endpoint problem to motivate the discrete transport formulation in Section~\ref{subsec:estimation}.}
 
 The solution to SB is characterized by two positive Schr\"{o}dinger potentials, $\varphi(\boldsymbol{x},t)$ and $\psi(\boldsymbol{x},t)$, which propagate information from the undesired forward and desired endpoints backward, respectively~\citep{leonard2013survey}. Together they determine the bridge density through their product,
 \begin{equation}
