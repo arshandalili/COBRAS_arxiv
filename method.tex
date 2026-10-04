@@ -79,7 +79,7 @@ K_b(\boldsymbol{x},\boldsymbol{y})
 \qquad b>0.
 \label{eq:kernel}
 \end{equation}
-The bandwidth $b$ sets the scale of this kernel, whose form is motivated by the leading short-time exponential behavior of the heat kernel~\citep{chen2023logarithmic}. \textcolor{blue}{At transport scale $\varepsilon>0$, we use $K_\varepsilon$ as a surrogate for the spherical Brownian transition density and solve the discrete entropic transport problem}
+The bandwidth $b$ sets the scale of this kernel, whose form is motivated by the leading short-time exponential behavior of the heat kernel~\citep{chen2023logarithmic}. \textcolor{blue}{With entropy regularization strength $\varepsilon>0$, we use $K_\varepsilon$ as a surrogate for the spherical Brownian transition density and solve the discrete entropic transport problem}
 \begin{equation}
 \textcolor{blue}{\displaystyle
 \pi^\star=\operatorname*{arg\,min}_{\pi\in\mathcal{U}}
@@ -205,7 +205,7 @@ At each step, we recompute the direction $\boldsymbol{v}(\boldsymbol{x}_k)$ whil
 \small
 \begin{algorithmic}[1]
 \Require $\mathcal{D}^\pm$; reference prompts $\mathcal{D}_{\mathrm{ref}}$;
-transport scale $\varepsilon$; support bandwidth $b_g$;
+regularization strength $\varepsilon$; support bandwidth $b_g$;
 strength $T$; coverage $p$; steps $K$; concentration $\kappa$
 \Statex \textbf{Offline: fit transport and calibrate support}
 \State $R\gets\mathrm{mean}_{\boldsymbol{h}\in\mathcal{D}^+\cup\mathcal{D}^-}\|\boldsymbol{h}\|$;
