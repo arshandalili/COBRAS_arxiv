@@ -20,7 +20,7 @@ For example, the following methods can be recalled from this perspective as summ
 \paragraph{Spherical Steering (SS)~\citep{you2026spherical}}
 
 
-To relax the assumption of a flat Euclidean space and account for the directional nature of high-dimensional neural representations, Spherical Steering constrains the optimization trajectory to a unit hypersphere manifold, setting $\mathcal{M}=\mathcal{S}^{d-1}$. Under a single-step discrete horizon ($K=1$), the method models the target positive activations using a von Mises-Fisher (vMF) distribution $p_+=\mathrm{vMF}(\cdot;\boldsymbol{\mu},\kappa)$ which acts as the spherical analogue to an isotropic Gaussian with a mean direction vector $\boldsymbol{\mu}$ and a concentration parameter $\kappa$. Conversely, the negative behavior is modeled as a uniform distribution over the sphere $p_-=\mathrm{Unif}(\mathcal{S})$. The unit prototype towards the positive activations $\boldsymbol{\mu}$ is empirically defined by normalizing the difference between the mean positive and negative activations: $$\boldsymbol{\mu}= \frac{\bar{\boldsymbol{h}}^{+} - \bar{\boldsymbol{h}}^{-}}{\|\bar{\boldsymbol{h}}^{+} - \bar{\boldsymbol{h}}^{-}\|}.$$
+To relax the assumption of a flat Euclidean space and account for the directional nature of high-dimensional neural representations, Spherical Steering constrains the optimization trajectory to a unit hypersphere manifold, setting $\mathcal{M}=\mathcal{S}^{d-1}$. Under a single-step discrete horizon ($K=1$), the method models the target positive activations using a von Mises-Fisher (vMF) distribution $p_+=\mathrm{vMF}(\cdot;\boldsymbol{\mu},\kappa)$ which acts as the spherical analogue to an isotropic Gaussian with a mean direction vector $\boldsymbol{\mu}$ and a concentration parameter $\kappa$. Conversely, the negative behavior is modeled as a uniform distribution over the sphere $p_-=\mathrm{Unif}(\mathcal{S})$. The unit direction $\boldsymbol{\mu}$ toward the positive activations is empirically defined by normalizing the difference between the mean positive and negative activations: $$\boldsymbol{\mu}= \frac{\bar{\boldsymbol{h}}^{+} - \bar{\boldsymbol{h}}^{-}}{\|\bar{\boldsymbol{h}}^{+} - \bar{\boldsymbol{h}}^{-}\|}.$$
 
 When evaluating the global flow framework under these spherical constraints, the Riemannian gradient of the likelihood ratio yields a non-linear direction proportional to the logarithmic map on the sphere $\nabla_{\mathcal{S}}\log\tfrac{p_+}{p_-} \propto\log_{\boldsymbol{x}}(\boldsymbol{\mu})$ which corresponds to the Slerp direction toward $\boldsymbol{\mu}$ in the direction of this Riemannian gradient. By explicitly respecting the spherical geometry of hidden states, SS ensures that the magnitude of the activation vector is preserved, avoiding out-of-distribution distortion while performing directional steering.
 
@@ -35,11 +35,11 @@ When evaluating the global flow framework under these spherical constraints, the
 \textbf{Method} & \textbf{Manifold ($\mathcal{M}$)} & \textbf{Horizon ($K$)} & \textbf{Density Ratio $\log(\pplus / \pminus)$} & \textbf{Induced Gradient $\nabla_{\mathcal{M}} \log(\pplus / \pminus)$} \\ 
 \midrule
 \textbf{CAA}~\citep{rimsky2024steering} & $\mathbb{R}^d$ & $K=1$ & Isotropic Gaussians:\newline $\mathcal{N}(\boldsymbol{\mu}_{\pm}, \boldsymbol{I}_d)$ & Constant translation:\newline $\boldsymbol{\mu}_+ - \boldsymbol{\mu}_-$ \\ \addlinespace
-\textbf{SS}~\citep{you2026spherical} & $\mathcal{S}^{d-1}$ & $K=1$ & von Mises-Fisher vs. Uniform:\newline $\text{vMF}(\boldsymbol{\mu}, \kappa) / \text{Unif}(\mathcal{S})$ & Slerp direction toward unit prototype $\boldsymbol{\mu}$ \\ \addlinespace
+\textbf{SS}~\citep{you2026spherical} & $\mathcal{S}^{d-1}$ & $K=1$ & von Mises-Fisher vs. Uniform:\newline $\text{vMF}(\boldsymbol{\mu}, \kappa) / \text{Unif}(\mathcal{S})$ & Slerp direction toward the unit direction $\boldsymbol{\mu}$ \\ \addlinespace
 \textbf{ITI}~\citep{li2023inference} & $\mathbb{R}^d$ & $K=1$ & Discriminative Linear\newline Logistic Probe: $\sigma(\boldsymbol{\theta}^\top \boldsymbol{x})$ & Normal vector to decision boundary: $\boldsymbol{\theta}$ \\ \addlinespace
 \textbf{HPR}~\citep{pham2024householder} & $\mathcal{S}^{d-1}$ & $K=1$ & Linear Probe mapped via Householder Reflector $\boldsymbol{H}$ & Slerp path toward reflected state $\boldsymbol{H}\hat{\boldsymbol{x}}$ \\ \addlinespace
 \textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & $K > 1$ & Polynomial Count-Sketch Feature Map: $\boldsymbol{w}^\top \phi(\boldsymbol{x}) + b$ & State-dependent Jacobian field:\newline $\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w} / \|\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w}\|$ \\
-\textbf{\Cobras~(ours)} & $\mathcal{S}^{d-1}$ & $K > 1$ & Schr\"{o}dinger potentials via spherical KDE:\newline $\hat\psi / \hat\phi$ & Weighted Riemannian mean of log-maps:\newline $\sum_{i}\bar{w}^{+}_{i}\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i}) - \sum_{j}\bar{w}^{-}_{j}\log_{\boldsymbol{x}}(\boldsymbol{h}^{-}_{j})$ \\
+\textbf{\Cobras~(ours)} & $\mathcal{S}^{d-1}$ & $K > 1$ & Schr\"{o}dinger potentials via spherical KDE:\newline $\hat{\psi} / \hat{\phi}$ & Weighted Riemannian mean of log-maps:\newline $\sum_{i}\bar{w}^{+}_{i}\log_{\boldsymbol{x}}(\boldsymbol{h}^{+}_{i}) - \sum_{j}\bar{w}^{-}_{j}\log_{\boldsymbol{x}}(\boldsymbol{h}^{-}_{j})$ \\
 \bottomrule
 \end{tabular}
 }
@@ -53,44 +53,50 @@ When evaluating the global flow framework under these spherical constraints, the
 \section{Derivations and Implementation}
 \label{apx:theory}
 
-This appendix provides derivations for bridge field and discrete transport fit, explains the gradient form of the steering direction, and proves its density-ratio limit.
+\textcolor{blue}{This appendix derives the continuous bridge field, the discrete transport fit, and the local gradient interpretation of the steering field. It then separates the transport limit from the sampling limit needed to recover the population log-density-ratio gradient.}
 
 \subsection{Continuous bridge and discrete transport}
 \label{apx:static}
 
-\paragraph{Probability flow.}
-For the continuous derivation, assume strictly positive $C^2$ endpoint densities on $\Sph$. The reference $Q$ is Brownian motion started uniformly, with generator $\tfrac{\sigma^2}{2}\Delta_{\Sph}$, where $\Delta_{\Sph}$ is the spherical Laplacian. The bridge retains this diffusion and has drift $\boldsymbol u(\boldsymbol{x},t)=\sigma^2\nablaS\log\psi(\boldsymbol{x},t)$ so its Fokker--Planck equation can be written
-\begin{align}
-\partial_t p_t
-&=-\operatorname{div}_{\Sph}(p_t\boldsymbol u)
-  +\frac{\sigma^2}{2}\Delta_{\Sph}p_t \nonumber\\
-&=-\operatorname{div}_{\Sph}\!\left[
-p_t\left(\boldsymbol u-\frac{\sigma^2}{2}\nablaS\log p_t\right)\right].
-\label{eq:apx-continuity}
-\end{align}
-This is the continuity equation for a deterministic field with the same marginals, initialized from $\pminus$. Substituting $p_t\propto\varphi\psi$ gives $\boldsymbol u-\tfrac{\sigma^2}{2}\nablaS\log p_t =\tfrac{\sigma^2}{2}\nablaS\log(\psi/\varphi)$, proving Eq.~\eqref{eq:ldr}.
+\paragraph{\textcolor{blue}{Probability-flow identity.}}
+\textcolor{blue}{Song et al.~\citep[Sec.~4.3, Eq.~13]{song2020score} give the following statement, with vector typography adapted to our notation.}
+\begin{quote}
+\textcolor{blue}{``For all diffusion processes, there exists a corresponding deterministic process whose trajectories share the same marginal probability densities $\{p_t(\boldsymbol{x})\}_{t=0}^{T}$ as the SDE.''}
+\end{quote}
+\textcolor{blue}{For the Euclidean SDE $\mathrm{d}\boldsymbol{x}=\boldsymbol{f}(\boldsymbol{x},t)\,\mathrm{d}t+g(t)\,\mathrm{d}\boldsymbol{w}$, their probability-flow ODE is}
+\[
+\textcolor{blue}{\displaystyle
+\mathrm{d}\boldsymbol{x}
+=\Big[\boldsymbol{f}(\boldsymbol{x},t)-\frac{1}{2}g(t)^2\nabla_{\boldsymbol{x}}\log p_t(\boldsymbol{x})\Big]\,\mathrm{d}t.
+}
+\]
+\textcolor{blue}{In the source notation, $\boldsymbol{f}$ is the drift, $g(t)$ is the diffusion amplitude, $\boldsymbol{w}$ is standard Brownian motion, and $T$ is the diffusion time horizon.}
+
+\paragraph{\textcolor{blue}{Application to the spherical bridge.}}
+\textcolor{blue}{The formula above is stated in Euclidean coordinates. De Bortoli et al.~\citep[App.~D.1]{de2022riemannian} give the corresponding construction for Brownian motion on a Riemannian manifold, using intrinsic gradients and densities with respect to Riemannian volume. Their Appendix~M.3, Eq.~270 includes a drift and is written in reverse time. In forward time on $\Sph$, the probability-flow velocity is $\boldsymbol{u}-\tfrac{\sigma^2}{2}\nablaS\log p_t$ for tangent drift $\boldsymbol{u}$ and constant diffusion variance $\sigma^2$. For smooth positive endpoint densities, the bridge drift is $\boldsymbol{u}(\boldsymbol{x},t)=\sigma^2\nablaS\log\psi(\boldsymbol{x},t)$~\citep{leonard2013survey}. Combining this drift with $p_t\propto\varphi\psi$ from Eq.~\eqref{eq:product} gives}
+\[
+\textcolor{blue}{\displaystyle
+\begin{aligned}
+\frac{d\boldsymbol{x}_t}{dt}
+&=\sigma^2\nablaS\log\psi(\boldsymbol{x}_t,t)
+-\frac{\sigma^2}{2}\nablaS\log\!\left[\varphi(\boldsymbol{x}_t,t)\psi(\boldsymbol{x}_t,t)\right]\\
+&=\frac{\sigma^2}{2}\nablaS\log\frac{\psi(\boldsymbol{x}_t,t)}{\varphi(\boldsymbol{x}_t,t)}.
+\end{aligned}
+}
+\]
+\textcolor{blue}{Initialized from $\pminus$, the deterministic flow has the same activation distributions $P_t$ as the bridge. The resulting velocity is Eq.~\eqref{eq:ldr}.}
 
 \paragraph{Static formulation.}
 Conditioning trajectories on their starting and ending activations separates a path law $P$ into its endpoint coupling $P_{01}$ and conditional path laws $P_{\mid01}$. The corresponding relative-entropy decomposition is~\citep{leonard2013survey}
 \begin{equation}
 \KL(P\,\Vert\,Q)
 =\KL(P_{01}\,\Vert\,Q_{01})
-+\mathbb E_{P_{01}}\!\left[\KL(P_{\mid01}\,\Vert\,Q_{\mid01})\right].
++\mathbb{E}_{P_{01}}\!\left[\KL(P_{\mid01}\,\Vert\,Q_{\mid01})\right].
 \label{eq:apx-disint}
 \end{equation}
 For any endpoint coupling, the second term is minimized by retaining the reference bridges. Thus the continuous problem reduces to entropy minimization over endpoint couplings. Atomic empirical endpoints have infinite relative entropy against Brownian endpoints. We therefore discretize the static problem rather than impose empirical measures directly in Eq.~\eqref{eq:sb}.
 
-Choose discrete reference weights proportional to $e^{-c_{ji}}$ and normalize them to sum to one. Their relative entropy objective differs by a constant from
-\begin{equation}
-\pi^\star=\operatorname*{arg\,min}_{\pi\in\mathcal U}
-\sum_{j,i}\pi_{ji}c_{ji}+\sum_{j,i}\pi_{ji}\log\pi_{ji},
-\quad
-\mathcal U=\left\{\pi\ge0:
-\sum_i\pi_{ji}=\frac1{N_-},\
-\sum_j\pi_{ji}=\frac1{N_+}\right\}.
-\label{eq:e-ot}
-\end{equation}
-The strictly positive kernel gives a unique optimal coupling with the factorization in Eq.~\eqref{eq:plan}. Sinkhorn fitting alternates the log-space updates
+Choose discrete reference weights proportional to $e^{-c_{ji}}$ and normalize them to sum to one. \textcolor{blue}{Their relative entropy objective over couplings with uniform marginals differs by a constant from the objective in Eq.~\eqref{eq:e-ot}.} The strictly positive kernel gives a unique optimal coupling with the factorization in Eq.~\eqref{eq:plan}. Sinkhorn fitting alternates the log-space updates
 \begin{align}
 \log a_j^-&=-\log N_- -
 \operatorname{logsumexp}_i[\log a_i^+-c_{ji}],\nonumber\\
@@ -103,50 +109,50 @@ At convergence the plan satisfies both marginals, while the finite number of swe
 \subsection{Kernel gradients and conditional weights}
 \label{app:grad-psi}
 
-The weighted logarithm maps in Eq.~\eqref{eq:cobras-field} arise from differentiating kernel sums at a fixed bandwidth $b$. For $\theta=d_{\Sph}(\boldsymbol{x},\boldsymbol h)/R<\pi$, differentiating $R^2\arccos^2(R^{-2}\boldsymbol{x}^\top\boldsymbol h)$ and projecting onto the tangent space gives
+The weighted logarithm maps in Eq.~\eqref{eq:cobras-field} arise from differentiating kernel sums at a fixed bandwidth $b$. For $\theta=d_{\Sph}(\boldsymbol{x},\boldsymbol{h})/R<\pi$, differentiating $R^2\arccos^2(R^{-2}\boldsymbol{x}^\top\boldsymbol{h})$ and projecting onto the tangent space gives
 \[
-\nablaS d_{\Sph}(\boldsymbol{x},\boldsymbol h)^2
-=-\frac{2\theta}{\sin\theta}\Pi_{\boldsymbol{x}}\boldsymbol h
-=-2\log_{\boldsymbol{x}}(\boldsymbol h).
+\nablaS d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2
+=-\frac{2\theta}{\sin\theta}\Pi_{\boldsymbol{x}}\boldsymbol{h}
+=-2\log_{\boldsymbol{x}}(\boldsymbol{h}).
 \]
-At $\boldsymbol{x}=\boldsymbol h$, use the continuous limit, which is zero. For fixed positive $m_i$, the chain rule therefore yields
+At $\boldsymbol{x}=\boldsymbol{h}$, use the continuous limit, which is zero. For fixed positive $m_i$, the chain rule therefore yields
 \begin{equation}
-b\nablaS\log\sum_i m_iK_b(\boldsymbol{x},\boldsymbol h_i)
-=\sum_i w_i(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol h_i),
+b\nablaS\log\sum_i m_iK_b(\boldsymbol{x},\boldsymbol{h}_i)
+=\sum_i w_i(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_i),
 \quad
 w_i(\boldsymbol{x})=
-\frac{m_iK_b(\boldsymbol{x},\boldsymbol h_i)}
-{\sum_{i'}m_{i'}K_b(\boldsymbol{x},\boldsymbol h_{i'})}.
+\frac{m_iK_b(\boldsymbol{x},\boldsymbol{h}_i)}
+{\sum_{i'}m_{i'}K_b(\boldsymbol{x},\boldsymbol{h}_{i'})}.
 \label{eq:grad-psi}
 \end{equation}
 Taking $m_i=a_i^+$ or $m_j=a_j^-$ gives the log-gradients of the fitted kernel factors. Uniform $m_i$ gives the corresponding kernel density-estimate gradient.
 
 \paragraph{Gradient interpretation of the steering field.}
 \label{apx:omitted-term}
-At the current iterate $\boldsymbol q\in\Sph$, evaluate the conditional coefficients $m^+_{i,b}(\boldsymbol q)$ and $m^-_{j,b}(\boldsymbol q)$. Let $\boldsymbol y\in\Sph$ denote the point at which the kernels are evaluated, and define
+At the current iterate $\boldsymbol{q}\in\Sph$, evaluate the conditional coefficients $m^+_{i,b}(\boldsymbol{q})$ and $m^-_{j,b}(\boldsymbol{q})$. Let $\boldsymbol{y}\in\Sph$ denote the point at which the kernels are evaluated, and define
 \begin{equation}
-F_{\boldsymbol q}(\boldsymbol y)=
-\log\frac{\sum_i m^+_{i,b}(\boldsymbol q)K_b(\boldsymbol y,\boldsymbol h_i^+)}
-{\sum_j m^-_{j,b}(\boldsymbol q)K_b(\boldsymbol y,\boldsymbol h_j^-)}.
+F_{\boldsymbol{q}}(\boldsymbol{y})=
+\log\frac{\sum_i m^+_{i,b}(\boldsymbol{q})K_b(\boldsymbol{y},\boldsymbol{h}_i^+)}
+{\sum_j m^-_{j,b}(\boldsymbol{q})K_b(\boldsymbol{y},\boldsymbol{h}_j^-)}.
 \label{eq:local-objective}
 \end{equation}
-Equation~\eqref{eq:grad-psi} gives $\boldsymbol v(\boldsymbol q)=b\nabla_{\boldsymbol y}F_{\boldsymbol q}(\boldsymbol y) |_{\boldsymbol y=\boldsymbol q}$. Differentiation is with respect to $\boldsymbol y$, with the coefficients evaluated at $\boldsymbol q$ and recomputed at the next iterate.
+Equation~\eqref{eq:grad-psi} gives $\boldsymbol{v}(\boldsymbol{q})=b\nabla_{\boldsymbol{y}}F_{\boldsymbol{q}}(\boldsymbol{y}) |_{\boldsymbol{y}=\boldsymbol{q}}$. Differentiation is with respect to $\boldsymbol{y}$, with the coefficients evaluated at $\boldsymbol{q}$ and recomputed at the next iterate.
 
 Using the same variable $\boldsymbol{x}$ in both the coefficients and the kernels gives
 \[
-\Psi_b^+(\boldsymbol{x})=\sum_i m^+_{i,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol h_i^+),
+\Psi_b^+(\boldsymbol{x})=\sum_i m^+_{i,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_i^+),
 \qquad
-\Psi_b^-(\boldsymbol{x})=\sum_j m^-_{j,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol h_j^-).
+\Psi_b^-(\boldsymbol{x})=\sum_j m^-_{j,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_j^-).
 \]
 Differentiating their log-ratio yields
 \begin{equation}
 b\nablaS\log\frac{\Psi_b^+}{\Psi_b^-}
-=\boldsymbol v
-+b\sum_i\bar w_i^+\nablaS\log m^+_{i,b}
--b\sum_j\bar w_j^-\nablaS\log m^-_{j,b},
+=\boldsymbol{v}
++b\sum_i\bar{w}_i^+\nablaS\log m^+_{i,b}
+-b\sum_j\bar{w}_j^-\nablaS\log m^-_{j,b},
 \label{eq:apx-omitted}
 \end{equation}
-with every term evaluated at $\boldsymbol{x}$. The additional terms need not vanish, so this gradient generally differs from $\boldsymbol v$.
+with every term evaluated at $\boldsymbol{x}$. The additional terms need not vanish, so this gradient generally differs from $\boldsymbol{v}$.
 
 \subsection{Proof of Proposition~\ref{prop:ldr-limit}}
 \label{apx:proof-ldr-limit}
@@ -155,26 +161,26 @@ Because $K_b$ depends only on geodesic distance, its integral over $\Sph$ is ind
 
 Fix the projected contrastive activations and a shared bandwidth $b>0$, and let $c_{\max}=\max_{j,i}c_{ji}$. For any positive scalings in Eqs.~\eqref{eq:ext-psi}--\eqref{eq:ext-phi}, the following bound holds away from the contrastive activations' antipodes:
 \begin{equation}
-\|\boldsymbol v(\boldsymbol{x})-\boldsymbol v_b^{\mathrm{kde}}(\boldsymbol{x})\|
+\|\boldsymbol{v}(\boldsymbol{x})-\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})\|
 \le 2\pi R(e^{c_{\max}}-1).
 \label{eq:prop1-bound}
 \end{equation}
 
 \begin{proof}
-Write $S_-(\boldsymbol{x})=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol h_j^-)$. Since $0\le c_{ji}\le c_{\max}$, every desired multiplier satisfies
+Write $S_-(\boldsymbol{x})=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)$. Since $0\le c_{ji}\le c_{\max}$, every desired multiplier satisfies
 \[
 e^{-c_{\max}}S_-(\boldsymbol{x})
 \le m^+_{i,b}(\boldsymbol{x})\le S_-(\boldsymbol{x}).
 \]
 Its log-range across $i$ is therefore at most $c_{\max}$, independently of the positive scalings. The undesired multipliers obey the same bound.
 
-For a probability vector $u$, reweighting by positive multipliers of log-range at most $c_{\max}$ gives $w_i=u_i m_i/\sum_k u_km_k$. After a common rescaling, both $m_i$ and their $u$-weighted mean lie in $[1,e^{c_{\max}}]$. Consequently, $\|w-u\|_1\le e^{c_{\max}}-1$. Apply this to the kernel-only weights $u_i^+\propto K_b(\boldsymbol{x},\boldsymbol h_i^+)$ and the conditional weights $\bar w_i^+$. Each log-map has norm at most $\pi R$, so
+For a probability vector $u$, reweighting by positive multipliers of log-range at most $c_{\max}$ gives $w_i=u_i m_i/\sum_k u_km_k$. After a common rescaling, both $m_i$ and their $u$-weighted mean lie in $[1,e^{c_{\max}}]$. Consequently, $\|w-u\|_1\le e^{c_{\max}}-1$. Apply this to the kernel-only weights $u_i^+\propto K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$ and the conditional weights $\bar{w}_i^+$. Each log-map has norm at most $\pi R$, so
 \[
-\left\|\sum_i(\bar w_i^+-u_i^+)
-\log_{\boldsymbol{x}}(\boldsymbol h_i^+)\right\|
+\left\|\sum_i(\bar{w}_i^+-u_i^+)
+\log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)\right\|
 \le\pi R(e^{c_{\max}}-1).
 \]
-The negative branch contributes the same bound. Equation~\eqref{eq:grad-psi} identifies their kernel-only difference with $\boldsymbol v_b^{\mathrm{kde}}$, proving Eq.~\eqref{eq:prop1-bound}. Finally, $c_{\max}\le\pi^2R^2/(2\varepsilon)$ gives uniform convergence and the $O(1/\varepsilon)$ rate at fixed $b$.
+The negative branch contributes the same bound. Equation~\eqref{eq:grad-psi} identifies their kernel-only difference with $\boldsymbol{v}_b^{\mathrm{kde}}$, proving Eq.~\eqref{eq:prop1-bound}. Finally, $c_{\max}\le\pi^2R^2/(2\varepsilon)$ gives uniform convergence and the $O(1/\varepsilon)$ rate at fixed $b$.
 \end{proof}
 
 The bound requires only positive scalings and thus also holds after finitely many Sinkhorn iterations. It describes the unnormalized field on a fixed dataset at a shared fixed bandwidth. Normalized directions converge wherever the limiting field's norm is bounded away from zero.
@@ -187,8 +193,8 @@ The bound requires only positive scalings and thus also holds after finitely man
 The implementation selects a squared-distance scale separately for each population at every iterate:
 \begin{equation}
 b_\pm(\boldsymbol{x})=
-\max\!\left\{\max_{\boldsymbol h\in\mathcal D^\pm}
-d_{\Sph}(\boldsymbol{x},\boldsymbol h)^2,\ b_{\min}\right\}.
+\max\!\left\{\max_{\boldsymbol{h}\in\mathcal{D}^\pm}
+d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2,\ b_{\min}\right\}.
 \label{eq:adaptive-bandwidth}
 \end{equation}
 Here $b_{\min}>0$ is a numerical floor. Every kernel centered on a desired sample uses $b_+$, including the kernels inside $m^-$. Every kernel centered on an undesired sample uses $b_-$, including those inside $m^+$. The final field remains the difference of weighted log-maps in Eq.~\eqref{eq:cobras-field}, without dividing either branch by its bandwidth. Thus the common-$b$ gradient-ratio identity and Proposition~\ref{prop:ldr-limit} describe the fixed-bandwidth construction. The gate uses the separate, fixed bandwidth $b_g$.
@@ -206,7 +212,7 @@ Transport fitting and reference-score computation are performed offline. With pa
 \paragraph{Support score and reference prompts.}
 The gate uses the product score in Eq.~\eqref{eq:support-score} at a fixed bandwidth $b_g$. Its two factors summarize weighted proximity to desired and undesired activations, so the score depends on support from both populations. Both reference and query activations are taken at the steering layer and last prompt position, projected onto $\Sph$, and scored identically. This avoids assuming that prompt-only and contrastive question--answer activations have the same score distribution.
 
-In the TruthfulQA gate analysis, $\mathcal D_{\mathrm{ref}}$ contains the training-fold prompts and the gate is applied to the held-out fold. For OOD evaluation, it contains all $817$ TruthfulQA prompts. No GSM8K, MMLU, NQ, or TriviaQA prompt is used for calibration.
+In the TruthfulQA gate analysis, $\mathcal{D}_{\mathrm{ref}}$ contains the training-fold prompts and the gate is applied to the held-out fold. For OOD evaluation, it contains all $817$ TruthfulQA prompts. No GSM8K, MMLU, NQ, or TriviaQA prompt is used for calibration.
 
 \paragraph{Interpreting the coverage parameter.}
 The parameter $p$ sets the reference rank threshold at or below which $g=1$. If $n$ reference scores and one new score are exchangeable and almost surely distinct, the new score's rank $nr$ is uniform on $\{0,\ldots,n\}$. Consequently,
@@ -240,47 +246,74 @@ MMLU       & out-of-distribution & $0.000$ & $1.000$ \\
 
 Table~\ref{tab:gate-separation} shows strong separation for GSM8K and MMLU and weaker separation for NQ and TriviaQA. The gate is zero on every MMLU prompt in this evaluation. GSM8K and MMLU also use different few-shot formats, whereas NQ and TriviaQA reuse the TruthfulQA instruction and QA primer; these measurements therefore do not isolate task content from prompt format. Across the four OOD sets, the reported aggregate AUROC is $0.93$ on Llama3.1-8B and $0.97$ on Mistral-7B.
 
-\subsection{Nearest-neighbor gate as an external module}
+\FloatBarrier
+\section{\textcolor{blue}{Nearest-neighbor support gating}}
+\label{apx:knn}
+
+\textcolor{blue}{In this appendix, we describe the kNN gate and explain its relation to the product support score. We then compare steering methods under the same gate and examine sensitivity to the calibration parameters.}
+
+\textcolor{blue}{The bridge formulation motivates a steering direction through the potential ratio and a support score through their product. In \Cobras, the steering weights and product score use the same fitted transport scalings. The kNN gate provides a distance-based surrogate for support control, following nearest-neighbor OOD detection~\citep{sun2022out}. The connection to the product score follows from the small-bandwidth behavior of its kernel factors, derived below. Because the gate requires only activation distances, it can also scale interventions from other steering methods.}
+
+\subsection{\textcolor{blue}{Gate construction and connection to the product score}}
 \label{apx:knn-gate}
 
-\textcolor{blue}{As alluted...} The product score $\hat p_{b_g}$ in Eq.~\eqref{eq:support-score} measures support with the same fitted transport scalings that enter the \Cobras direction, following the product form of the bridge density in Section~\ref{subsec:sb}. A simpler statistic measures support directly through geodesic $k$-nearest-neighbor (kNN) distances on $\Sph$, as in nearest-neighbor OOD detection~\citep{sun2022out}. Because it needs no transport solution, this distance gate can also be attached to steering methods that do not provide a support score of their own.
-
-Let $\rho_k(\boldsymbol{x};\mathcal D^-)$ be the geodesic distance from $\boldsymbol{x}\in\Sph$ to its $k$-th nearest sample in $\mathcal D^-$. We set a reference radius from the within-population distances, excluding each sample from its own neighbors, and define the gate
+Let $\rho_k(\boldsymbol{x};\mathcal{D}^-)$ be the geodesic distance from $\boldsymbol{x}\in\Sph$ to its $k$-th nearest sample in $\mathcal{D}^-$. We set a reference radius from the within-population distances, excluding each sample from its own neighbors, and define the gate
 \begin{equation}
 \begin{aligned}
 \rho_{\mathrm{ref}}
 &=\operatorname{Quantile}_{\tau}\!\left(
-\left\{\rho_k(\boldsymbol h_j^-;\mathcal D^-\setminus\{\boldsymbol h_j^-\})\right\}_{j=1}^{N_-}
+\left\{\rho_k(\boldsymbol{h}_j^-;\mathcal{D}^-\setminus\{\boldsymbol{h}_j^-\})\right\}_{j=1}^{N_-}
 \right),\\
 g_{\mathrm{kNN}}(\boldsymbol{x})
-&=\left[1+\left(\frac{\rho_k(\boldsymbol{x};\mathcal D^-)}{\rho_{\mathrm{ref}}}\right)^\gamma\right]^{-1}.
+&=\left[1+\left(\frac{\rho_k(\boldsymbol{x};\mathcal{D}^-)}{\rho_{\mathrm{ref}}}\right)^\gamma\right]^{-1}.
 \end{aligned}
 \label{eq:knn-gate}
 \end{equation}
 The gate equals $1/2$ at $\rho_{\mathrm{ref}}$ and decreases smoothly as the query moves away from the undesired samples. The quantile $\tau\in(0,1)$ therefore sets the radius at which steering is halved, and $\gamma>0$ sets how sharply it falls. By contrast, the coverage $p$ in Eq.~\eqref{eq:gate} sets the reference rank up to which steering keeps full strength. We use $k=32$ and $\tau=0.98$, with $\gamma=50$ in Table~\ref{tab:abstain-results} and $\gamma=200$ in Table~\ref{tab:knn-external}.
 
-As with $g_q$, the distance gate is evaluated once at the last prompt activation and reused for the continuation. For \Cobras it replaces $g_q$ in Eq.~\eqref{eq:step}. For another method that maps an activation $\boldsymbol h$ to $\tilde{\boldsymbol h}$, the gated output is $\boldsymbol h+g_{\mathrm{kNN}}\,(\tilde{\boldsymbol h}-\boldsymbol h)$, so the gate scales each method's own displacement.
+As with $g_q$, the distance gate is evaluated once at the last prompt activation and reused for the continuation. For \Cobras it replaces $g_q$ in Eq.~\eqref{eq:step}. For another method that maps an activation $\boldsymbol{h}$ to $\tilde{\boldsymbol{h}}$, the gated output is $\boldsymbol{h}+g_{\mathrm{kNN}}\,(\tilde{\boldsymbol{h}}-\boldsymbol{h})$, so the gate scales each method's own displacement. \textcolor{blue}{Algorithm~\ref{alg:knn-external} summarizes how the gate is attached to another steering method.}
+
+\begin{algorithm}[t]
+\caption{\textcolor{blue}{Applying the kNN gate to a steering method}}
+\label{alg:knn-external}
+\small
+\begingroup
+\color{blue}
+\begin{algorithmic}[1]
+\Require A fitted steering method, projected undesired activations $\mathcal{D}^-\subset\Sph$, sphere radius $R$, layer $\ell$, and gate parameters $k,\tau,\gamma$
+\Statex \textbf{Offline calibration}
+\State Compute $\rho_{\mathrm{ref}}$ from leave-one-out neighbor distances using Eq.~\eqref{eq:knn-gate}
+\Statex \textbf{For each new prompt}
+\State Obtain the last prompt activation $\boldsymbol{h}$ at layer $\ell$ and project it to $\boldsymbol{x}=R\boldsymbol{h}/\|\boldsymbol{h}\|$
+\State Compute and cache $g_q\gets g_{\mathrm{kNN}}(\boldsymbol{x})$ using Eq.~\eqref{eq:knn-gate}
+\For{each token activation $\boldsymbol{h}$ at layer $\ell$, starting with the last prompt token}
+    \State Compute the method's steering direction and apply its update to obtain $\tilde{\boldsymbol{h}}$
+    \State Replace $\boldsymbol{h}$ by $\boldsymbol{h}+g_q(\tilde{\boldsymbol{h}}-\boldsymbol{h})$
+\EndFor
+\end{algorithmic}
+\endgroup
+\end{algorithm}
 
 \paragraph{Connection to the product score.}
 \label{apx:knn-connection}
-The two statistics coincide in a limit of the product score. For the undesired factor $\widehat\varphi_{b_g}$ in Eq.~\eqref{eq:frozen-factors}, write $\rho_1(\boldsymbol{x};\mathcal D^-)=\min_j d_{\Sph}(\boldsymbol{x},\boldsymbol h_j^-)$. Every kernel in $\widehat\varphi_{b_g}$ is at most $\exp[-\rho_1(\boldsymbol{x};\mathcal D^-)^2/(2b_g)]$, with equality at a nearest sample. Bounding the weight of that sample below by $\min_j a_j^-$ and the total weight above by $\sum_j a_j^-$ gives
+\textcolor{blue}{The kernel factors connect the product score to nearest-neighbor support at small bandwidth.} For the undesired factor $\widehat{\varphi}_{b_g}$ in Eq.~\eqref{eq:frozen-factors}, write $\rho_1(\boldsymbol{x};\mathcal{D}^-)=\min_j d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_j^-)$. Every kernel in $\widehat{\varphi}_{b_g}$ is at most $\exp[-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)]$, with equality at a nearest sample. Bounding the weight of that sample below by $\min_j a_j^-$ and the total weight above by $\sum_j a_j^-$ gives
 \begin{equation}
-0\le -2b_g\log\frac{\widehat\varphi_{b_g}(\boldsymbol{x})}{\sum_j a_j^-}
--\rho_1(\boldsymbol{x};\mathcal D^-)^2
+0\le -2b_g\log\frac{\widehat{\varphi}_{b_g}(\boldsymbol{x})}{\sum_j a_j^-}
+-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2
 \le 2b_g\log\frac{\sum_j a_j^-}{\min_j a_j^-}.
 \label{eq:knn-kernel-bound}
 \end{equation}
-The scalings are fitted at the transport scale $\varepsilon$ and do not depend on $b_g$, so the upper bound vanishes as $b_g\to0$. The same argument applies to $\widehat\psi_{b_g}$ with $\rho_1(\boldsymbol{x};\mathcal D^+)=\min_i d_{\Sph}(\boldsymbol{x},\boldsymbol h_i^+)$, and summing the two gives
+The scalings are fitted at the transport scale $\varepsilon$ and do not depend on $b_g$, so the upper bound vanishes as $b_g\to0$. The same argument applies to $\widehat{\psi}_{b_g}$ with $\rho_1(\boldsymbol{x};\mathcal{D}^+)=\min_i d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_i^+)$, and summing the two gives
 \begin{equation}
--2b_g\log\frac{\hat p_{b_g}(\boldsymbol{x})}
+-2b_g\log\frac{\hat{p}_{b_g}(\boldsymbol{x})}
 {(\sum_j a_j^-)(\sum_i a_i^+)}
 \longrightarrow
-\rho_1(\boldsymbol{x};\mathcal D^-)^2
-+\rho_1(\boldsymbol{x};\mathcal D^+)^2
+\rho_1(\boldsymbol{x};\mathcal{D}^-)^2
++\rho_1(\boldsymbol{x};\mathcal{D}^+)^2
 \quad\text{as }b_g\to0.
 \label{eq:knn-product-limit}
 \end{equation}
-The normalizing sums do not depend on the query, so they leave the ranks in Eq.~\eqref{eq:gate} unchanged. At small bandwidth, the product score thus measures proximity to both contrastive populations through the sum of their nearest squared distances. The distance gate keeps only the undesired population and replaces the nearest neighbor with the $k$-th for robustness. The two gates therefore share a notion of local support while differing in population, neighbor rank, and calibration.
+\textcolor{blue}{The left-hand side of Eq.~\eqref{eq:knn-product-limit} is $2b_g u(\boldsymbol{x})$ plus a query-independent constant, so it preserves the ranks used in Eq.~\eqref{eq:gate}. The score $u$ therefore combines proximity to both populations. The kNN gate uses the proximity information captured by the undesired factor in Eq.~\eqref{eq:knn-kernel-bound}, replacing the nearest sample with the $k$-th neighbor to reduce dependence on an individual activation. Thus kNN serves as a distance-based surrogate for support control, while the product score retains both populations and their fitted transport scalings.}
 
 \subsection{The distance gate on other steering methods}
 \label{apx:knn-external}
@@ -290,7 +323,7 @@ Because the distance gate needs only activations, it lets us separate the contri
 \begin{table}[ht]
 \centering
 \small
-\caption{Support gating attached to different steering methods on Llama3.1-8B. TruthfulQA True$\times$Info is averaged over three seeds; GSM8K and MMLU accuracy use the same $100$ sampled questions for every row. Baselines use $T=4$ and \Cobras uses $T=0.65$. The distance gate follows Eq.~\eqref{eq:knn-gate} with $k=32$, $\tau=0.98$, and $\gamma=200$; the product-score gate follows Eq.~\eqref{eq:gate} with coverage $p=0.534$.}
+\caption{Support gating attached to different steering methods on Llama3.1-8B. TruthfulQA True$\times$Info is averaged over three seeds; GSM8K and MMLU accuracy use the same $100$ sampled questions for every row. Baselines use $T=4$ and \Cobras uses $T=0.65$. The distance gate follows Eq.~\eqref{eq:knn-gate} with $k=32$, $\tau=0.98$, and $\gamma=200$. The product-score gate follows Eq.~\eqref{eq:gate} with coverage $p=0.7$.}
 \label{tab:knn-external}
 \begin{tabular}{lccc}
 \toprule
@@ -307,12 +340,14 @@ SphericalSteer + distance gate & 61.7 & 54 & 66 \\
 \midrule
 \Cobras, no gate & 66.5 & 0 & 48 \\
 \Cobras + distance gate & 63.7 & 52 & 66 \\
-\Cobras + product-score gate & 61.4 & 55 & 66 \\
+\Cobras + product-score gate & 63.5 & 56 & 66 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Without a gate, every method that moves TruthfulQA substantially also loses GSM8K accuracy, and \Cobras is no exception: its ungated version reaches the highest TruthfulQA score but answers no GSM8K question correctly. Attaching the same gate restores GSM8K and MMLU accuracy for every method, at a cost of $1.7$ to $2.8$ TruthfulQA points. Support gating is therefore what preserves OOD accuracy, and it transfers across steering rules. Under the same gate, \Cobras retains the highest TruthfulQA score ($63.7$, against $61.7$ for SphericalSteer), so its in-distribution advantage does not come from the gate. With $100$ questions per benchmark, differences of a few points between gated rows are within sampling variation, and we read the OOD columns only as retained or collapsed accuracy. For \Cobras, the product-score gate gives the same OOD retention while being read from the fitted transport solution. At the coverage $p=0.534$ used here it steers fewer in-distribution prompts at full strength, hence its lower TruthfulQA score; the coverage sweep in Appendix~\ref{apx:ood-gate} shows how $p$ trades the two.
+\textcolor{blue}{Attaching the same distance gate brings GSM8K and MMLU accuracy close to the unsteered levels for all four methods, with a decrease of $1.7$ to $2.8$ points in TruthfulQA True$\times$Info. The gate therefore accounts for much of the OOD retention in this comparison. The choice of steering method still matters under the shared gate. \Cobras retains the highest mean TruthfulQA score at $63.7\%$, compared with $61.7\%$ for SphericalSteer, while maintaining similar OOD accuracy. The results support both the usefulness of the gate across methods and the contribution of \Cobras's steering rule to in-distribution performance.}
+
+\textcolor{blue}{The product-score gate also retains OOD accuracy while using support information from the fitted transport solution. This provides an alternative to the external distance gate within the same framework. Because each OOD benchmark contains only $100$ sampled questions here, the comparison supports the broad pattern of capability retention rather than a reliable ordering of the gated methods by small accuracy differences. The product and distance gates use different calibration rules, whose sensitivity we discuss next.}
 
 \subsection{Calibration and sensitivity of the nearest-neighbor gate}
 \label{apx:knn-calibration}
@@ -463,7 +498,7 @@ Our base LLMs follow the experimental setup of Zhao~\etal~\cite{zhaoodesteer}. W
 
 \label{appendix:implementation_details}
 
-All experiments use one H100 80GB GPU. We extend the ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement the steering methods and baselines. We set $\varepsilon=\sigma^2$ from geodesic neighborhood distances in $\mathcal D^+\cup\mathcal D^-$. The steering bandwidths follow Eq.~\eqref{eq:adaptive-bandwidth}, and we use $K=10$ integration steps. The accompanying code specifies the bandwidth settings, Sinkhorn initialization and iteration count, concentration $\kappa$, and numerical safeguards. The in-distribution configuration is ungated, with $g_q=1$ and $T=0.5$. The OOD configuration uses $p=0.7$ and $T=0.65$. Steering acts through a forward hook at layer $\ell$ on the last-token activation at every decoding step. Our ITI baseline uses the normalized logistic-probe direction implemented in this codebase.
+All experiments use one H100 80GB GPU. We extend the ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement the steering methods and baselines. We set $\varepsilon=\sigma^2$ from geodesic neighborhood distances in $\mathcal{D}^+\cup\mathcal{D}^-$. The steering bandwidths follow Eq.~\eqref{eq:adaptive-bandwidth}, and we use $K=10$ integration steps. The accompanying code specifies the bandwidth settings, Sinkhorn initialization and iteration count, concentration $\kappa$, and numerical safeguards. The in-distribution configuration is ungated, with $g_q=1$ and $T=0.5$. The OOD configuration uses $p=0.7$ and $T=0.65$. Steering acts through a forward hook at layer $\ell$ on the last-token activation at every decoding step. Our ITI baseline uses the normalized logistic-probe direction implemented in this codebase.
 
 \section{Additional Results}
 
@@ -471,7 +506,7 @@ All experiments use one H100 80GB GPU. We extend the ODESteer codebase\footnote{
 \subsection{Empirical Validation of Spherical Geometry assumption}
 \label{appendix:norm_concentration}
 
-\Cobras models residual-stream activations at a fixed layer as lying approximately on a hypersphere. As shown in Algorithm~\ref{alg:cobras}, it projects each query onto the fitted sphere (Line~\ref{alg:cobras:norm_equation}), \[ \mathbf{q}_0 = R \frac{\mathbf{h}_q}{\|\mathbf{h}_q\|}, \] performs steering on the sphere, and restores the original norm afterward. Thus, steering depends on activation direction rather than magnitude. We test this assumption by measuring the coefficient of variation (CoV) of residual-stream norms across layers and model families. For the four models used in the main experiments, we use 5,918 TruthfulQA activations; for four additional architectures (Gemma-2-2B~\cite{team2024gemma}, GPT-OSS-20B~\cite{agarwal2025gpt}, LLama-3.2-1B, Qwen2.5-1.5B), we use approximately 110K tokens of web text.
+\Cobras models residual-stream activations at a fixed layer as lying approximately on a hypersphere. As shown in Algorithm~\ref{alg:cobras}, it projects each query onto the fitted sphere (Line~\ref{alg:cobras:norm_equation}), \[ \boldsymbol{q}_0 = R \frac{\boldsymbol{h}_q}{\|\boldsymbol{h}_q\|}, \] performs steering on the sphere, and restores the original norm afterward. Thus, steering depends on activation direction rather than magnitude. We test this assumption by measuring the coefficient of variation (CoV) of residual-stream norms across layers and model families. For the four models used in the main experiments, we use 5,918 TruthfulQA activations; for four additional architectures (Gemma-2-2B~\cite{team2024gemma}, GPT-OSS-20B~\cite{agarwal2025gpt}, LLama-3.2-1B, Qwen2.5-1.5B), we use approximately 110K tokens of web text.
 
 
 \begin{table}[t]
@@ -508,7 +543,7 @@ From Table~\ref{tab:norm_concentration}, we observe that norms are least concent
 Figure~\ref{fig:cobras_vs_t} shows that steering strength has a non-monotonic effect. On TruthfulQA, moderate $T$ generally improves True$\times$Info, with peaks around $T=0.6$ for LLaMA3.1-8B, $T=0.7$ for Mistral-7B, and $T=0.4$ for Qwen2.5-7B; larger values often degrade performance, suggesting over-steering. Falcon-7B is flatter and weaker overall, with a sharp drop at high $T$. On UltraFeedback, the trend is more model-dependent: LLaMA3.1-8B benefits from moderate $T$, Falcon-7B is relatively stable, while Mistral-7B and Qwen2.5-7B degrade as $T$ increases. Overall, these results support using moderate steering, typically $T\approx0.5$--$0.7$ for TruthfulQA and lower-to-moderate values for UltraFeedback.
 
 
-\begin{figure}[!ht]
+\begin{figure}[t]
     \centering
     \begin{subfigure}[t]{0.48\linewidth}
         \centering
@@ -646,8 +681,9 @@ For Falcon-7B, larger $K$ increases informativeness, but also reduces the True s
 \label{tab:cobras_truthfulqa_iters}
 \end{table*}
 
+\clearpage
 
-\begin{figure}[ht]
+\begin{figure}[t]
     \centering
      \includegraphics[width=\linewidth]{figures/performance_vs_steering_strength.png}
     \caption{

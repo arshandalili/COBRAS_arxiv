@@ -131,6 +131,13 @@
 \tcbuselibrary{breakable}
 \usepackage{placeins}
 
+% Avoid stacking figures and keep float-only pages aligned at the top.
+\setcounter{topnumber}{1}
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@dblfptop}{0pt}
+\makeatother
+
 % --- Bibliographies & Citations ---
 \usepackage{natbib}
 \usepackage{doi}

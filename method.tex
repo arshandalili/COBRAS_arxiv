@@ -7,7 +7,7 @@ We fix a decoder-only transformer of residual width $d$ and a layer index $\ell$
 \paragraph{Spherical geometry of activations.}
 Residual-stream norms concentrate tightly across inputs at a fixed layer, both empirically~\citep{pham2024householder, you2026spherical} and as a consequence of the residual architecture~\citep{yang2023spectral, xie2026controlled}. Figure~\ref{fig:norm-concentration} shows this for the four models we study, for which the coefficient of variation of the layer-normalized last-token norm lies between $2.5\%$ and $7.3\%$, and Appendix~\ref{appendix:norm_concentration} reports the same measurement layer by layer and for four further architectures. We therefore model the state space as the sphere $\Sph=\{\boldsymbol{x}\in\mathbb{R}^{d}:\lVert\boldsymbol{x}\rVert=R\}$ of radius $R$, the mean norm over $\mathcal{D}^{+}\cup\mathcal{D}^{-}$, and restore the original norm of $\hquery$ after steering, so that the intervention changes only the direction of the activation.
 
-\begin{figure}[t!]
+\begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/norm_concentration.pdf}
 \caption{Last-token residual-stream norms across layers on TruthfulQA for four LLMs, each divided by its layer-wise mean. Dark and light bands show the 25th--75th percentiles. The coefficient of variation (CoV) is reported per model.}
@@ -32,10 +32,10 @@ The steering field derived below is a weighted sum of logarithm maps toward the 
 
 In this section, we first cast steering as a transportation problem and then derive our method, \Cobras. We first derive the continuous bridge identities that motivate our construction (Section~\ref{subsec:sb}), then derive the direction, strength controls, and inference procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction} establishes the connection to density-ratio steering, which is prior works implicitly optimized.
 
-\begin{figure}[!tb]
+\begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figures/cobras_overview.pdf}
-    \caption{Overview of \Cobras. \textbf{(a)} Contrastive activations are projected onto $\Sph$.     \textbf{(b)} Entropic transport connects the undesired and desired populations; these connections     reweight attraction and repulsion at each steering step. \textbf{(c--d)} Direction and strength     depend on the input, and the support gate can leave unfamiliar prompts unchanged.     \textbf{(e)} Example generations on TruthfulQA and an OOD GSM8K question.     The figure's $q_k$ and $\hat p_0$ correspond to $\boldsymbol{x}_k$ and $\hat p_{b_g}$ in the text.}
+    \caption{Overview of \Cobras. \textbf{(a)} Contrastive activations are projected onto $\Sph$. \textbf{(b)} Entropic transport connects the undesired and desired populations; these connections reweight attraction and repulsion at each steering step. \textbf{(c--d)} Direction and strength depend on the input, and the support gate can leave unfamiliar prompts unchanged. \textbf{(e)} Example generations on TruthfulQA and an OOD GSM8K question. The figure's $q_k$ and $\hat{p}_0$ correspond to $\boldsymbol{x}_k$ and $\hat{p}_{b_g}$ in the text.}
     \label{fig:overview}
 \end{figure}
 
@@ -48,21 +48,23 @@ P^\star=\operatorname*{arg\,min}_{P}\KL(P\,\Vert\,Q)
 \qquad\text{s.t.}\qquad P_0=\pminus,\quad P_1=\pplus.
 \label{eq:sb}
 \end{equation}
-Thus the endpoint constraints specify the desired population change, and relative entropy selects the evolution closest to the reference motion. The time variable $t\in[0,1]$ indexes this population transport independently of token positions in the generated sequence. \textcolor{red}{AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}
+Thus the endpoint constraints specify the desired population change, and relative entropy selects the evolution closest to the reference motion. The time variable $t\in[0,1]$ indexes this population transport independently of token positions in the generated sequence.
+
+\textcolor{blue}{The trajectory optimization in Eq.~\eqref{eq:sb} reduces to finding an endpoint coupling, the joint distribution of starting and ending activations. For a fixed coupling, the KL divergence is minimized by using the reference Brownian motion conditioned on each pair of endpoints. We use the resulting endpoint problem to motivate the discrete transport formulation in Section~\ref{subsec:estimation}. Appendix~\ref{apx:static} derives the reduction.}
 
 The solution to SB is characterized by two positive Schr\"{o}dinger potentials, $\varphi(\boldsymbol{x},t)$ and $\psi(\boldsymbol{x},t)$, which propagate information from the undesired forward and desired endpoints backward, respectively~\citep{leonard2013survey}. Together they determine the bridge density through their product,
 \begin{equation}
 p_t(\boldsymbol{x})\propto\varphi(\boldsymbol{x},t)\psi(\boldsymbol{x},t).
 \label{eq:product}
 \end{equation}
-Starting from $\pminus$, a deterministic flow can reproduce the bridge's activation distribution $P_t$ at every time $t$~\citep{song2020score}. Its direction follows the gradient of the log-ratio of the two potentials,
+\textcolor{blue}{Starting from $\pminus$, a deterministic flow can reproduce the bridge's activation distribution $P_t$ at every time $t$~\citep{song2020score}. The flow follows the gradient of the log-ratio of the two potentials,}
 \begin{equation}
 \frac{d\boldsymbol{x}_t}{dt}
 =\frac{\sigma^2}{2}\nablaS\log
 \frac{\psi(\boldsymbol{x}_t,t)}{\varphi(\boldsymbol{x}_t,t)}.
 \label{eq:ldr}
 \end{equation}
-These identities motivate a potential \emph{ratio} for the steering direction and a potential \emph{product} for determining whether the obtained transport plan has support for the given instance or not. Derivations for these results can be found in Appendix~\ref{apx:static}. 
+These identities motivate a potential \emph{ratio} for the steering direction and a potential \emph{product} for determining whether the obtained transport plan has support for the given instance or not. \textcolor{blue}{Appendix~\ref{apx:static} gives the assumptions and derivation.}
 
 \subsection{Computing the direction from contrastive samples}
 \label{subsec:estimation}
@@ -70,94 +72,106 @@ These identities motivate a potential \emph{ratio} for the steering direction an
 Motivated by the bridge formulation, we construct a steering direction from contrastive activations.
 
 \paragraph{Transport plan estimation.}
-Project $\mathcal D^\pm$ onto $\Sph$ and define the kernel
+Project $\mathcal{D}^\pm$ onto $\Sph$ and define the kernel
 \begin{equation}
 K_b(\boldsymbol{x},\boldsymbol{y})
 =\exp\!\left[-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{y})^2}{2b}\right],
 \qquad b>0.
 \label{eq:kernel}
 \end{equation}
-The bandwidth $b$ sets the scale of this kernel, whose form is motivated by the leading short-time exponential behavior of the heat kernel~\citep{chen2023logarithmic}. Using it as a surrogate for the spherical Brownian transition density in a discrete entropic transport problem gives the plan
+The bandwidth $b$ sets the scale of this kernel, whose form is motivated by the leading short-time exponential behavior of the heat kernel~\citep{chen2023logarithmic}. \textcolor{blue}{At transport scale $\varepsilon>0$, we use $K_\varepsilon$ as a surrogate for the spherical Brownian transition density and solve the discrete entropic transport problem}
 \begin{equation}
-\pi^\star_{ji}=a_j^-a_i^+e^{-c_{ji}},
+\textcolor{blue}{\displaystyle
+\pi^\star=\operatorname*{arg\,min}_{\pi\in\mathcal{U}}
+\sum_{j,i}\pi_{ji}c_{ji}+\sum_{j,i}\pi_{ji}\log\pi_{ji},
 \qquad
-c_{ji}=\frac{d_{\Sph}(\boldsymbol h_j^-,\boldsymbol h_i^+)^2}{2\varepsilon}.
+c_{ji}=\frac{d_{\Sph}(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)^2}{2\varepsilon}.
+}
+\label{eq:e-ot}
+\end{equation}
+\textcolor{blue}{Here $\mathcal{U}$ is the set of nonnegative couplings with uniform marginals, $\sum_i\pi_{ji}=1/N_-$ and $\sum_j\pi_{ji}=1/N_+$. The cost term favors transport between nearby activations, while the entropy term encourages spreading mass across sample pairs. The optimal plan factorizes as}
+\begin{equation}
+\pi^\star_{ji}=a_j^-a_i^+e^{-c_{ji}}.
 \label{eq:plan}
 \end{equation}
-The entry $\pi^\star_{ji}$ assigns mass from undesired sample $j$ to desired sample $i$, with $\varepsilon$ controlling the cost--entropy tradeoff. The positive scalings $a_j^-,a_i^+$ enforce uniform row and column marginals and are fitted using Sinkhorn updates~\citep{cuturi2013sinkhorn}, as detailed in Appendix~\ref{apx:static}.\textcolor{red}{AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}
+The entry $\pi^\star_{ji}$ assigns mass from undesired sample $j$ to desired sample $i$, with $\varepsilon$ controlling the cost--entropy tradeoff. The positive scalings $a_j^-,a_i^+$ enforce the row and column marginals and are fitted using Sinkhorn updates~\citep{cuturi2013sinkhorn}, as detailed in Appendix~\ref{apx:static}.
+
+\textcolor{blue}{We fit the transport plan once and keep the costs $c_{ji}$ and scalings $a_j^-,a_i^+$ fixed during generation. Steering a new token activation then requires combining the fitted connections with the activation's proximity to the contrastive samples.}
 %For the current token activation $\boldsymbol{x}$ being steered
 % Target activations $\boldsymbol{h}_i^+$ coupled via transport mappings to negative instances near $\boldsymbol{x}$ provide optimal contrastive resolution. Weighting $\boldsymbol{h}_i^+$ proportionally to these couplings accelerates boundary traversal and prevents steering vectors from drifting toward adjacent unintended regions
-\paragraph{Transport weights and steering direction.}
-To steer the current token activation $\boldsymbol{x}$, we weight each desired contrastive activation $\boldsymbol h_i^+$ by both its proximity to $\boldsymbol{x}$ and its transport connections to undesired contrastive activations $\boldsymbol h_j^-$ near $\boldsymbol{x}$. We encode these connections by
+\paragraph{\textcolor{blue}{Steering direction from the transport plan.}}
+To steer the current token activation $\boldsymbol{x}$, we weight each desired contrastive activation $\boldsymbol{h}_i^+$ by both its proximity to $\boldsymbol{x}$ and its transport connections to undesired contrastive activations $\boldsymbol{h}_j^-$ near $\boldsymbol{x}$. We encode these connections by
 \begin{align}
 m^+_{i,b}(\boldsymbol{x})
-&=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol h_j^-)\,e^{-c_{ji}},
+&=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)\,e^{-c_{ji}},
 \label{eq:ext-psi}\\
 m^-_{j,b}(\boldsymbol{x})
-&=\sum_i a_i^+K_b(\boldsymbol{x},\boldsymbol h_i^+)\,e^{-c_{ji}}.
+&=\sum_i a_i^+K_b(\boldsymbol{x},\boldsymbol{h}_i^+)\,e^{-c_{ji}}.
 \label{eq:ext-phi}
 \end{align}
-The coefficient $m^+_{i,b}(\boldsymbol{x})$ combines the proximity of undesired activations $\boldsymbol h_j^-$ to $\boldsymbol{x}$ with their transport costs to the desired activation $\boldsymbol h_i^+$, weighted by the fitted scalings $a_j^-$. Multiplying by $K_b(\boldsymbol{x},\boldsymbol h_i^+)$ accounts for the desired activation's proximity, and normalization gives
+The coefficient $m^+_{i,b}(\boldsymbol{x})$ combines the proximity of undesired activations $\boldsymbol{h}_j^-$ to $\boldsymbol{x}$ with their transport costs to the desired activation $\boldsymbol{h}_i^+$, weighted by the fitted scalings $a_j^-$. Multiplying by $K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$ accounts for the desired activation's proximity, and normalization gives
 \begin{equation}
-\bar w_i^+(\boldsymbol{x})
-=\frac{m^+_{i,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol h_i^+)}
-{\sum_{i'}m^+_{i',b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol h_{i'}^+)},
+\bar{w}_i^+(\boldsymbol{x})
+=\frac{m^+_{i,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_i^+)}
+{\sum_{i'}m^+_{i',b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_{i'}^+)},
 \label{eq:weights-pos}
 \end{equation}
-with $\bar w_j^-$ defined symmetrically. The steering field is
+with $\bar{w}_j^-$ defined symmetrically. The steering field is
 \begin{equation}
-\boldsymbol v(\boldsymbol{x})
-=\underbrace{\sum_i\bar w_i^+(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol h_i^+)}_{\text{attraction}}
--\underbrace{\sum_j\bar w_j^-(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol h_j^-)}_{\text{repulsion}}.
+\boldsymbol{v}(\boldsymbol{x})
+=\underbrace{\sum_i\bar{w}_i^+(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)}_{\text{attraction}}
+-\underbrace{\sum_j\bar{w}_j^-(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_j^-)}_{\text{repulsion}}.
 \label{eq:cobras-field}
 \end{equation}
-The field combines attraction toward desired activations $\boldsymbol h_i^+$ with repulsion from undesired activations $\boldsymbol h_j^-$, with weights recomputed at each steering step. Appendix~\ref{app:grad-psi} explains its relationship to the potential-ratio formulation. The implementation uses separate adaptive bandwidths for the two populations, as detailed in Appendix~\ref{apx:bandwidth}.
+The field combines attraction toward desired activations $\boldsymbol{h}_i^+$ with repulsion from undesired activations $\boldsymbol{h}_j^-$, with weights recomputed at each steering step.
+
+\textcolor{blue}{To relate the field in Eq.~\eqref{eq:cobras-field} to the log-ratio direction in Eq.~\eqref{eq:ldr}, fix a shared bandwidth $b$ and hold the coefficients $m^+_{i,b}$ and $m^-_{j,b}$ at their values for the current activation. The field $\boldsymbol{v}(\boldsymbol{x})$ is then the scaled Riemannian gradient of the log-ratio of the positive and negative kernel sums used to normalize the weights. The coefficients are recomputed at each step, so the gradient interpretation is local. Differentiating the coefficients as functions of $\boldsymbol{x}$ adds the terms derived in Appendix~\ref{app:grad-psi}.} The implementation uses separate adaptive bandwidths for the two populations, as detailed in Appendix~\ref{apx:bandwidth}.
 
 \subsection{Adaptive steering strength}
 \label{subsec:strength}
 
-We normalize $\boldsymbol v$ to separate the steering direction from the update size. The attenuation coefficient $s$ reduces this size as the activation aligns with the desired activations, while the support gate $g$ attenuates steering for prompts with low support under the contrastive data.
+We normalize $\boldsymbol{v}$ to separate the steering direction from the update size. The attenuation coefficient $s$ reduces this size as the activation aligns with the desired activations, while the support gate $g$ attenuates steering for prompts with low support under the contrastive data.
 
-\paragraph{vMF attenuation.}
-Following Spherical Steering~\citep{you2026spherical}, we use antipodal von Mises--Fisher (vMF) prototypes to measure alignment with the contrastive axis. Let $\bar{\boldsymbol h}^{\pm}$ be the means of the projected samples and define the desired prototype
+\paragraph{\textcolor{blue}{vMF strength attenuation.}}
+\textcolor{blue}{Following Spherical Steering~\citep{you2026spherical}, we use von Mises--Fisher (vMF) scores to measure alignment with the contrastive axis. Let $\bar{\boldsymbol{h}}^{\pm}$ be the means of the projected samples and define the unit direction toward the desired activations}
 \begin{equation}
-\boldsymbol\mu
-=\frac{\bar{\boldsymbol h}^+-\bar{\boldsymbol h}^-}
-{\|\bar{\boldsymbol h}^+-\bar{\boldsymbol h}^-\|}.
+\boldsymbol{\mu}
+=\frac{\bar{\boldsymbol{h}}^+-\bar{\boldsymbol{h}}^-}
+{\|\bar{\boldsymbol{h}}^+-\bar{\boldsymbol{h}}^-\|}.
 \label{eq:mu}
 \end{equation}
-The prototypes $\boldsymbol\mu$ and $-\boldsymbol\mu$ have vMF scores proportional to $e^{\pm\kappa\langle\boldsymbol{x}/R,\boldsymbol\mu\rangle}$, with shared concentration $\kappa>0$. We use the normalized score of the undesired prototype as the strength coefficient,
+\textcolor{blue}{With mean directions $\boldsymbol{\mu}$ and $-\boldsymbol{\mu}$ and shared concentration $\kappa>0$, the desired and undesired vMF scores are proportional to $e^{\pm\kappa\langle\boldsymbol{x}/R,\boldsymbol{\mu}\rangle}$. We use the normalized undesired score as the strength coefficient,}
 \begin{equation}
 s(\boldsymbol{x})
-=\frac{e^{-\kappa\langle\boldsymbol{x}/R,\boldsymbol\mu\rangle}}
-{e^{\kappa\langle\boldsymbol{x}/R,\boldsymbol\mu\rangle}+e^{-\kappa\langle\boldsymbol{x}/R,\boldsymbol\mu\rangle}}
-=\left(1+e^{2\kappa\langle\boldsymbol{x}/R,\boldsymbol\mu\rangle}\right)^{-1}.
+=\frac{e^{-\kappa\langle\boldsymbol{x}/R,\boldsymbol{\mu}\rangle}}
+{e^{\kappa\langle\boldsymbol{x}/R,\boldsymbol{\mu}\rangle}+e^{-\kappa\langle\boldsymbol{x}/R,\boldsymbol{\mu}\rangle}}
+=\left(1+e^{2\kappa\langle\boldsymbol{x}/R,\boldsymbol{\mu}\rangle}\right)^{-1}.
 \label{eq:side}
 \end{equation}
-Thus $s$ decreases as the activation aligns with $\boldsymbol\mu$, reducing the intervention on activations already oriented toward the desired prototype. We apply this smooth score directly, with $\kappa$ controlling the sharpness of the attenuation.
+\textcolor{blue}{Thus $s$ decreases as the activation aligns with $\boldsymbol{\mu}$, reducing the intervention on activations already oriented toward the desired direction.} We apply this smooth score directly, with $\kappa$ controlling the sharpness of the attenuation.
 
-\paragraph{Support estimation and gate calibration.}
-Alignment with $\boldsymbol\mu$ alone does not establish proximity to the contrastive data. To limit steering on out-of-distribution (OOD) prompts, we therefore assess the proximity of a prompt activation $\boldsymbol{x}$ to each contrastive population using the weighted kernel sums
+\paragraph{\textcolor{blue}{Support scoring and gate calibration.}}
+Alignment with $\boldsymbol{\mu}$ alone does not establish proximity to the contrastive data. To limit steering on out-of-distribution (OOD) prompts, we therefore assess the proximity of a prompt activation $\boldsymbol{x}$ to each contrastive population using the weighted kernel sums
 \begin{equation}
-\widehat\varphi_b(\boldsymbol{x})=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol h_j^-),
+\widehat{\varphi}_b(\boldsymbol{x})=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-),
 \qquad
-\widehat\psi_b(\boldsymbol{x})=\sum_i a_i^+K_b(\boldsymbol{x},\boldsymbol h_i^+).
+\widehat{\psi}_b(\boldsymbol{x})=\sum_i a_i^+K_b(\boldsymbol{x},\boldsymbol{h}_i^+).
 \label{eq:frozen-factors}
 \end{equation}
-Following the product form of the bridge density in Eq.~\eqref{eq:product}, we define an unnormalized support score at bandwidth $b_g$,
+\textcolor{blue}{The ratio $\widehat{\psi}_b(\boldsymbol{x})/\widehat{\varphi}_b(\boldsymbol{x})$ can be large even when both fitted factors are small, so relative preference alone does not establish proximity to the contrastive data. Multiplying the factors retains information about their joint magnitude.} Following the product form of the bridge density in Eq.~\eqref{eq:product}, \textcolor{blue}{we use the fitted factors to define} an unnormalized support score at bandwidth $b_g$,
 \begin{equation}
-\hat p_{b_g}(\boldsymbol{x})
-=\widehat\varphi_{b_g}(\boldsymbol{x})\widehat\psi_{b_g}(\boldsymbol{x}),
+\hat{p}_{b_g}(\boldsymbol{x})
+=\widehat{\varphi}_{b_g}(\boldsymbol{x})\widehat{\psi}_{b_g}(\boldsymbol{x}),
 \qquad
-u(\boldsymbol{x})=-\log\hat p_{b_g}(\boldsymbol{x}).
+u(\boldsymbol{x})=-\log\hat{p}_{b_g}(\boldsymbol{x}).
 \label{eq:support-score}
 \end{equation}
-Larger values of $u$ indicate lower support.
+\textcolor{blue}{The support score uses the same fitted transport scalings $a_j^-,a_i^+$ as the steering weights.} Larger values of $u$ indicate lower support.
 
-We calibrate $u$ using a reference set $\mathcal D_{\mathrm{ref}}$ of in-distribution prompt activations held out from evaluation. Both reference and query activations are extracted from the last prompt token at the steering layer and projected onto $\Sph$. For $n=|\mathcal D_{\mathrm{ref}}|$, we rank a query prompt's score against the reference scores and convert its rank into the gate
+We calibrate $u$ using a reference set $\mathcal{D}_{\mathrm{ref}}$ of in-distribution prompt activations held out from evaluation. Both reference and query activations are extracted from the last prompt token at the steering layer and projected onto $\Sph$. For $n=|\mathcal{D}_{\mathrm{ref}}|$, we rank a query prompt's score against the reference scores and convert its rank into the gate
 \begin{equation}
 r(\boldsymbol{x})
-=\frac{|\{\boldsymbol z\in\mathcal D_{\mathrm{ref}}:u(\boldsymbol z)<u(\boldsymbol{x})\}|}{n},
+=\frac{|\{\boldsymbol{z}\in\mathcal{D}_{\mathrm{ref}}:u(\boldsymbol{z})<u(\boldsymbol{x})\}|}{n},
 \qquad
 g(\boldsymbol{x})=\min\!\left\{1,\frac{1-r(\boldsymbol{x})}{1-p}\right\}.
 \label{eq:gate}
@@ -165,42 +179,42 @@ g(\boldsymbol{x})=\min\!\left\{1,\frac{1-r(\boldsymbol{x})}{1-p}\right\}.
 With coverage parameter $p\in(0,1)$, the gate leaves the steering strength unchanged up to the reference $p$-quantile and then decreases linearly with rank, reaching zero for scores above all reference scores. Appendix~\ref{apx:ood-gate} explains how $p$ controls in-distribution steering strength and evaluates how well the support scores separate OOD prompts.
 
 \begin{remark}
-  \textcolor{red}{emphasize  universal}  We also implement a simpler distance gate based on the $k$-th nearest undesired activation to obtain this score. Because it needs only distances, it can also be used to gate other steering methods. Appendix~\ref{apx:knn-gate} discusses this kNN variant, its relation to the product score in the limit, and reports its sensitivity and performance for \Cobras and the baseline methods.
+\textcolor{blue}{We also implement a kNN distance gate that can be attached as an external module to other steering methods. The gate depends only on the query and contrastive activations and scales each method's own intervention. Appendix~\ref{apx:knn} presents the gate, its connection to the product score, and evaluations across steering methods.}
 \end{remark}
 
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
 
-We combine the steering field $\boldsymbol v$ with the attenuation coefficient $s$ and support gate $g$ to update activations during generation. We compute the support gate $g_q$ once from the last prompt token's activation and reuse it throughout generation. For each incoming token activation $\hquery$ at layer $\ell$, we project it onto $\Sph$ as $\boldsymbol{x}_0=R\hquery/\|\hquery\|$ and evaluate the attenuation coefficient $s(\boldsymbol{x}_0)$. We then apply $K$ geodesic Euler steps with steering strength $T\ge0$,
+We combine the steering field $\boldsymbol{v}$ with the attenuation coefficient $s$ and support gate $g$ to update activations during generation. We compute the support gate $g_q$ once from the last prompt token's activation and reuse it throughout generation. For each incoming token activation $\hquery$ at layer $\ell$, we project it onto $\Sph$ as $\boldsymbol{x}_0=R\hquery/\|\hquery\|$ and evaluate the attenuation coefficient $s(\boldsymbol{x}_0)$. We then apply $K$ geodesic Euler steps with steering strength $T\ge0$,
 \begin{equation}
 \Delta=T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0\frac{R}{K},
 \qquad
-\theta_0=\arccos\langle\boldsymbol{x}_0/R,\boldsymbol\mu\rangle,
+\theta_0=\arccos\langle\boldsymbol{x}_0/R,\boldsymbol{\mu}\rangle,
 \qquad
 \boldsymbol{x}_{k+1}
 =\exp_{\boldsymbol{x}_k}\!\left(
-\Delta\frac{\boldsymbol v(\boldsymbol{x}_k)}{\|\boldsymbol v(\boldsymbol{x}_k)\|}
+\Delta\frac{\boldsymbol{v}(\boldsymbol{x}_k)}{\|\boldsymbol{v}(\boldsymbol{x}_k)\|}
 \right).
 \label{eq:step}
 \end{equation}
-At each step, we recompute the direction $\boldsymbol v(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. We skip steps with a zero field, while $g_q=0$ disables steering throughout generation. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. Here $\theta_0R$ is the geodesic distance from $\boldsymbol{x}_0$ to the desired prototype $R\boldsymbol\mu$ of Eq.~\eqref{eq:mu}, so the total path length on $\Sph$ is $T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0R\le T\theta_0R$: the strength $T$ sets the largest fraction of that distance the activation can travel. Algorithm~\ref{alg:cobras} summarizes the procedure, with experimental settings given in Appendix~\ref{appendix:implementation_details}.
+At each step, we recompute the direction $\boldsymbol{v}(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. Here $\theta_0R$ is the geodesic distance from $\boldsymbol{x}_0$ to the point $R\boldsymbol{\mu}$ on the sphere, with $\boldsymbol{\mu}$ defined in Eq.~\eqref{eq:mu}, so the total path length on $\Sph$ is $T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0R\le T\theta_0R$: the strength $T$ sets the largest fraction of that distance the activation can travel. Algorithm~\ref{alg:cobras} summarizes the procedure, with experimental settings given in Appendix~\ref{appendix:implementation_details}.
 
 \begin{algorithm}[t]
 \caption{\Cobras with adaptive bandwidths}
 \label{alg:cobras}
 \small
 \begin{algorithmic}[1]
-\Require $\mathcal D^\pm$; reference prompts $\mathcal D_{\mathrm{ref}}$;
+\Require $\mathcal{D}^\pm$; reference prompts $\mathcal{D}_{\mathrm{ref}}$;
 transport scale $\varepsilon$; support bandwidth $b_g$;
 strength $T$; coverage $p$; steps $K$; concentration $\kappa$
 \Statex \textbf{Offline: fit transport and calibrate support}
-\State $R\gets\mathrm{mean}_{\boldsymbol h\in\mathcal D^+\cup\mathcal D^-}\|\boldsymbol h\|$;
+\State $R\gets\mathrm{mean}_{\boldsymbol{h}\in\mathcal{D}^+\cup\mathcal{D}^-}\|\boldsymbol{h}\|$;
 project all contrastive activations onto $\Sph$
-\State Form $c_{ji}$ using Eq.~\eqref{eq:plan}; fit $\log\boldsymbol a^\pm$
+\State Form $c_{ji}$ using Eq.~\eqref{eq:e-ot}; fit $\log\boldsymbol{a}^\pm$
 using the Sinkhorn updates in Eq.~\eqref{eq:sinkhorn}
-\State Compute $\boldsymbol\mu$ using Eq.~\eqref{eq:mu}
-\State Store the sorted scores $u(R\boldsymbol z/\|\boldsymbol z\|)$
-for $\boldsymbol z\in\mathcal D_{\mathrm{ref}}$
+\State Compute $\boldsymbol{\mu}$ using Eq.~\eqref{eq:mu}
+\State Store the sorted scores $u(R\boldsymbol{z}/\|\boldsymbol{z}\|)$
+for $\boldsymbol{z}\in\mathcal{D}_{\mathrm{ref}}$
 \Statex \textbf{Online: edit the current token activation $\hquery$}
 \State $\boldsymbol{x}_0\gets R\hquery/\|\hquery\|$
 \label{alg:cobras:norm_equation}
@@ -208,23 +222,23 @@ for $\boldsymbol z\in\mathcal D_{\mathrm{ref}}$
     \State Compute $g_q$ by Eq.~\eqref{eq:gate} and cache it for the continuation
 \EndIf
 \State $s\gets s(\boldsymbol{x}_0)$;\quad
-$\theta_0\gets\arccos\langle\boldsymbol{x}_0/R,\boldsymbol\mu\rangle$;\quad
+$\theta_0\gets\arccos\langle\boldsymbol{x}_0/R,\boldsymbol{\mu}\rangle$;\quad
 $\Delta\gets Tsg_q\theta_0R/K$
 \If{$\Delta=0$}
     \State \Return $\hquery$
 \EndIf
 \For{$k=0,\ldots,K-1$}
     \State Compute $b_\pm(\boldsymbol{x}_k)$ by Eq.~\eqref{eq:adaptive-bandwidth}
-    \State $L_i^+\gets-d_{\Sph}(\boldsymbol{x}_k,\boldsymbol h_i^+)^2/(2b_+)$;
-    $L_j^-\gets-d_{\Sph}(\boldsymbol{x}_k,\boldsymbol h_j^-)^2/(2b_-)$
+    \State $L_i^+\gets-d_{\Sph}(\boldsymbol{x}_k,\boldsymbol{h}_i^+)^2/(2b_+)$;
+    $L_j^-\gets-d_{\Sph}(\boldsymbol{x}_k,\boldsymbol{h}_j^-)^2/(2b_-)$
     \State $M_i^+\gets\operatorname{logsumexp}_j[\log a_j^-+L_j^--c_{ji}]$;
     $M_j^-\gets\operatorname{logsumexp}_i[\log a_i^++L_i^+-c_{ji}]$
-    \State $\bar w_i^+\gets\mathrm{softmax}_i(M_i^++L_i^+)$;
-    $\bar w_j^-\gets\mathrm{softmax}_j(M_j^-+L_j^-)$
-    \State Form $\boldsymbol v_k$ from Eq.~\eqref{eq:cobras-field}
-    \If{$\|\boldsymbol v_k\|>0$}
+    \State $\bar{w}_i^+\gets\mathrm{softmax}_i(M_i^++L_i^+)$;
+    $\bar{w}_j^-\gets\mathrm{softmax}_j(M_j^-+L_j^-)$
+    \State Form $\boldsymbol{v}_k$ from Eq.~\eqref{eq:cobras-field}
+    \If{$\|\boldsymbol{v}_k\|>0$}
         \State $\boldsymbol{x}_{k+1}\gets
-        \exp_{\boldsymbol{x}_k}(\Delta\,\boldsymbol v_k/\|\boldsymbol v_k\|)$
+        \exp_{\boldsymbol{x}_k}(\Delta\,\boldsymbol{v}_k/\|\boldsymbol{v}_k\|)$
     \Else
         \State $\boldsymbol{x}_{k+1}\gets\boldsymbol{x}_k$
     \EndIf
@@ -238,7 +252,7 @@ $\Delta\gets Tsg_q\theta_0R/K$
 
 Log-density-ratio steering favors regions where desired activations have higher density relative to undesired activations, using the direction
 \begin{equation}
-\boldsymbol v(\boldsymbol{x})\propto \nabla\log\frac{\pplus(\boldsymbol{x})}{\pminus(\boldsymbol{x})}.
+\boldsymbol{v}(\boldsymbol{x})\propto \nabla\log\frac{\pplus(\boldsymbol{x})}{\pminus(\boldsymbol{x})}.
 \label{eq:ldr-ideal}
 \end{equation}
 For Gaussian models with identity covariance, this gradient gives the mean difference used by CAA~\citep{rimsky2024steering}. ODESteer estimates the log-ratio directly and follows its gradient~\citep{zhaoodesteer}, with further baseline interpretations in Appendix~\ref{apx:ldr-formalize}.
@@ -247,16 +261,16 @@ With the contrastive activations and a shared evaluation bandwidth $b>0$ fixed, 
 
 The resulting field follows the log-ratio gradient of kernel estimates summarizing the two contrastive populations,
 \begin{equation}
-\hat p_b^\pm(\boldsymbol{x})=\frac{1}{N_\pm}\sum_k K_b(\boldsymbol{x},\boldsymbol h_k^\pm),
+\hat{p}_b^\pm(\boldsymbol{x})=\frac{1}{N_\pm}\sum_k K_b(\boldsymbol{x},\boldsymbol{h}_k^\pm),
 \qquad
-\boldsymbol v_b^{\mathrm{kde}}(\boldsymbol{x})
-=b\nablaS\log\frac{\hat p_b^+(\boldsymbol{x})}{\hat p_b^-(\boldsymbol{x})}.
+\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})
+=b\nablaS\log\frac{\hat{p}_b^+(\boldsymbol{x})}{\hat{p}_b^-(\boldsymbol{x})}.
 \label{eq:ldr-kde}
 \end{equation}
 
 \begin{proposition}[Reduction to the kernel density-ratio field]
 \label{prop:ldr-limit}
-Fix the contrastive activations on $\Sph$ and a shared bandwidth $b>0$. As $\varepsilon\to\infty$, the unnormalized field $\boldsymbol v$ converges to $\boldsymbol v_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$, uniformly away from the contrastive activations' antipodes.
+Fix the contrastive activations on $\Sph$ and a shared bandwidth $b>0$. As $\varepsilon\to\infty$, the unnormalized field $\boldsymbol{v}$ converges to $\boldsymbol{v}_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$, uniformly away from the contrastive activations' antipodes.
 \end{proposition}
 
 Proposition~\ref{prop:ldr-limit} shows that, at a shared fixed bandwidth, the \Cobras field converges to a kernel density-ratio field on the sphere as $\varepsilon\to\infty$. This recovers the steering principle represented by Gaussian densities in the interpretation of CAA and by a directly fitted log-ratio in ODESteer. At finite $\varepsilon$, transport connections reweight the attraction and repulsion contributions of individual contrastive activations. The proof is in Appendix~\ref{apx:proof-ldr-limit}.
