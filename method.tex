@@ -30,19 +30,19 @@ The steering field derived below is a weighted sum of logarithm maps toward the 
 \section{LLM Steering as a Schr\"{o}dinger Bridge}
 \label{sec:method}
 
-In this section, we first cast steering as a transportation problem and then derive our method, \Cobras. We first derive the continuous bridge identities that motivate our construction (Section~\ref{subsec:sb}), then derive the direction, strength controls, and inference procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction} establishes the connection to density-ratio steering, which is prior works implicitly optimized.
+In this section, we first cast steering as a distribution transportation problem and then derive our method. We first derive the continuous bridge identities that motivate our construction (Section~\ref{subsec:sb}), then derive the direction, strength controls, and inference procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction} establishes the connection to density-ratio steering, which is implicitly optimized in prior work.
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figures/cobras_overview.pdf}
-    \caption{Overview of \Cobras. \textbf{(a)} Contrastive activations are projected onto $\Sph$. \textbf{(b)} Entropic transport connects the undesired and desired populations; these connections reweight attraction and repulsion at each steering step. \textbf{(c--d)} Direction and strength depend on the input, and the support gate can leave unfamiliar prompts unchanged. \textbf{(e)} Example generations on TruthfulQA and an OOD GSM8K question. The figure's $q_k$ and $\hat{p}_0$ correspond to $\boldsymbol{x}_k$ and $\hat{p}_{b_g}$ in the text.}
+    \caption{Overview of \Cobras. \textbf{(a)} Contrastive activations are projected onto $\Sph$. \textbf{(b)} Entropic transport connects the undesired and desired populations; these connections reweight attraction and repulsion at each steering step. \textbf{(c--d)} Direction and strength depend on the input, and the support gate can leave unfamiliar prompts unchanged. \textbf{(e)} Example generations on TruthfulQA and an OOD GSM8K question.}
     \label{fig:overview}
 \end{figure}
 
 \subsection{Schr\"{o}dinger Bridge and transport objective}
 \label{subsec:sb}
 
-We formulate steering as transporting the undesired activation distribution $\pminus$ to the desired distribution $\pplus$ on $\Sph$. Let $P$ be a probability distribution over continuous activation trajectories, and let $P_t$ denote the distribution of activations at transport time $t\in[0,1]$ when trajectories are drawn from $P$. To choose among transports with these endpoints, we compare $P$ with a reference trajectory distribution $Q$. We take $Q$ as the Brownian motion on $\Sph$ with diffusion scale $\sigma^2$ and a uniform initial distribution, providing random motion without a preferred direction on the sphere. The Schr\"{o}dinger bridge (SB) is the trajectory distribution that matches the two endpoints while minimizing the Kullback--Leibler (KL) divergence from $Q$~\citep{schrodinger1932theorie},
+We formulate steering as transporting the undesired activation distribution $\pminus$ to the desired distribution $\pplus$ on $\Sph$. Let $P$ be a probability distribution over continuous activation trajectories, and let $P_t$ denote the distribution of activations at transport time $t\in[0,1]$ when trajectories are drawn from $P$. To choose among transports with these endpoints, we compare $P$ with a reference trajectory distribution $Q$. We take $Q$ to be the Brownian motion on $\Sph$ with diffusion scale $\sigma^2$ and a uniform initial distribution, providing random motion on the sphere without a preferred direction. The Schr\"{o}dinger bridge (SB) is the trajectory distribution that matches the two endpoints while minimizing the Kullback--Leibler (KL) divergence from $Q$~\citep{schrodinger1932theorie, de2021diffusion},
 \begin{equation}
 P^\star=\operatorname*{arg\,min}_{P}\KL(P\,\Vert\,Q)
 \qquad\text{s.t.}\qquad P_0=\pminus,\quad P_1=\pplus.
@@ -64,7 +64,7 @@ p_t(\boldsymbol{x})\propto\varphi(\boldsymbol{x},t)\psi(\boldsymbol{x},t).
 \frac{\psi(\boldsymbol{x}_t,t)}{\varphi(\boldsymbol{x}_t,t)}.
 \label{eq:ldr}
 \end{equation}
-These identities motivate a potential \emph{ratio} for the steering direction and a potential \emph{product} for determining whether the obtained transport plan has support for the given instance or not. \textcolor{blue}{Appendix~\ref{apx:static} gives the assumptions and derivation.}
+These identities in Eqs.~\eqref{eq:product} and \eqref{eq:ldr} motivate a potential \emph{ratio} for the steering direction and a potential \emph{product} for determining whether the obtained transport plan has support for the given activation at inference or not. \textcolor{blue}{Appendix~\ref{apx:static} gives the assumptions and derivation.}
 
 \subsection{Computing the direction from contrastive samples}
 \label{subsec:estimation}
