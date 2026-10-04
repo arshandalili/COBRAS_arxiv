@@ -42,27 +42,27 @@ In this section, we first cast steering as a transportation problem and then der
 \subsection{Schr\"{o}dinger Bridge and transport objective}
 \label{subsec:sb}
 
-We formulate steering as transporting the undesired activation distribution $\pminus$ to the desired distribution $\pplus$ on $\Sph$. Let $P$ be a probability distribution over continuous activation trajectories, and let $P_t$ denote the distribution of activations at transport time $t\in[0,1]$ when trajectories are drawn from $P$. To choose among transports with these endpoints, we compare $P$ with a reference trajectory distribution $Q$. We take $Q$ to describe Brownian motion on $\Sph$ with diffusion scale $\sigma^2$ and a uniform initial distribution, providing random motion without a preferred direction on the sphere. The Schr\"{o}dinger bridge~\citep{schrodinger1932theorie} is the trajectory distribution that matches the two endpoints while minimizing the Kullback--Leibler (KL) divergence from $Q$,
+We formulate steering as transporting the undesired activation distribution $\pminus$ to the desired distribution $\pplus$ on $\Sph$. Let $P$ be a probability distribution over continuous activation trajectories, and let $P_t$ denote the distribution of activations at transport time $t\in[0,1]$ when trajectories are drawn from $P$. To choose among transports with these endpoints, we compare $P$ with a reference trajectory distribution $Q$. We take $Q$ as the Brownian motion on $\Sph$ with diffusion scale $\sigma^2$ and a uniform initial distribution, providing random motion without a preferred direction on the sphere. The Schr\"{o}dinger bridge (SB) is the trajectory distribution that matches the two endpoints while minimizing the Kullback--Leibler (KL) divergence from $Q$~\citep{schrodinger1932theorie},
 \begin{equation}
 P^\star=\operatorname*{arg\,min}_{P}\KL(P\,\Vert\,Q)
 \qquad\text{s.t.}\qquad P_0=\pminus,\quad P_1=\pplus.
 \label{eq:sb}
 \end{equation}
-Thus the endpoint constraints specify the desired population change, and relative entropy selects the evolution closest to the reference motion. The time variable $t\in[0,1]$ indexes this population transport independently of token positions in the generated sequence.
+Thus the endpoint constraints specify the desired population change, and relative entropy selects the evolution closest to the reference motion. The time variable $t\in[0,1]$ indexes this population transport independently of token positions in the generated sequence. \textcolor{red}{AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}
 
-The solution is characterized by two positive Schr\"{o}dinger potentials, $\varphi(\boldsymbol{x},t)$ and $\psi(\boldsymbol{x},t)$, which propagate information from the undesired and desired endpoints, respectively~\citep{leonard2013survey}. Together they determine the bridge density through their product,
+The solution to SB is characterized by two positive Schr\"{o}dinger potentials, $\varphi(\boldsymbol{x},t)$ and $\psi(\boldsymbol{x},t)$, which propagate information from the undesired forward and desired endpoints backward, respectively~\citep{leonard2013survey}. Together they determine the bridge density through their product,
 \begin{equation}
 p_t(\boldsymbol{x})\propto\varphi(\boldsymbol{x},t)\psi(\boldsymbol{x},t).
 \label{eq:product}
 \end{equation}
-Starting from $\pminus$, a deterministic flow can reproduce the bridge's activation distribution at every time $t$~\citep{song2020score}. Its direction follows the gradient of the log-ratio of the two potentials,
+Starting from $\pminus$, a deterministic flow can reproduce the bridge's activation distribution $P_t$ at every time $t$~\citep{song2020score}. Its direction follows the gradient of the log-ratio of the two potentials,
 \begin{equation}
 \frac{d\boldsymbol{x}_t}{dt}
 =\frac{\sigma^2}{2}\nablaS\log
 \frac{\psi(\boldsymbol{x}_t,t)}{\varphi(\boldsymbol{x}_t,t)}.
 \label{eq:ldr}
 \end{equation}
-These identities, derived in Appendix~\ref{apx:static}, motivate a potential \emph{ratio} for the steering direction and a potential \emph{product} for support. Since the potentials describe the intermediate bridge rather than the endpoint densities, the connection to ordinary density-ratio steering requires the analysis of it in the limit, as done in Section~\ref{subsec:reduction}.
+These identities motivate a potential \emph{ratio} for the steering direction and a potential \emph{product} for determining whether the obtained transport plan has support for the given instance or not. Derivations for these results can be found in Appendix~\ref{apx:static}. 
 
 \subsection{Computing the direction from contrastive samples}
 \label{subsec:estimation}
@@ -84,10 +84,11 @@ The bandwidth $b$ sets the scale of this kernel, whose form is motivated by the 
 c_{ji}=\frac{d_{\Sph}(\boldsymbol h_j^-,\boldsymbol h_i^+)^2}{2\varepsilon}.
 \label{eq:plan}
 \end{equation}
-The entry $\pi^\star_{ji}$ assigns mass from undesired sample $j$ to desired sample $i$, with $\varepsilon$ controlling the cost--entropy tradeoff. The positive scalings $a_j^-,a_i^+$ enforce uniform row and column marginals and are fitted using Sinkhorn updates~\citep{cuturi2013sinkhorn}, as detailed in Appendix~\ref{apx:static}.
-
+The entry $\pi^\star_{ji}$ assigns mass from undesired sample $j$ to desired sample $i$, with $\varepsilon$ controlling the cost--entropy tradeoff. The positive scalings $a_j^-,a_i^+$ enforce uniform row and column marginals and are fitted using Sinkhorn updates~\citep{cuturi2013sinkhorn}, as detailed in Appendix~\ref{apx:static}.\textcolor{red}{AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}
+%For the current token activation $\boldsymbol{x}$ being steered
+% Target activations $\boldsymbol{h}_i^+$ coupled via transport mappings to negative instances near $\boldsymbol{x}$ provide optimal contrastive resolution. Weighting $\boldsymbol{h}_i^+$ proportionally to these couplings accelerates boundary traversal and prevents steering vectors from drifting toward adjacent unintended regions
 \paragraph{Transport weights and steering direction.}
-For the current token activation $\boldsymbol{x}$ being steered, we weight each desired contrastive activation $\boldsymbol h_i^+$ by both its proximity to $\boldsymbol{x}$ and its transport connections to undesired contrastive activations $\boldsymbol h_j^-$ near $\boldsymbol{x}$. We encode these connections by
+To steer the current token activation $\boldsymbol{x}$, we weight each desired contrastive activation $\boldsymbol h_i^+$ by both its proximity to $\boldsymbol{x}$ and its transport connections to undesired contrastive activations $\boldsymbol h_j^-$ near $\boldsymbol{x}$. We encode these connections by
 \begin{align}
 m^+_{i,b}(\boldsymbol{x})
 &=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol h_j^-)\,e^{-c_{ji}},
@@ -163,7 +164,9 @@ g(\boldsymbol{x})=\min\!\left\{1,\frac{1-r(\boldsymbol{x})}{1-p}\right\}.
 \end{equation}
 With coverage parameter $p\in(0,1)$, the gate leaves the steering strength unchanged up to the reference $p$-quantile and then decreases linearly with rank, reaching zero for scores above all reference scores. Appendix~\ref{apx:ood-gate} explains how $p$ controls in-distribution steering strength and evaluates how well the support scores separate OOD prompts.
 
-We also implement a simpler distance gate based on the $k$-th nearest undesired activation to obtain this score. Because it needs only distances, it can also be used to gate other steering methods. Appendix~\ref{apx:knn-gate} discusses this kNN variant, its relation to the product score in the limit, and reports its sensitivity and performance for \Cobras and the baseline methods.
+\begin{remark}
+  \textcolor{red}{emphasize  universal}  We also implement a simpler distance gate based on the $k$-th nearest undesired activation to obtain this score. Because it needs only distances, it can also be used to gate other steering methods. Appendix~\ref{apx:knn-gate} discusses this kNN variant, its relation to the product score in the limit, and reports its sensitivity and performance for \Cobras and the baseline methods.
+\end{remark}
 
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
