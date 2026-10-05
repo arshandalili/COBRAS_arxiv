@@ -673,38 +673,40 @@ Figure~\ref{fig:cobras_vs_t} shows that steering strength has a non-monotonic ef
 \end{figure}
 
 
+\FloatBarrier
 \subsection{Impact of geodesic Euler steps $K$}
 \label{appendix:cobras_vs_k}
 
-Table~\ref{tab:cobras_truthfulqa_iters} shows the effect of increasing the number of geodesic Euler steps $K$ in our proposed \Cobras steering method on TruthfulQA. Overall, increasing $K$ improves the True $\times$ Info score across all models, although the trend differs slightly by model.
-
-For Falcon-7B, larger $K$ increases informativeness, but also reduces the True score, leading to only a modest gain in True $\times$ Info. For Mistral-7B, performance is relatively stable across different values of $K$, with a small improvement at $K=10$. LLaMA3.1-8B benefits the most from increasing $K$, where True $\times$ Info improves consistently from $64.6$ at $K=1$ to $68.5$ at $K=10$. These results suggest that using more geodesic Euler steps generally improves steering quality, with $K=10$ giving the best overall performance in our experiments.
+We vary the number of geodesic Euler steps $K$ to examine how integration affects TruthfulQA performance. At fixed steering strength $T$, increasing $K$ divides the same steering budget into smaller updates and re-evaluates the query-dependent field after each update. Table~\ref{tab:cobras_truthfulqa_iters} includes the unsteered models as references for the resulting changes in truthfulness and informativeness.
 
 
 \begin{table*}[h!]
 \centering
-\caption{TruthfulQA performance of \Cobras across geodesic Euler steps $K$.}
+\caption{TruthfulQA performance of \Cobras across geodesic Euler steps $K$. Unsteered references are reproduced from Table~\ref{tab:main_results}.}
 \renewcommand{\arraystretch}{1.2}
 \small
 % \resizebox{0.72\linewidth}{!}{%
 \begin{tabular}{cccc>{\columncolor{lightpurple!25}}c}
 \toprule[1.5pt]
-\textbf{Model} & \textbf{$K$} & \textbf{True (\%)}$\uparrow$ & \textbf{Info (\%)}$\uparrow$ & \textbf{T$\times$I (\%)}$\uparrow$ \\
+\textbf{Model} & \textbf{Setting} & \textbf{True (\%)}$\uparrow$ & \textbf{Info (\%)}$\uparrow$ & \textbf{T$\times$I (\%)}$\uparrow$ \\
 \midrule
-\multirow{4}{*}{{Falcon-7B}} & 1 &  60.5 {\tiny $\pm$ 0.187} & 73.7 {\tiny $\pm$ 0.245} & 37.3 {\tiny $\pm$ 0.883} \\
- & 2 &  58.3 {\tiny $\pm$ 0.628} & 78.6 {\tiny $\pm$ 0.071} & 39.9 {\tiny $\pm$ 0.367} \\
- & 5 &  56.0 {\tiny $\pm$ 1.837} & 80.3 {\tiny $\pm$ 0.308} & 39.0 {\tiny $\pm$ 1.540} \\
- & 10 & 45.5 {\tiny $\pm$ 2.124} & 93.4 {\tiny $\pm$ 1.379} & 40.3 {\tiny $\pm$ 1.390} \\
+\multirow{5}{*}{{Falcon-7B}} & Unsteered & 32.1 {\tiny $\pm$ 0.951} & 96.5 {\tiny $\pm$ 0.283} & 29.1 {\tiny $\pm$ 0.919} \\
+ & $K=1$ &  60.5 {\tiny $\pm$ 0.187} & 73.7 {\tiny $\pm$ 0.245} & 37.3 {\tiny $\pm$ 0.883} \\
+ & $K=2$ &  58.3 {\tiny $\pm$ 0.628} & 78.6 {\tiny $\pm$ 0.071} & 39.9 {\tiny $\pm$ 0.367} \\
+ & $K=5$ &  56.0 {\tiny $\pm$ 1.837} & 80.3 {\tiny $\pm$ 0.308} & 39.0 {\tiny $\pm$ 1.540} \\
+ & $K=10$ & 45.5 {\tiny $\pm$ 2.124} & 93.4 {\tiny $\pm$ 1.379} & 40.3 {\tiny $\pm$ 1.390} \\
 \midrule
-\multirow{4}{*}{{Mistral-7B}} & 1 &  81.4 {\tiny $\pm$ 1.180} & 82.7 {\tiny $\pm$ 0.956} & 64.6 {\tiny $\pm$ 1.841} \\
- & 2 &  80.8 {\tiny $\pm$ 0.510} & 83.4 {\tiny $\pm$ 1.671} & 64.8 {\tiny $\pm$ 1.309} \\
- & 5 &  79.8 {\tiny $\pm$ 0.883} & 84.6 {\tiny $\pm$ 0.324} & 64.9 {\tiny $\pm$ 0.648} \\
- & 10 &  79.5 {\tiny $\pm$ 0.308} & 85.3 {\tiny $\pm$ 1.002} & 65.4 {\tiny $\pm$ 0.738} \\
+\multirow{5}{*}{{Mistral-7B}} & Unsteered & 41.7 {\tiny $\pm$ 0.764} & 94.8 {\tiny $\pm$ 0.463} & 36.9 {\tiny $\pm$ 0.616} \\
+ & $K=1$ &  81.4 {\tiny $\pm$ 1.180} & 82.7 {\tiny $\pm$ 0.956} & 64.6 {\tiny $\pm$ 1.841} \\
+ & $K=2$ &  80.8 {\tiny $\pm$ 0.510} & 83.4 {\tiny $\pm$ 1.671} & 64.8 {\tiny $\pm$ 1.309} \\
+ & $K=5$ &  79.8 {\tiny $\pm$ 0.883} & 84.6 {\tiny $\pm$ 0.324} & 64.9 {\tiny $\pm$ 0.648} \\
+ & $K=10$ &  79.5 {\tiny $\pm$ 0.308} & 85.3 {\tiny $\pm$ 1.002} & 65.4 {\tiny $\pm$ 0.738} \\
 \midrule
-\multirow{4}{*}{{LLaMA3.1-8B}} & 1 &  86.7 {\tiny $\pm$ 1.443} & 77.2 {\tiny $\pm$ 1.205} & 64.6 {\tiny $\pm$ 2.406} \\
- & 2 &  86.5 {\tiny $\pm$ 1.481} & 78.5 {\tiny $\pm$ 0.787} & 65.6 {\tiny $\pm$ 2.198} \\
- & 5 &  86.2 {\tiny $\pm$ 2.139} & 80.9 {\tiny $\pm$ 0.424} & 67.6 {\tiny $\pm$ 2.345} \\
- & 10 &  86.3 {\tiny $\pm$ 1.484} & 81.8 {\tiny $\pm$ 1.097} & 68.5 {\tiny $\pm$ 0.717} \\
+\multirow{5}{*}{{LLaMA3.1-8B}} & Unsteered & 45.1 {\tiny $\pm$ 1.309} & 97.6 {\tiny $\pm$ 0.628} & 43.0 {\tiny $\pm$ 1.496} \\
+ & $K=1$ &  86.7 {\tiny $\pm$ 1.443} & 77.2 {\tiny $\pm$ 1.205} & 64.6 {\tiny $\pm$ 2.406} \\
+ & $K=2$ &  86.5 {\tiny $\pm$ 1.481} & 78.5 {\tiny $\pm$ 0.787} & 65.6 {\tiny $\pm$ 2.198} \\
+ & $K=5$ &  86.2 {\tiny $\pm$ 2.139} & 80.9 {\tiny $\pm$ 0.424} & 67.6 {\tiny $\pm$ 2.345} \\
+ & $K=10$ &  86.3 {\tiny $\pm$ 1.484} & 81.8 {\tiny $\pm$ 1.097} & 68.5 {\tiny $\pm$ 0.717} \\
 \bottomrule[1.5pt]
 \end{tabular}
 % }
@@ -712,6 +714,8 @@ For Falcon-7B, larger $K$ increases informativeness, but also reduces the True s
 \end{table*}
 
 \FloatBarrier
+
+Every tested $K$ gives higher True and True$\times$Info scores than the corresponding unsteered reference. Increasing $K$ raises informativeness but can lower truthfulness. On Falcon-7B, moving from $K=1$ to $K=10$ raises Info from $73.7$ to $93.4$ and lowers True from $60.5$ to $45.5$, while improving the joint score from $37.3$ to $40.3$. The joint-score gain is larger on LLaMA3.1-8B and smaller on Mistral-7B. Although $K=10$ gives the highest mean joint score for each model, the Falcon trend is not monotonic. The choice of $K$ should therefore reflect both the desired truthfulness--informativeness balance and the cost of additional field evaluations (Appendix~\ref{apx:computational-cost}).
 
 \begin{table*}[h!]
 \centering
