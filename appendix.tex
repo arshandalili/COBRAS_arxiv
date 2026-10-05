@@ -158,7 +158,7 @@ b\nablaS\log m^+_{i,b}(\boldsymbol{x})
 \subsection{Proof of Proposition~\ref{prop:ldr-limit}}
 \label{apx:proof-ldr-limit}
 
-Because $K_b$ depends only on geodesic distance, its integral over $\Sph$ is independent of the kernel center. The kernel estimates in Eq.~\eqref{eq:ldr-kde} therefore share a normalizing constant, which cancels in their ratio.
+\textcolor{blue}{We prove Proposition~\ref{prop:ldr-limit} by bounding how much the transport coefficients change the normalized kernel weights. Because $K_b$ depends only on geodesic distance, its integral over $\Sph$ is independent of the kernel center. The kernel estimates defined in Section~\ref{subsec:reduction} therefore share a normalizing constant, which cancels in their ratio.}
 
 Fix the projected contrastive activations and a shared bandwidth $b>0$, and let $c_{\max}=\max_{j,i}c_{ji}$. For any positive scalings in Eqs.~\eqref{eq:ext-psi}--\eqref{eq:ext-phi}, the following bound holds away from the contrastive activations' antipodes:
 \begin{equation}
@@ -168,14 +168,14 @@ Fix the projected contrastive activations and a shared bandwidth $b>0$, and let 
 \end{equation}
 
 \begin{proof}
-Write $S_-(\boldsymbol{x})=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)$. Since $0\le c_{ji}\le c_{\max}$, every desired multiplier satisfies
+\textcolor{blue}{Since $0\le c_{ji}\le c_{\max}$, the undesired factor $\widehat{\varphi}_b$ in Eq.~\eqref{eq:frozen-factors} bounds every desired coefficient,}
 \[
-e^{-c_{\max}}S_-(\boldsymbol{x})
-\le m^+_{i,b}(\boldsymbol{x})\le S_-(\boldsymbol{x}).
+\textcolor{blue}{e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})
+\le m^+_{i,b}(\boldsymbol{x})\le\widehat{\varphi}_b(\boldsymbol{x}).}
 \]
-Its log-range across $i$ is therefore at most $c_{\max}$, independently of the positive scalings. The undesired multipliers obey the same bound.
+\textcolor{blue}{The log-coefficients therefore differ by at most $c_{\max}$ across desired samples, independently of the positive scalings. The same argument applies to the undesired coefficients.}
 
-For a probability vector $u$, reweighting by positive multipliers of log-range at most $c_{\max}$ gives $w_i=u_i m_i/\sum_k u_km_k$. After a common rescaling, both $m_i$ and their $u$-weighted mean lie in $[1,e^{c_{\max}}]$. Consequently, $\|w-u\|_1\le e^{c_{\max}}-1$. Apply this to the kernel-only weights $u_i^+\propto K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$ and the conditional weights $\bar{w}_i^+$. Each log-map has norm at most $\pi R$, so
+\textcolor{blue}{For a probability vector $\boldsymbol{u}$, reweighting by positive coefficients whose logarithms differ by at most $c_{\max}$ gives $w_i=u_i m_i/\sum_k u_km_k$. After a common rescaling, both $m_i$ and their weighted mean lie in $[1,e^{c_{\max}}]$. Consequently, $\|\boldsymbol{w}-\boldsymbol{u}\|_1\le e^{c_{\max}}-1$. Apply this to the kernel-only weights $u_i^+\propto K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$ and the conditional weights $\bar{w}_i^+$. Each log-map has norm at most $\pi R$, so}
 \[
 \left\|\sum_i(\bar{w}_i^+-u_i^+)
 \log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)\right\|
@@ -184,7 +184,11 @@ For a probability vector $u$, reweighting by positive multipliers of log-range a
 The negative branch contributes the same bound. Equation~\eqref{eq:grad-psi} identifies their kernel-only difference with $\boldsymbol{v}_b^{\mathrm{kde}}$, proving Eq.~\eqref{eq:prop1-bound}. Finally, $c_{\max}\le\pi^2R^2/(2\varepsilon)$ gives uniform convergence and the $O(1/\varepsilon)$ rate at fixed $b$.
 \end{proof}
 
-The bound requires only positive scalings and thus also holds after finitely many Sinkhorn iterations. It describes the unnormalized field on a fixed dataset at a shared fixed bandwidth. Normalized directions converge wherever the limiting field's norm is bounded away from zero.
+\textcolor{blue}{The bound shows that the effect of transport reweighting vanishes as $\varepsilon$ increases, while the proximity weighting at bandwidth $b$ remains intact. Since the bound requires only positive scalings, it also holds after finitely many Sinkhorn iterations. It controls the unnormalized field. Normalized directions converge wherever the limiting field's norm is bounded away from zero.}
+
+\paragraph{\textcolor{blue}{Discussion of the two limits.}}
+\label{apx:sampling-limit}
+\textcolor{blue}{Proposition~\ref{prop:ldr-limit} recovers a kernel density-ratio field at fixed samples and bandwidth. Recovering the population log-density-ratio gradient requires a separate sampling limit, with more contrastive samples and a shrinking bandwidth. For i.i.d.\ samples from densities on $\Sph$, let $N=\min\{N_+,N_-\}$ and choose $b_N\to0$ with $N b_N^{(d+1)/2}\to\infty$. The condition makes the bandwidth shrink slowly enough for the normalized density estimates and their gradients to converge. Consequently, $\boldsymbol{v}_{b_N}^{\mathrm{kde}}(\boldsymbol{x})/b_N$ converges in probability to $\nablaS\log[\pplus(\boldsymbol{x})/\pminus(\boldsymbol{x})]$ at each fixed query. The limits are sequential, first increasing $\varepsilon$ at fixed samples and bandwidth, then increasing the sample size while shrinking $b_N$. Separating the two parameters therefore recovers density-ratio steering without requiring the evaluation kernels to flatten.}
 
 \subsection{Implementation details}
 \label{apx:bandwidth}

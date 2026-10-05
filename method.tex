@@ -235,27 +235,15 @@ $\Delta\gets Tsg_q\theta_0R/K$
 \subsection{Connection to density-ratio steering}
 \label{subsec:reduction}
 
-Log-density-ratio steering favors regions where desired activations have higher density relative to undesired activations, using the direction
-\begin{equation}
-\boldsymbol{v}(\boldsymbol{x})\propto \nabla\log\frac{\pplus(\boldsymbol{x})}{\pminus(\boldsymbol{x})}.
-\label{eq:ldr-ideal}
-\end{equation}
-For Gaussian models with identity covariance, this gradient gives the mean difference used by CAA~\citep{rimsky2024steering}. ODESteer estimates the log-ratio directly and follows its gradient~\citep{zhaoodesteer}, with further baseline interpretations in Appendix~\ref{apx:ldr-formalize}.
+\textcolor{blue}{We now show how the transport-based field recovers the density-ratio steering principle used to interpret prior methods. Log-density-ratio steering follows $\nabla\log[\pplus(\boldsymbol{x})/\pminus(\boldsymbol{x})]$, favoring regions where desired activations have higher density relative to undesired activations. For Gaussian models with identity covariance, the gradient gives the mean difference used by CAA~\citep{rimsky2024steering}. ODESteer estimates the log-ratio directly and follows its gradient~\citep{zhaoodesteer}. Appendix~\ref{apx:ldr-formalize} gives further baseline interpretations.}
 
-With the contrastive activations and a shared evaluation bandwidth $b>0$ fixed, taking $\varepsilon\to\infty$ yields $c_{ji}\to0$ and $e^{-c_{ji}}\to1$ while leaving the proximity kernels $K_b$ unchanged. In this limit, the coefficients $m^+_{i,b}$ no longer vary across desired activations, and likewise for $m^-_{j,b}$ across undesired activations. They therefore cancel during weight normalization, leaving weights determined only by proximity to $\boldsymbol{x}$.
+\textcolor{blue}{To isolate the contribution of the transport connections, fix the contrastive activations and a shared evaluation bandwidth $b>0$, then increase the entropy regularization strength $\varepsilon$. As $\varepsilon\to\infty$, the costs $c_{ji}$ vanish and $e^{-c_{ji}}\to1$, while the proximity kernels $K_b$ remain unchanged. The coefficients $m^+_{i,b}$ then become independent of the desired-sample index $i$, and likewise for $m^-_{j,b}$ across undesired samples. The common coefficients cancel during weight normalization, leaving weights determined only by proximity to $\boldsymbol{x}$.}
 
-The resulting field follows the log-ratio gradient of kernel estimates summarizing the two contrastive populations,
-\begin{equation}
-\hat{p}_b^\pm(\boldsymbol{x})=\frac{1}{N_\pm}\sum_k K_b(\boldsymbol{x},\boldsymbol{h}_k^\pm),
-\qquad
-\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})
-=b\nablaS\log\frac{\hat{p}_b^+(\boldsymbol{x})}{\hat{p}_b^-(\boldsymbol{x})}.
-\label{eq:ldr-kde}
-\end{equation}
+\textcolor{blue}{The corresponding kernel density-ratio field is \mbox{$\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})=b\nablaS\log[\hat{p}_b^+(\boldsymbol{x})/\hat{p}_b^-(\boldsymbol{x})]$}, where \mbox{$\hat{p}_b^\pm(\boldsymbol{x})=N_\pm^{-1}\sum_k K_b(\boldsymbol{x},\boldsymbol{h}_k^\pm)$} estimates each population.}
 
 \begin{proposition}[Reduction to the kernel density-ratio field]
 \label{prop:ldr-limit}
 Fix the contrastive activations on $\Sph$ and a shared bandwidth $b>0$. As $\varepsilon\to\infty$, the unnormalized field $\boldsymbol{v}$ converges to $\boldsymbol{v}_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$, uniformly away from the contrastive activations' antipodes.
 \end{proposition}
 
-Proposition~\ref{prop:ldr-limit} shows that, at a shared fixed bandwidth, the \Cobras field converges to a kernel density-ratio field on the sphere as $\varepsilon\to\infty$. This recovers the steering principle represented by Gaussian densities in the interpretation of CAA and by a directly fitted log-ratio in ODESteer. At finite $\varepsilon$, transport connections reweight the attraction and repulsion contributions of individual contrastive activations. The proof is in Appendix~\ref{apx:proof-ldr-limit}.
+\textcolor{blue}{Proposition~\ref{prop:ldr-limit} establishes a limiting relationship at a shared fixed bandwidth. Appendix~\ref{apx:proof-ldr-limit} gives the proof and discusses the separate sampling limit needed to recover the population log-density-ratio gradient. The reduction identifies what transport contributes beyond density-ratio steering. At finite $\varepsilon$, each sample's influence depends on both its proximity to the query and its transport connections to the opposite population.}
