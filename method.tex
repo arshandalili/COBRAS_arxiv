@@ -164,7 +164,7 @@ g(\boldsymbol{x})=\min\!\left\{1,\frac{1-r(\boldsymbol{x})}{1-p}\right\}.
 With coverage parameter $p\in(0,1)$, the gate leaves the steering strength unchanged up to the reference $p$-quantile and then decreases linearly with rank, reaching zero for scores above all reference scores. Appendix~\ref{apx:ood-gate} explains how $p$ controls in-distribution steering strength and evaluates how well the support scores separate OOD prompts.
 
 \begin{remark}
-\textcolor{blue}{We also implement a kNN distance gate that can be attached as an external module to other steering methods. The gate depends only on the query and contrastive activations and scales each method's own intervention. Appendix~\ref{apx:knn} presents the gate, its connection to the product score, and evaluations across steering methods.}
+\textcolor{blue}{We also implement a kNN distance gate that can be attached as an external module to other steering methods. The gate depends only on the query and contrastive activations and scales each method's own intervention. Appendix~\ref{apx:knn} presents the gate, its connection to the support score, and evaluations across steering methods.}
 \end{remark}
 
 \subsection{Applying the intervention during generation}
