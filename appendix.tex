@@ -248,14 +248,12 @@ The gate values show the practical effect of the score separation. At $p=0.7$, t
 \section{\textcolor{blue}{Nearest-neighbor support gating}}
 \label{apx:knn}
 
-\textcolor{blue}{In this appendix, we describe the kNN gate and explain its relation to the product support score. We then compare steering methods under the same gate and examine sensitivity to the calibration parameters.}
+\textcolor{blue}{In this appendix, we describe a kNN gate that can be attached to other steering methods and explain its relation to the support score in Eq.~\eqref{eq:support-score}. We then examine how much OOD retention comes from gating, whether the steering rule still matters under a shared gate, and how calibration affects the intervention.}
 
-\textcolor{blue}{The bridge formulation motivates a steering direction through the potential ratio and a support score through their product. In \Cobras, the steering weights and product score use the same fitted transport scalings. The kNN gate provides a distance-based surrogate for support control, following nearest-neighbor OOD detection~\citep{sun2022out}. The connection to the product score follows from the small-bandwidth behavior of its kernel factors, derived below. Because the gate requires only activation distances, it can also scale interventions from other steering methods.}
-
-\subsection{\textcolor{blue}{Gate construction and connection to the product score}}
+\subsection{\textcolor{blue}{Gate construction and connection to the support score}}
 \label{apx:knn-gate}
 
-Let $\rho_k(\boldsymbol{x};\mathcal{D}^-)$ be the geodesic distance from $\boldsymbol{x}\in\Sph$ to its $k$-th nearest sample in $\mathcal{D}^-$. We set a reference radius from the within-population distances, excluding each sample from its own neighbors, and define the gate
+\textcolor{blue}{Following nearest-neighbor OOD detection~\citep{sun2022out}, we use distance to the undesired activations as a support surrogate, reducing steering when a prompt is far from the contrastive data.} Let $\rho_k(\boldsymbol{x};\mathcal{D}^-)$ be the geodesic distance from $\boldsymbol{x}\in\Sph$ to its $k$-th nearest sample in $\mathcal{D}^-$. We set a reference radius from the within-population distances, excluding each sample from its own neighbors, and define the gate
 \begin{equation}
 \begin{aligned}
 \rho_{\mathrm{ref}}
@@ -269,7 +267,7 @@ g_{\mathrm{kNN}}(\boldsymbol{x})
 \end{equation}
 The gate equals $1/2$ at $\rho_{\mathrm{ref}}$ and decreases smoothly as the query moves away from the undesired samples. The quantile $\tau\in(0,1)$ therefore sets the radius at which steering is halved, and $\gamma>0$ sets how sharply it falls. By contrast, the coverage $p$ in Eq.~\eqref{eq:gate} sets the reference rank up to which steering keeps full strength. We use $k=32$ and $\tau=0.98$, with $\gamma=50$ in Table~\ref{tab:abstain-results} and $\gamma=200$ in Table~\ref{tab:knn-external}.
 
-As with $g_q$, the distance gate is evaluated once at the last prompt activation and reused for the continuation. For \Cobras it replaces $g_q$ in Eq.~\eqref{eq:step}. For another method that maps an activation $\boldsymbol{h}$ to $\tilde{\boldsymbol{h}}$, the gated output is $\boldsymbol{h}+g_{\mathrm{kNN}}\,(\tilde{\boldsymbol{h}}-\boldsymbol{h})$, so the gate scales each method's own displacement. \textcolor{blue}{Algorithm~\ref{alg:knn-external} summarizes how the gate is attached to another steering method.}
+\textcolor{blue}{We evaluate the kNN gate once at the last prompt activation and reuse it throughout the continuation.} For \Cobras it replaces $g_q$ in Eq.~\eqref{eq:step}. For another method that maps an activation $\boldsymbol{h}$ to $\tilde{\boldsymbol{h}}$, the gated output is $\boldsymbol{h}+g_{\mathrm{kNN}}\,(\tilde{\boldsymbol{h}}-\boldsymbol{h})$, so the gate scales each method's own displacement. \textcolor{blue}{The external module therefore applies support control without changing how the underlying method computes its update. Algorithm~\ref{alg:knn-external} summarizes the procedure.}
 
 \begin{algorithm}[t]
 \caption{\textcolor{blue}{Applying the kNN gate to a steering method}}
@@ -292,9 +290,9 @@ As with $g_q$, the distance gate is evaluated once at the last prompt activation
 \endgroup
 \end{algorithm}
 
-\paragraph{Connection to the product score.}
+\paragraph{\textcolor{blue}{Connection to the support score.}}
 \label{apx:knn-connection}
-\textcolor{blue}{The kernel factors connect the product score to nearest-neighbor support at small bandwidth.} For the undesired factor $\widehat{\varphi}_{b_g}$ in Eq.~\eqref{eq:frozen-factors}, write $\rho_1(\boldsymbol{x};\mathcal{D}^-)=\min_j d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_j^-)$. Every kernel in $\widehat{\varphi}_{b_g}$ is at most $\exp[-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)]$, with equality at a nearest sample. Bounding the weight of that sample below by $\min_j a_j^-$ and the total weight above by $\sum_j a_j^-$ gives
+\textcolor{blue}{To relate the kNN gate to the support score, we examine the kernel factors at small bandwidth. With the fitted scalings held fixed, the nearest samples dominate each factor as $b_g$ shrinks.} For the undesired factor $\widehat{\varphi}_{b_g}$ in Eq.~\eqref{eq:frozen-factors}, write $\rho_1(\boldsymbol{x};\mathcal{D}^-)=\min_j d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_j^-)$. Every kernel in $\widehat{\varphi}_{b_g}$ is at most $\exp[-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)]$, with equality at a nearest sample. Bounding the weight of that sample below by $\min_j a_j^-$ and the total weight above by $\sum_j a_j^-$ gives
 \begin{equation}
 0\le -2b_g\log\frac{\widehat{\varphi}_{b_g}(\boldsymbol{x})}{\sum_j a_j^-}
 -\rho_1(\boldsymbol{x};\mathcal{D}^-)^2
@@ -311,17 +309,17 @@ The scalings are fitted with $\varepsilon$ fixed and do not depend on $b_g$, so 
 \quad\text{as }b_g\to0.
 \label{eq:knn-product-limit}
 \end{equation}
-\textcolor{blue}{The left-hand side of Eq.~\eqref{eq:knn-product-limit} is $2b_g u(\boldsymbol{x})$ plus a query-independent constant, so it preserves the ranks used in Eq.~\eqref{eq:gate}. The score $u$ therefore combines proximity to both populations. The kNN gate uses the proximity information captured by the undesired factor in Eq.~\eqref{eq:knn-kernel-bound}, replacing the nearest sample with the $k$-th neighbor to reduce dependence on an individual activation. Thus kNN serves as a distance-based surrogate for support control, while the product score retains both populations and their fitted transport scalings.}
+\textcolor{blue}{The left-hand side of Eq.~\eqref{eq:knn-product-limit} is $2b_g u(\boldsymbol{x})$ plus a query-independent constant, so it preserves the ranks used in Eq.~\eqref{eq:gate}. The score $u$ therefore combines proximity to both populations. The kNN gate uses the proximity information captured by the undesired factor in Eq.~\eqref{eq:knn-kernel-bound}, replacing the nearest sample with the $k$-th neighbor to reduce dependence on an individual activation. The kNN gate thus provides support control without fitting transport, while \Cobras's support score uses both populations and the same fitted scalings as its steering weights.}
 
-\subsection{The distance gate on other steering methods}
+\subsection{\textcolor{blue}{The kNN gate on other steering methods}}
 \label{apx:knn-external}
 
-Because the distance gate needs only activations, it lets us separate the contribution of support gating from that of the steering rule. We attach the same gate to CAA, ODESteer, and SphericalSteer and compare each method with and without it, together with \Cobras without a gate, with the distance gate, and with its product-score gate. Table~\ref{tab:knn-external} reports the results on Llama3.1-8B with steering fitted on TruthfulQA.
+\textcolor{blue}{We compare CAA, ODESteer, SphericalSteer, and \Cobras with and without the same kNN gate. The comparison tests whether support gating preserves OOD performance across methods and whether the steering rule still affects in-distribution gains under a shared gate. Table~\ref{tab:knn-external} reports results on Llama3.1-8B with steering fitted on TruthfulQA and also includes \Cobras with its support gate.}
 
 \begin{table}[ht]
 \centering
 \small
-\caption{Support gating attached to different steering methods on Llama3.1-8B. TruthfulQA True$\times$Info is averaged over three seeds; GSM8K and MMLU accuracy use the same $100$ sampled questions for every row. Baselines use $T=4$ and \Cobras uses $T=0.65$. The distance gate follows Eq.~\eqref{eq:knn-gate} with $k=32$, $\tau=0.98$, and $\gamma=200$. The product-score gate follows Eq.~\eqref{eq:gate} with coverage $p=0.7$.}
+\caption{Support gating attached to different steering methods on Llama3.1-8B. TruthfulQA True$\times$Info is averaged over three seeds. GSM8K and MMLU accuracy use the same $100$ sampled questions for every row. Baselines use $T=4$ and \Cobras uses $T=0.65$. The kNN gate follows Eq.~\eqref{eq:knn-gate} with $k=32$, $\tau=0.98$, and $\gamma=200$. The support gate follows Eq.~\eqref{eq:gate} with coverage $p=0.7$.}
 \label{tab:knn-external}
 \begin{tabular}{lccc}
 \toprule
@@ -330,28 +328,29 @@ Method & TQA T$\times$I (\%) & GSM8K (\%) & MMLU (\%) \\
 Unsteered & 43.3 & 57 & 66 \\
 \midrule
 CAA & 60.3 & 18 & 63 \\
-CAA + distance gate & 58.6 & 55 & 66 \\
+CAA + kNN gate & 58.6 & 55 & 66 \\
 ODESteer & 58.5 & 30 & 65 \\
-ODESteer + distance gate & 56.8 & 58 & 66 \\
+ODESteer + kNN gate & 56.8 & 58 & 66 \\
 SphericalSteer & 64.4 & 2 & 51 \\
-SphericalSteer + distance gate & 61.7 & 54 & 66 \\
+SphericalSteer + kNN gate & 61.7 & 54 & 66 \\
 \midrule
 \Cobras, no gate & 66.5 & 0 & 48 \\
-\Cobras + distance gate & 63.7 & 52 & 66 \\
-\Cobras + product-score gate & 63.5 & 56 & 66 \\
+\Cobras + kNN gate & 63.7 & 52 & 66 \\
+\Cobras + support gate & 63.5 & 56 & 66 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textcolor{blue}{Attaching the same distance gate brings GSM8K and MMLU accuracy close to the unsteered levels for all four methods, with a decrease of $1.7$ to $2.8$ points in TruthfulQA True$\times$Info. The gate therefore accounts for much of the OOD retention in this comparison. The choice of steering method still matters under the shared gate. \Cobras retains the highest mean TruthfulQA score at $63.7\%$, compared with $61.7\%$ for SphericalSteer, while maintaining similar OOD accuracy. The results support both the usefulness of the gate across methods and the contribution of \Cobras's steering rule to in-distribution performance.}
+Attaching the kNN gate brings GSM8K and MMLU accuracy close to the unsteered levels for all four methods, with a decrease of $1.7$ to $2.8$ points in TruthfulQA True$\times$Info. Support gating therefore accounts for much of the OOD retention in this comparison. Under the shared gate, \Cobras retains the highest mean TruthfulQA score at $63.7\%$, compared with $61.7\%$ for SphericalSteer, while maintaining similar OOD accuracy. The steering rule thus remains important for in-distribution gains even when methods share the same support control.
 
-\textcolor{blue}{The product-score gate also retains OOD accuracy while using support information from the fitted transport solution. This provides an alternative to the external distance gate within the same framework. Because each OOD benchmark contains only $100$ sampled questions here, the comparison supports the broad pattern of capability retention rather than a reliable ordering of the gated methods by small accuracy differences. The product and distance gates use different calibration rules, whose sensitivity we discuss next.}
+\textcolor{blue}{The support gate also preserves OOD accuracy with similar TruthfulQA performance, showing that \Cobras can use its fitted transport scalings for support control. Each OOD benchmark contains $100$ sampled questions here, so small accuracy differences among the gated methods should be interpreted cautiously. The comparison supports the usefulness of both gate implementations, whose calibration rules we examine next.}
 
+\FloatBarrier
 \subsection{Calibration and sensitivity of the nearest-neighbor gate}
 \label{apx:knn-calibration}
-The distance gate is sensitive to its quantile because its reference population and its queries come from different token positions. In Eq.~\eqref{eq:knn-gate}, $\rho_{\mathrm{ref}}$ is computed from contrastive question--answer activations, whereas the gate is evaluated at the last prompt token. In a Llama3.1-8B diagnostic, the median TruthfulQA prompt lies at the $96$th percentile of the reference distances and the median GSM8K prompt at the $99.2$nd, which leaves a range of only a few percentiles in which $\tau$ separates the two.
+\textcolor{blue}{Calibration determines which prompts the kNN gate attenuates. In Eq.~\eqref{eq:knn-gate}, $\rho_{\mathrm{ref}}$ is computed from contrastive question--answer activations, whereas the gate is evaluated at the last prompt token. In a Llama3.1-8B diagnostic, the median TruthfulQA prompt lies at the $96$th percentile of the reference distances and the median GSM8K prompt at the $99.2$nd. Only a few percentile points therefore separate the two medians. The quantile $\tau$ must account for the shift from question--answer to prompt activations, making the intervention sensitive to its setting.}
 
-Table~\ref{tab:abstain-results} shows the resulting sensitivity. Raising $\tau$ enlarges the reference radius and permits stronger steering, which improves TruthfulQA True$\times$Info but sharply reduces GSM8K accuracy on Llama3.1-8B at $\tau=0.995$. Raising $k$ has a similar effect on Llama3.1-8B and little effect on Mistral-7B. Calibrating on prompt activations at the evaluated position removes this mismatch, which is how the product-score gate is calibrated (Section~\ref{subsec:strength}). On the same $100$ GSM8K questions, sweeping the distance gate over $\tau\in\{0.90,0.95,0.98,0.995\}$ gives $57$, $57$, $52$, and $15\%$ accuracy, whereas sweeping the product-score coverage over $p\in\{0.4,0.7,0.8,0.9\}$ gives $56$, $56$, $54$, and $52\%$. Appendix~\ref{apx:ood-gate} evaluates the product-score gate on the full OOD benchmarks.
+\textcolor{blue}{Table~\ref{tab:abstain-results} shows how changing $\tau$ and $k$ affects the balance between in-distribution steering and OOD retention. Raising $\tau$ enlarges the reference radius and permits stronger steering, improving TruthfulQA True$\times$Info but sharply reducing GSM8K accuracy on Llama3.1-8B at $\tau=0.995$. Increasing $k$ also improves TruthfulQA scores on both models, with a substantial GSM8K loss on Llama3.1-8B and little change in GSM8K accuracy on Mistral-7B.}
 
 \begin{table}[ht]
 \centering
@@ -378,6 +377,8 @@ Table~\ref{tab:abstain-results} shows the resulting sensitivity. Raising $\tau$ 
 \bottomrule
 \end{tabular}
 \end{table}
+
+\textcolor{blue}{The support gate addresses the reference mismatch by calibrating on prompt activations at the position used during inference and setting attenuation through their reference ranks (Section~\ref{subsec:strength}). In a separate comparison on the same $100$ GSM8K questions used in Table~\ref{tab:knn-external}, sweeping the kNN gate over $\tau\in\{0.90,0.95,0.98,0.995\}$ gives $57$, $57$, $52$, and $15\%$ accuracy, whereas sweeping the coverage over $p\in\{0.4,0.7,0.8,0.9\}$ gives $56$, $56$, $54$, and $52\%$. The support gate shows less variation in OOD accuracy across the tested settings. Calibrating on prompts makes the control parameter refer directly to the activations encountered at inference.}
 
 \FloatBarrier
 \section{Experimental Details}
