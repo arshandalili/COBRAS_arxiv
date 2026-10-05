@@ -153,7 +153,7 @@ b\nablaS\log m^+_{i,b}(\boldsymbol{x})
 \log_{\boldsymbol{x}}(\boldsymbol{h}_j^-).
 }
 \]
-\textcolor{blue}{The weights in this sum are positive and sum to one. The corresponding expression for $m^-_{j,b}$ averages logarithm maps toward desired samples. Thus, the two additional terms in Eq.~\eqref{eq:apx-omitted} form a difference of convex combinations of logarithm maps toward the two populations. Differentiating through the coefficients therefore changes the weighting of the same sample directions.}
+\textcolor{blue}{The weights in this sum are positive and sum to one. The corresponding expression for $m^-_{j,b}$ averages logarithm maps toward desired samples. The two additional terms in Eq.~\eqref{eq:apx-omitted} therefore reweight the same sample directions through a difference of convex combinations. For the shared fixed bandwidth considered here, holding the coefficients fixed makes $\boldsymbol{v}$ an ascent direction for the current local log-ratio. Recomputing the coefficients after each step updates which contrastive samples guide the next direction.}
 
 \subsection{Proof of Proposition~\ref{prop:ldr-limit}}
 \label{apx:proof-ldr-limit}
