@@ -58,6 +58,7 @@ When evaluating the global flow framework under these spherical constraints, the
 \subsection{Continuous bridge and discrete transport}
 \label{apx:static}
 
+\textcolor{red}{please talk to me about this part.}
 \paragraph{\textcolor{blue}{Probability-flow identity.}}
 \textcolor{blue}{Song et al.~\citep[Sec.~4.3, Eq.~13]{song2020score} give the following statement.}
 \begin{quote}
@@ -109,7 +110,7 @@ At convergence, the plan satisfies both marginals. The geodesic kernel and subse
 \subsection{Kernel gradients and conditional weights}
 \label{app:grad-psi}
 
-\textcolor{blue}{The weighted logarithm maps in Eq.~\eqref{eq:cobras-field} arise from the log-gradients of weighted kernel estimates at a fixed bandwidth $b$.} For $\theta=d_{\Sph}(\boldsymbol{x},\boldsymbol{h})/R<\pi$, differentiating $R^2\arccos^2(R^{-2}\boldsymbol{x}^\top\boldsymbol{h})$ and projecting onto the tangent space gives
+The weighted logarithm maps in Eq.~\eqref{eq:cobras-field} arise from the log-gradients of weighted kernel estimates at a fixed bandwidth $b$. For $\theta=d_{\Sph}(\boldsymbol{x},\boldsymbol{h})/R<\pi$, differentiating $R^2\arccos^2(R^{-2}\boldsymbol{x}^\top\boldsymbol{h})$ and projecting onto the tangent space gives
 \[
 \nablaS d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2
 =-\frac{2\theta}{\sin\theta}\Pi_{\boldsymbol{x}}\boldsymbol{h}
@@ -129,31 +130,29 @@ Taking $m_i=a_i^+$ or $m_j=a_j^-$ gives the log-gradients of the fitted kernel f
 
 \paragraph{Gradient interpretation of the steering field.}
 \label{apx:omitted-term}
-\textcolor{blue}{The fitted scalings $a_j^-,a_i^+$ remain fixed during generation, while the conditional coefficients $m^+_{i,b}(\boldsymbol{x})$ and $m^-_{j,b}(\boldsymbol{x})$ are recomputed at each iterate. At a shared fixed bandwidth $b$, applying Eq.~\eqref{eq:grad-psi} with the current coefficient values held fixed gives $\boldsymbol{v}(\boldsymbol{x})$ as $b$ times the local log-ratio gradient.}
+The fitted scalings $a_j^-,a_i^+$ remain fixed during generation, while the conditional coefficients $m^+_{i,b}(\boldsymbol{x})$ and $m^-_{j,b}(\boldsymbol{x})$ are recomputed at each iterate. At a shared fixed bandwidth $b$, applying Eq.~\eqref{eq:grad-psi} with the current coefficient values held fixed gives $\boldsymbol{v}(\boldsymbol{x})$ as $b$ times the local log-ratio gradient.
 
-\textcolor{blue}{Including the derivatives of the conditional coefficients gives}
+Including the derivatives of the conditional coefficients gives
 \begin{equation}
-\textcolor{blue}{\begin{aligned}
+\begin{aligned}
 b\nablaS\log
 \frac{\sum_i m^+_{i,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_i^+)}
 {\sum_j m^-_{j,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_j^-)}
 ={}&\boldsymbol{v}(\boldsymbol{x})\\
 &+b\sum_i\bar{w}_i^+\nablaS\log m^+_{i,b}
 -b\sum_j\bar{w}_j^-\nablaS\log m^-_{j,b},
-\end{aligned}}
+\end{aligned}
 \label{eq:apx-omitted}
 \end{equation}
-\textcolor{blue}{where all terms are evaluated at $\boldsymbol{x}$. The coefficient derivatives also have a weighted log-map form. In particular, Eq.~\eqref{eq:ext-psi} gives}
+where all terms are evaluated at $\boldsymbol{x}$. The coefficient derivatives also have a weighted log-map form. In particular, Eq.~\eqref{eq:ext-psi} gives
 \[
-\textcolor{blue}{
 b\nablaS\log m^+_{i,b}(\boldsymbol{x})
 =\sum_j
 \frac{a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)e^{-c_{ji}}}
 {m^+_{i,b}(\boldsymbol{x})}
 \log_{\boldsymbol{x}}(\boldsymbol{h}_j^-).
-}
 \]
-\textcolor{blue}{The weights in this sum are positive and sum to one. The corresponding expression for $m^-_{j,b}$ averages logarithm maps toward desired samples. The two additional terms in Eq.~\eqref{eq:apx-omitted} therefore reweight the same sample directions through a difference of convex combinations. For the shared fixed bandwidth considered here, holding the coefficients fixed makes $\boldsymbol{v}$ an ascent direction for the current local log-ratio. Recomputing the coefficients after each step updates which contrastive samples guide the next direction.}
+The weights in this sum are positive and sum to one. The corresponding expression for $m^-_{j,b}$ averages logarithm maps toward desired samples. The two additional terms in Eq.~\eqref{eq:apx-omitted} therefore reweight the same sample directions through a difference of convex combinations. For the shared fixed bandwidth considered here, holding the coefficients fixed makes $\boldsymbol{v}$ an ascent direction for the current local log-ratio. Recomputing the coefficients after each step updates which contrastive samples guide the next direction.
 
 \subsection{Proof of Proposition~\ref{prop:ldr-limit}}
 \label{apx:proof-ldr-limit}
@@ -232,7 +231,7 @@ The gate values show the practical effect of the score separation. At $p=0.7$, t
 \section{\textcolor{blue}{Nearest-neighbor support gating}}
 \label{apx:knn}
 
-\textcolor{blue}{In this appendix, we describe a kNN gate that can be attached to other steering methods and explain its relation to the support score in Eq.~\eqref{eq:support-score}. We then examine how much OOD retention comes from gating, whether the steering rule still matters under a shared gate, and how calibration affects the intervention.}
+\textcolor{blue}{In this section, we describe a kNN gate that can be seamlessly integrated as an external module to other steering methods and explain its relation to the support score in Eq.~\eqref{eq:support-score}. We then examine how much OOD retention comes from gating, whether the steering rule still matters under a shared gate, and how calibration affects the intervention.}
 
 \subsection{\textcolor{blue}{Gate construction and connection to the support score}}
 \label{apx:knn-gate}
