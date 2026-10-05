@@ -210,27 +210,22 @@ Transport fitting and reference-score computation are performed offline. With pa
 \section{Calibration and Properties of the Support Gate}
 \label{apx:ood-gate}
 
-\paragraph{Support score and reference prompts.}
-The gate uses the product score in Eq.~\eqref{eq:support-score} at a fixed bandwidth $b_g$. Its two factors summarize weighted proximity to desired and undesired activations, so the score depends on support from both populations. Both reference and query activations are taken at the steering layer and last prompt position, projected onto $\Sph$, and scored identically. This avoids assuming that prompt-only and contrastive question--answer activations have the same score distribution.
+\textcolor{blue}{In this appendix, we examine how the support gate controls intervention strength. We explain the choice of reference prompts and the role of the coverage parameter $p$, then evaluate whether the calibrated gate suppresses steering on OOD prompts.}
 
-In the TruthfulQA gate analysis, $\mathcal{D}_{\mathrm{ref}}$ contains the training-fold prompts and the gate is applied to the held-out fold. For OOD evaluation, it contains all $817$ TruthfulQA prompts. No GSM8K, MMLU, NQ, or TriviaQA prompt is used for calibration.
+\paragraph{\textcolor{blue}{Calibrating on prompt activations.}}
+\textcolor{blue}{We calibrate the support score in Eq.~\eqref{eq:support-score} on prompt activations to match the inputs seen by the gate during generation. The contrastive question--answer activations used to fit transport need not have the same score distribution. Reference and query activations are therefore extracted at the last prompt token and steering layer, projected onto $\Sph$, and scored with the same fixed bandwidth $b_g$.}
+
+\textcolor{blue}{For TruthfulQA evaluation, $\mathcal{D}_{\mathrm{ref}}$ contains the training-fold prompts and the gate is applied to the held-out fold. For OOD evaluation, the reference set contains all $817$ TruthfulQA prompts. No GSM8K, MMLU, NQ, or TriviaQA prompt is used for calibration.}
 
 \paragraph{Interpreting the coverage parameter.}
-The parameter $p$ sets the reference rank threshold at or below which $g=1$. If $n$ reference scores and one new score are exchangeable and almost surely distinct, the new score's rank $nr$ is uniform on $\{0,\ldots,n\}$. Consequently,
-\begin{equation}
-\Pr(g=1)=\frac{\lfloor np\rfloor+1}{n+1}.
-\label{eq:gate-finite-coverage}
-\end{equation}
-As $n$ grows at fixed $p<1$, this probability tends to $p$, and the mean gate tends to $\int_0^p1\,\mathrm{d}r+(1-p)^{-1}\int_p^1(1-r)\,\mathrm{d}r=(1+p)/2$. At $p=0.7$, these limits correspond to no gate attenuation on $70\%$ of new in-distribution prompts and a mean gate of $0.85$, under the stated assumptions.
+\textcolor{blue}{The parameter $p$ sets the reference rank above which the gate attenuates steering. With $p=0.7$, Eq.~\eqref{eq:gate} gives $g=1$ for prompts with $r\le0.7$ and decreases $g$ linearly above that rank. For example, a prompt at $r=0.85$ receives $g=0.5$, halving the steering step size, while $r=1$ gives $g=0$. Increasing $p$ therefore permits stronger steering over a larger range of reference ranks, while decreasing $p$ begins attenuation at a lower rank.}
 
-These statements average over both reference and query scores. Our calibration reuses bridge-training prompts, for which exchangeability with new-query scores has not been established. The calculation therefore interprets $p$ under the stated assumptions without providing a coverage guarantee for this fitted gate.
-
-\paragraph{OOD separation.}
-We assess OOD separation empirically using the support scores and resulting gate values in Table~\ref{tab:gate-separation}.
+\paragraph{\textcolor{blue}{OOD separation and steering attenuation.}}
+\textcolor{blue}{We next examine how the support score and calibrated gate behave on OOD prompts. Table~\ref{tab:gate-separation} reports AUROC to measure how well $u$ separates TruthfulQA from each OOD set, and mean $g$ to measure the average multiplier applied to the steering step size in Eq.~\eqref{eq:step}.}
 \begin{table}[ht]
 \centering
 \small
-\caption{Support gate on Llama3.1-8B layer $13$, with $p=0.7$. The bridge and reference scores use TruthfulQA. AUROC compares TruthfulQA and each listed OOD set using the score $u$. The TruthfulQA row evaluates the $817$ calibration prompts against their own reference scores; its mean is not a held-out coverage estimate.}
+\caption{\textcolor{blue}{Support gate on Llama3.1-8B layer $13$, with $p=0.7$. Transport fitting and gate calibration use TruthfulQA. AUROC measures separation using $u$. The TruthfulQA mean gate is computed on the $817$ reference prompts themselves.}}
 \label{tab:gate-separation}
 \begin{tabular}{llcc}
 \toprule
@@ -245,7 +240,9 @@ MMLU       & out-of-distribution & $0.000$ & $1.000$ \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:gate-separation} shows strong separation for GSM8K and MMLU and weaker separation for NQ and TriviaQA. The gate is zero on every MMLU prompt in this evaluation. GSM8K and MMLU also use different few-shot formats, whereas NQ and TriviaQA reuse the TruthfulQA instruction and QA primer; these measurements therefore do not isolate task content from prompt format. Across the four OOD sets, the reported aggregate AUROC is $0.93$ on Llama3.1-8B and $0.97$ on Mistral-7B.
+\textcolor{blue}{The support score separates GSM8K and MMLU most strongly, with weaker separation for NQ and TriviaQA. The mean AUROC across the four OOD sets is $0.93$ on Llama3.1-8B and $0.97$ on Mistral-7B. GSM8K and MMLU use different few-shot formats, whereas NQ and TriviaQA reuse the TruthfulQA instruction, so the measurements reflect a combination of task and prompt-format shifts.}
+
+\textcolor{blue}{The gate values show the practical effect of the score separation. At $p=0.7$, the gate retains $7.3\%$ of the ungated step size on average on GSM8K and disables steering on every MMLU prompt in this evaluation. NQ and TriviaQA retain larger gate values and are attenuated less strongly. Because the prompt gate is reused throughout generation, the attenuation limits interventions over the entire continuation using calibration on TruthfulQA alone.}
 
 \FloatBarrier
 \section{\textcolor{blue}{Nearest-neighbor support gating}}
