@@ -182,45 +182,38 @@ We combine the steering field $\boldsymbol{v}$ with the attenuation coefficient 
 \right).
 \label{eq:step}
 \end{equation}
-At each step, we recompute the direction $\boldsymbol{v}(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. Here $\theta_0R$ is the geodesic distance from $\boldsymbol{x}_0$ to the point $R\boldsymbol{\mu}$ on the sphere, so the total path length on $\Sph$ is $T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0R\le T\theta_0R$: the strength $T$ sets the largest fraction of that distance the activation can transport. Algorithm~\ref{alg:cobras} summarizes the procedure, with experimental settings given in Appendix~\ref{appendix:implementation_details}.
+At each step, we recompute the direction $\boldsymbol{v}(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. \textcolor{blue}{Here $\theta_0R$ is the geodesic distance from $\boldsymbol{x}_0$ to the point $R\boldsymbol{\mu}$ on the sphere, so the total path length on $\Sph$ is at most $T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0R\le T\theta_0R$: the strength $T$ sets the largest fraction of that distance the activation can transport.} Algorithm~\ref{alg:cobras} summarizes the procedure, with experimental settings given in Appendix~\ref{appendix:implementation_details}.
 
 \begin{algorithm}[t]
 \caption{\Cobras with adaptive bandwidths}
 \label{alg:cobras}
 \small
 \begin{algorithmic}[1]
-\Require $\mathcal{D}^\pm$; reference prompts $\mathcal{D}_{\mathrm{ref}}$;
-regularization strength $\varepsilon$; support bandwidth $b_g$;
-strength $T$; coverage $p$; steps $K$; concentration $\kappa$
-\Statex \textbf{Offline: fit transport and calibrate support}
-\State $R\gets\mathrm{mean}_{\boldsymbol{h}\in\mathcal{D}^+\cup\mathcal{D}^-}\|\boldsymbol{h}\|$;
-project all contrastive activations onto $\Sph$
-\State Form $c_{ji}$ using Eq.~\eqref{eq:e-ot}; fit $\log\boldsymbol{a}^\pm$
-using the Sinkhorn updates in Eq.~\eqref{eq:sinkhorn}
-\State Compute $\boldsymbol{\mu}$ as defined in Section~\ref{subsec:strength}
-\State Store the sorted scores $u(R\boldsymbol{z}/\|\boldsymbol{z}\|)$
-for $\boldsymbol{z}\in\mathcal{D}_{\mathrm{ref}}$
-\Statex \textbf{Online: edit the current token activation $\hquery$}
+\Require Contrastive activations $\mathcal{D}^\pm$, reference prompt activations $\mathcal{D}_{\mathrm{ref}}$,
+regularization strength $\varepsilon$, support bandwidth $b_g$,
+strength $T$, coverage $p$, steps $K$, concentration $\kappa$
+\Statex \textbf{Offline fitting and calibration}
+\State Set $R$ to the mean norm over $\mathcal{D}^+\cup\mathcal{D}^-$ and project all contrastive and reference activations onto $\Sph$
+\State Form costs $c_{ji}$ by Eq.~\eqref{eq:e-ot} and fit the scalings $a_j^-,a_i^+$ using Eq.~\eqref{eq:sinkhorn}
+\State Compute the contrastive axis $\boldsymbol{\mu}$ as defined in Section~\ref{subsec:strength}
+\State Store the sorted reference scores $u(\boldsymbol{z})$ for $\boldsymbol{z}\in\mathcal{D}_{\mathrm{ref}}$ using Eq.~\eqref{eq:support-score}
+\Statex \textbf{Online steering of $\hquery$ at layer $\ell$, starting with the last prompt token}
 \State $\boldsymbol{x}_0\gets R\hquery/\|\hquery\|$
 \label{alg:cobras:norm_equation}
-\If{this is the last prompt token}
-    \State Compute $g_q$ by Eq.~\eqref{eq:gate} and cache it for the continuation
+\If{$\hquery$ is the last prompt token's activation}
+    \State Compute $g_q\gets g(\boldsymbol{x}_0)$ by Eq.~\eqref{eq:gate} and cache it for the continuation
+\Else
+    \State Reuse the cached $g_q$ for the current prompt
 \EndIf
-\State $s\gets s(\boldsymbol{x}_0)$;\quad
-$\theta_0\gets\arccos\langle\boldsymbol{x}_0/R,\boldsymbol{\mu}\rangle$;\quad
-$\Delta\gets Tsg_q\theta_0R/K$
+\State Evaluate $s(\boldsymbol{x}_0)$ and compute the fixed step size $\Delta$ using Eq.~\eqref{eq:step}
 \If{$\Delta=0$}
     \State \Return $\hquery$
 \EndIf
 \For{$k=0,\ldots,K-1$}
-    \State Compute $b_\pm(\boldsymbol{x}_k)$ by Eq.~\eqref{eq:adaptive-bandwidth}
-    \State $L_i^+\gets-d_{\Sph}(\boldsymbol{x}_k,\boldsymbol{h}_i^+)^2/(2b_+)$;
-    $L_j^-\gets-d_{\Sph}(\boldsymbol{x}_k,\boldsymbol{h}_j^-)^2/(2b_-)$
-    \State $M_i^+\gets\operatorname{logsumexp}_j[\log a_j^-+L_j^--c_{ji}]$;
-    $M_j^-\gets\operatorname{logsumexp}_i[\log a_i^++L_i^+-c_{ji}]$
-    \State $\bar{w}_i^+\gets\mathrm{softmax}_i(M_i^++L_i^+)$;
-    $\bar{w}_j^-\gets\mathrm{softmax}_j(M_j^-+L_j^-)$
-    \State Form $\boldsymbol{v}_k$ from Eq.~\eqref{eq:cobras-field}
+    \State Select the bandwidths $b_\pm(\boldsymbol{x}_k)$ by Eq.~\eqref{eq:adaptive-bandwidth}
+    \State Compute the conditional coefficients and normalized weights in Eqs.~\eqref{eq:ext-psi}--\eqref{eq:weights-pos},
+    using $b_+$ for kernels centered on $\mathcal{D}^+$ and $b_-$ for kernels centered on $\mathcal{D}^-$
+    \State $\boldsymbol{v}_k\gets\boldsymbol{v}(\boldsymbol{x}_k)$ using Eq.~\eqref{eq:cobras-field}
     \If{$\|\boldsymbol{v}_k\|>0$}
         \State $\boldsymbol{x}_{k+1}\gets
         \exp_{\boldsymbol{x}_k}(\Delta\,\boldsymbol{v}_k/\|\boldsymbol{v}_k\|)$
