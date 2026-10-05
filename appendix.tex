@@ -510,6 +510,9 @@ All experiments use one H100 80GB GPU. We extend the ODESteer codebase\footnote{
 
 \begin{table}[t]
 \centering
+\caption{Range of the coefficient of variation (CoV) of residual-stream
+activation norms across layers. The top block contains models used in the
+main experiments; the bottom block contains additional architectures.}
 \small
 \setlength{\tabcolsep}{5pt}
 \begin{tabular}{@{}lccc@{}}
@@ -527,9 +530,6 @@ LLaMA-3.2-1B      & 16 & [0.101, 0.152] & [0.044, 0.109] \\
 Qwen2.5-1.5B      & 28 & [0.120, 0.191] & [0.077, 0.192] \\
 \bottomrule
 \end{tabular}
-\caption{Range of the coefficient of variation (CoV) of residual-stream
-activation norms across layers. The top block contains models used in the
-main experiments; the bottom block contains additional architectures.}
 \label{tab:norm_concentration}
 \end{table}
 
