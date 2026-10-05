@@ -132,14 +132,6 @@ SphericalSteer &  & -7.203 {\tiny $\pm$ 0.208} & 4.309 {\tiny $\pm$ 0.192} & 43.
 \end{table*}
 
 
-\begin{figure}[t]
-    \centering
-    \includegraphics[width=\linewidth]{figures/within_task_ood.png}
-    \caption{Performance of steering methods in Within-task OOD: TriviaQA~\cite{joshi2017triviaqa} and NQ~\cite{kwiatkowski2019natural} performance. We skipped Falcon-7B because the original model's performance was low.}
-    \label{fig:within_task_ood}\vspace{-3mm}
-\end{figure}
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{\textcolor{blue}{RQ1: In-distribution steering performance.}}
 
@@ -155,6 +147,12 @@ Activation steering can be brittle under distribution shift, with prior work sho
 
 
 \paragraph{\textcolor{blue}{Within-task OOD.}}~In this experiment, we evaluate the performance of steering methods on two datasets, Natural Questions (NQ~\cite{kwiatkowski2019natural}) and TriviaQA~\cite{joshi2017triviaqa}, relevant to truthfulness by training only on TruthfulQA. Figure~\ref{fig:within_task_ood} plots OOD accuracy against TruthfulQA True$\times$Info; the ideal method appears in the upper-right, improving truthfulness while preserving OOD accuracy. While most methods move substantially along the TruthfulQA axis, their behavior on TriviaQA and NQ varies considerably, with some producing marked accuracy losses—most visibly on NQ. \Cobras shows a different pattern: across all three models, it attains the largest TruthfulQA improvements while keeping performance on both OOD datasets near the top of the corresponding plots. These results suggest that the gains from \Cobras are not limited to the training distribution and transfer with minimal disruption to closely related QA capabilities.
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/within_task_ood.png}
+    \caption{Performance of steering methods in Within-task OOD: TriviaQA~\cite{joshi2017triviaqa} and NQ~\cite{kwiatkowski2019natural} performance. We skipped Falcon-7B because the original model's performance was low.}
+    \label{fig:within_task_ood}\vspace{-3mm}
+\end{figure}
 
 \begin{figure}[t]
     \centering
