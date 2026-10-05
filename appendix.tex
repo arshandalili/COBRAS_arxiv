@@ -129,30 +129,31 @@ Taking $m_i=a_i^+$ or $m_j=a_j^-$ gives the log-gradients of the fitted kernel f
 
 \paragraph{Gradient interpretation of the steering field.}
 \label{apx:omitted-term}
-At the current iterate $\boldsymbol{x}\in\Sph$, evaluate the conditional coefficients $m^+_{i,b}(\boldsymbol{x})$ and $m^-_{j,b}(\boldsymbol{x})$. Let $\boldsymbol{y}\in\Sph$ denote the point at which the kernels are evaluated, and define
-\begin{equation}
-F_{\boldsymbol{x}}(\boldsymbol{y})=
-\log\frac{\sum_i m^+_{i,b}(\boldsymbol{x})K_b(\boldsymbol{y},\boldsymbol{h}_i^+)}
-{\sum_j m^-_{j,b}(\boldsymbol{x})K_b(\boldsymbol{y},\boldsymbol{h}_j^-)}.
-\label{eq:local-objective}
-\end{equation}
-Equation~\eqref{eq:grad-psi} gives $\boldsymbol{v}(\boldsymbol{x})=b\nabla_{\boldsymbol{y}}F_{\boldsymbol{x}}(\boldsymbol{y}) |_{\boldsymbol{y}=\boldsymbol{x}}$. Differentiation is with respect to $\boldsymbol{y}$, with the coefficients evaluated at $\boldsymbol{x}$ and recomputed at the next iterate.
+\textcolor{blue}{The fitted scalings $a_j^-,a_i^+$ remain fixed during generation, while the conditional coefficients $m^+_{i,b}(\boldsymbol{x})$ and $m^-_{j,b}(\boldsymbol{x})$ are recomputed at each iterate. At a shared fixed bandwidth $b$, applying Eq.~\eqref{eq:grad-psi} with the current coefficient values held fixed gives $\boldsymbol{v}(\boldsymbol{x})$ as $b$ times the local log-ratio gradient.}
 
-Using the same variable $\boldsymbol{x}$ in both the coefficients and the kernels gives
-\[
-\Psi_b^+(\boldsymbol{x})=\sum_i m^+_{i,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_i^+),
-\qquad
-\Psi_b^-(\boldsymbol{x})=\sum_j m^-_{j,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_j^-).
-\]
-Differentiating their log-ratio yields
+\textcolor{blue}{Including the derivatives of the conditional coefficients gives}
 \begin{equation}
-b\nablaS\log\frac{\Psi_b^+}{\Psi_b^-}
-=\boldsymbol{v}
-+b\sum_i\bar{w}_i^+\nablaS\log m^+_{i,b}
+\textcolor{blue}{\begin{aligned}
+b\nablaS\log
+\frac{\sum_i m^+_{i,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_i^+)}
+{\sum_j m^-_{j,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_j^-)}
+={}&\boldsymbol{v}(\boldsymbol{x})\\
+&+b\sum_i\bar{w}_i^+\nablaS\log m^+_{i,b}
 -b\sum_j\bar{w}_j^-\nablaS\log m^-_{j,b},
+\end{aligned}}
 \label{eq:apx-omitted}
 \end{equation}
-with every term evaluated at $\boldsymbol{x}$. The additional terms need not vanish, so this gradient generally differs from $\boldsymbol{v}$.
+\textcolor{blue}{where all terms are evaluated at $\boldsymbol{x}$. The coefficient derivatives also have a weighted log-map form. In particular, Eq.~\eqref{eq:ext-psi} gives}
+\[
+\textcolor{blue}{
+b\nablaS\log m^+_{i,b}(\boldsymbol{x})
+=\sum_j
+\frac{a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)e^{-c_{ji}}}
+{m^+_{i,b}(\boldsymbol{x})}
+\log_{\boldsymbol{x}}(\boldsymbol{h}_j^-).
+}
+\]
+\textcolor{blue}{The weights in this sum are positive and sum to one. The corresponding expression for $m^-_{j,b}$ averages logarithm maps toward desired samples. Thus, the two additional terms in Eq.~\eqref{eq:apx-omitted} form a difference of convex combinations of logarithm maps toward the two populations. Differentiating through the coefficients therefore changes the weighting of the same sample directions.}
 
 \subsection{Proof of Proposition~\ref{prop:ldr-limit}}
 \label{apx:proof-ldr-limit}
