@@ -129,14 +129,14 @@ Taking $m_i=a_i^+$ or $m_j=a_j^-$ gives the log-gradients of the fitted kernel f
 
 \paragraph{Gradient interpretation of the steering field.}
 \label{apx:omitted-term}
-At the current iterate $\boldsymbol{q}\in\Sph$, evaluate the conditional coefficients $m^+_{i,b}(\boldsymbol{q})$ and $m^-_{j,b}(\boldsymbol{q})$. Let $\boldsymbol{y}\in\Sph$ denote the point at which the kernels are evaluated, and define
+At the current iterate $\boldsymbol{x}\in\Sph$, evaluate the conditional coefficients $m^+_{i,b}(\boldsymbol{x})$ and $m^-_{j,b}(\boldsymbol{x})$. Let $\boldsymbol{y}\in\Sph$ denote the point at which the kernels are evaluated, and define
 \begin{equation}
-F_{\boldsymbol{q}}(\boldsymbol{y})=
-\log\frac{\sum_i m^+_{i,b}(\boldsymbol{q})K_b(\boldsymbol{y},\boldsymbol{h}_i^+)}
-{\sum_j m^-_{j,b}(\boldsymbol{q})K_b(\boldsymbol{y},\boldsymbol{h}_j^-)}.
+F_{\boldsymbol{x}}(\boldsymbol{y})=
+\log\frac{\sum_i m^+_{i,b}(\boldsymbol{x})K_b(\boldsymbol{y},\boldsymbol{h}_i^+)}
+{\sum_j m^-_{j,b}(\boldsymbol{x})K_b(\boldsymbol{y},\boldsymbol{h}_j^-)}.
 \label{eq:local-objective}
 \end{equation}
-Equation~\eqref{eq:grad-psi} gives $\boldsymbol{v}(\boldsymbol{q})=b\nabla_{\boldsymbol{y}}F_{\boldsymbol{q}}(\boldsymbol{y}) |_{\boldsymbol{y}=\boldsymbol{q}}$. Differentiation is with respect to $\boldsymbol{y}$, with the coefficients evaluated at $\boldsymbol{q}$ and recomputed at the next iterate.
+Equation~\eqref{eq:grad-psi} gives $\boldsymbol{v}(\boldsymbol{x})=b\nabla_{\boldsymbol{y}}F_{\boldsymbol{x}}(\boldsymbol{y}) |_{\boldsymbol{y}=\boldsymbol{x}}$. Differentiation is with respect to $\boldsymbol{y}$, with the coefficients evaluated at $\boldsymbol{x}$ and recomputed at the next iterate.
 
 Using the same variable $\boldsymbol{x}$ in both the coefficients and the kernels gives
 \[
@@ -506,7 +506,7 @@ All experiments use one H100 80GB GPU. We extend the ODESteer codebase\footnote{
 \subsection{Empirical Validation of Spherical Geometry assumption}
 \label{appendix:norm_concentration}
 
-\Cobras models residual-stream activations at a fixed layer as lying approximately on a hypersphere. As shown in Algorithm~\ref{alg:cobras}, it projects each query onto the fitted sphere (Line~\ref{alg:cobras:norm_equation}), \[ \boldsymbol{q}_0 = R \frac{\boldsymbol{h}_q}{\|\boldsymbol{h}_q\|}, \] performs steering on the sphere, and restores the original norm afterward. Thus, steering depends on activation direction rather than magnitude. We test this assumption by measuring the coefficient of variation (CoV) of residual-stream norms across layers and model families. For the four models used in the main experiments, we use 5,918 TruthfulQA activations; for four additional architectures (Gemma-2-2B~\cite{team2024gemma}, GPT-OSS-20B~\cite{agarwal2025gpt}, LLama-3.2-1B, Qwen2.5-1.5B), we use approximately 110K tokens of web text.
+\Cobras models residual-stream activations at a fixed layer as lying approximately on a hypersphere. As shown in Algorithm~\ref{alg:cobras}, it projects each query onto the fitted sphere (Line~\ref{alg:cobras:norm_equation}), \[ \boldsymbol{x}_0 = R \frac{\boldsymbol{h}_q}{\|\boldsymbol{h}_q\|}, \] performs steering on the sphere, and restores the original norm afterward. Thus, steering depends on activation direction rather than magnitude. We test this assumption by measuring the coefficient of variation (CoV) of residual-stream norms across layers and model families. For the four models used in the main experiments, we use 5,918 TruthfulQA activations; for four additional architectures (Gemma-2-2B~\cite{team2024gemma}, GPT-OSS-20B~\cite{agarwal2025gpt}, LLama-3.2-1B, Qwen2.5-1.5B), we use approximately 110K tokens of web text.
 
 
 \begin{table}[t]
