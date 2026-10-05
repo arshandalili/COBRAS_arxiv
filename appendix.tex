@@ -109,7 +109,7 @@ At convergence, the plan satisfies both marginals. The geodesic kernel and subse
 \subsection{Kernel gradients and conditional weights}
 \label{app:grad-psi}
 
-The weighted logarithm maps in Eq.~\eqref{eq:cobras-field} arise from differentiating kernel sums at a fixed bandwidth $b$. For $\theta=d_{\Sph}(\boldsymbol{x},\boldsymbol{h})/R<\pi$, differentiating $R^2\arccos^2(R^{-2}\boldsymbol{x}^\top\boldsymbol{h})$ and projecting onto the tangent space gives
+\textcolor{blue}{The weighted logarithm maps in Eq.~\eqref{eq:cobras-field} arise from the log-gradients of weighted kernel estimates at a fixed bandwidth $b$.} For $\theta=d_{\Sph}(\boldsymbol{x},\boldsymbol{h})/R<\pi$, differentiating $R^2\arccos^2(R^{-2}\boldsymbol{x}^\top\boldsymbol{h})$ and projecting onto the tangent space gives
 \[
 \nablaS d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2
 =-\frac{2\theta}{\sin\theta}\Pi_{\boldsymbol{x}}\boldsymbol{h}
@@ -201,7 +201,7 @@ d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2,\ b_{\min}\right\}.
 Here $b_{\min}>0$ is a numerical floor. Every kernel centered on a desired sample uses $b_+$, including the kernels inside $m^-$. Every kernel centered on an undesired sample uses $b_-$, including those inside $m^+$. The final field remains the difference of weighted log-maps in Eq.~\eqref{eq:cobras-field}, without dividing either branch by its bandwidth. Thus the common-$b$ gradient-ratio identity and Proposition~\ref{prop:ldr-limit} describe the fixed-bandwidth construction. The gate uses the separate, fixed bandwidth $b_g$.
 
 \paragraph{Numerical evaluation.}
-Algorithm~\ref{alg:cobras} in Section~\ref{subsec:procedure} gives the adaptive procedure. Kernel sums and normalized weights are evaluated in log space. Implementations also clamp cosines away from $\pm1$ and vector norms away from zero for numerical stability.
+Algorithm~\ref{alg:cobras} in Section~\ref{subsec:procedure} gives the adaptive procedure. \textcolor{blue}{Weighted kernel estimates} and normalized weights are evaluated in log space. Implementations also clamp cosines away from $\pm1$ and vector norms away from zero for numerical stability.
 
 \paragraph{Computational cost.}
 Transport fitting and reference-score computation are performed offline. With pairwise transport costs and Sinkhorn scalings precomputed, each steered token requires $K$ field evaluations, each costing $O(N_-N_+ + d(N_-+N_+))$. The $N_-N_+$ term comes from combining connections between the contrastive populations, while $d(N_-+N_+)$ covers distances and tangent vectors in activation space. This expression describes steering integration and excludes the language model's forward pass. The support gate is evaluated once per prompt.

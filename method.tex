@@ -125,7 +125,7 @@ with $\bar{w}_j^-$ defined symmetrically. The steering field is
 \end{equation}
 The field combines attraction toward desired activations $\boldsymbol{h}_i^+$ with repulsion from undesired activations $\boldsymbol{h}_j^-$, with weights recomputed at each steering step.
 
-\textcolor{blue}{To relate the field in Eq.~\eqref{eq:cobras-field} to the log-ratio direction in Eq.~\eqref{eq:ldr}, consider a shared fixed bandwidth $b$. Holding the coefficients $m^+_{i,b}$ and $m^-_{j,b}$ at their current values during differentiation gives $\boldsymbol{v}(\boldsymbol{x})$ as $b$ times the Riemannian gradient of the log-ratio of the positive and negative kernel sums. We recompute the coefficients at each steering step, so the gradient interpretation is local to the current activation. Appendix~\ref{app:grad-psi} derives the identity and characterizes the additional terms from differentiating through the coefficients. During inference, we choose each population's bandwidth from its largest squared distance to the current activation, subject to a numerical floor (Appendix~\ref{apx:bandwidth}).}
+\textcolor{blue}{To relate the field in Eq.~\eqref{eq:cobras-field} to the log-ratio direction in Eq.~\eqref{eq:ldr}, consider a shared fixed bandwidth $b$. Holding the coefficients $m^+_{i,b}$ and $m^-_{j,b}$ at their current values during differentiation gives $\boldsymbol{v}(\boldsymbol{x})$ as $b$ times the Riemannian gradient of the log-ratio of the weighted kernel estimates for the desired and undesired populations. We recompute the coefficients at each steering step, so the gradient interpretation is local to the current activation. Appendix~\ref{app:grad-psi} derives the identity and characterizes the additional terms from differentiating through the coefficients. During inference, we choose each population's bandwidth from its largest squared distance to the current activation, subject to a numerical floor (Appendix~\ref{apx:bandwidth}).}
 
 \subsection{Adaptive steering strength}
 \label{subsec:strength}
@@ -151,7 +151,7 @@ s(\boldsymbol{x})
 \textcolor{blue}{Thus $s$ decreases as the activation aligns with $\boldsymbol{\mu}$, reducing the intervention on activations already oriented toward the desired direction.} We apply this smooth score directly, with $\kappa$ controlling the sharpness of the attenuation.
 
 \paragraph{\textcolor{blue}{Support scoring and gate calibration.}}
-Alignment with $\boldsymbol{\mu}$ alone does not establish proximity to the contrastive data. To limit steering on out-of-distribution (OOD) prompts, we therefore assess the proximity of a prompt activation $\boldsymbol{x}$ to each contrastive population using the weighted kernel sums
+Alignment with $\boldsymbol{\mu}$ alone does not establish proximity to the contrastive data. To limit steering on out-of-distribution (OOD) prompts, we therefore assess the proximity of a prompt activation $\boldsymbol{x}$ to each contrastive population using the \textcolor{blue}{weighted kernel estimates}
 \begin{equation}
 \widehat{\varphi}_b(\boldsymbol{x})=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-),
 \qquad
