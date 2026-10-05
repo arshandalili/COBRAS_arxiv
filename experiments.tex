@@ -3,7 +3,7 @@
 \label{sec:exp}
 \vspace{-1mm}
 
- We conduct experiments to answer the following research questions. \textbf{(RQ1):} How does \Cobras compare to other steering methods on In-distribution tasks? \textbf{(RQ2):} How does \Cobras perform on OOD tasks? \textbf{(RQ3):} \textcolor{blue}{How do steering strength and the number of integration steps affect performance?}
+ We conduct experiments to answer the following research questions. \textbf{(RQ1):} How does \Cobras compare to other steering methods on In-distribution tasks? \textbf{(RQ2):} How does \Cobras perform on OOD tasks? \textbf{(RQ3):} \textcolor{blue}{How do the design choices affect performance and computational cost?}
 
 \paragraph{Datasets.}We conduct our evaluations on three prevalent steering datasets: TruthfulQA~\cite{lin2021truthfulqa} (TQA) for Truthfulness, Ultrafeedback~\cite{cui2023ultrafeedback} (UF) for Helpfulness and RealToxicityPrompts~\cite{gehman2020realtoxicityprompts} for Detoxification. Further, to compare the performance of steering methods on Out-of-Distribution (OOD) tasks, we use MMLU~\cite{hendrycks2020measuring} and GSM8K~\cite{cobbe2021gsm8k}.
 
@@ -183,8 +183,8 @@ Activation steering can be brittle under distribution shift, with prior work sho
 
 % \noindent\textbf{Effect of abstention parameters:} \Cobras uses an abstention rule to avoid steering inputs far from the training distribution. For each training example, we compute the distance to its $K$-th nearest neighbor and set the abstention threshold to a chosen percentile of these distances. At test time, \Cobras abstains from steering when an input's neighborhood distance exceeds this threshold. In-distribution inputs are expected to have nearby neighbors and therefore be steered, whereas OOD inputs should have larger distances and trigger abstention. Table~\ref{tab:abstain-results} evaluate this mechanism on LLaMA3.1-8B-Base and Mistral-7B-Base using TruthfulQA as the in-distribution task and GSM8K as the OOD task. Increasing the abstention percentile makes \Cobras steer more examples. This improves TruthfulQA True$\times$Info, but can reduce OOD accuracy, most notably for LLaMA3.1-8B-Base at the $99.5$th percentile. Increasing $K$ shows a similar trade-off: larger neighborhoods improve TruthfulQA, but can lower GSM8K accuracy, especially for LLaMA3.1-8B-Base. These results show that abstention helps balance effective in-distribution steering with preserving OOD capabilities.
 
-\paragraph{\textcolor{blue}{RQ3: Sensitivity to steering strength and step count.}}
-Appendix~\ref{appendix:cobras_vs_t} varies the steering strength $T$, and Table~\ref{tab:cobras_truthfulqa_iters} varies the number of geodesic Euler steps $K$. These experiments assess the intervention budget and the benefit of recomputing the direction along the path. Appendix~\ref{apx:ood-gate} separately reports the support gate's score separation and mean attenuation at coverage $p=0.7$. Those measurements characterize the chosen gate setting; they are not an ablation of its coverage or bandwidth.
+\paragraph{\textcolor{blue}{RQ3: Ablations and computational cost.}}
+\textcolor{blue}{Ablations on LLaMA3.1-8B show that vMF attenuation helps preserve informativeness, while kNN gating limits OOD degradation (Appendix~\ref{apx:component-ablations}). We also examine sensitivity to steering strength $T$ and integration steps $K$ (Appendices~\ref{appendix:cobras_vs_t}--\ref{appendix:cobras_vs_k}). Since each step evaluates the field over the contrastive samples, Appendix~\ref{apx:computational-cost} studies the accuracy--cost trade-off from subsampling and fewer integration steps.}
 
 
 
@@ -524,4 +524,3 @@ Appendix~\ref{appendix:cobras_vs_t} varies the steering strength $T$, and Table~
 % \cline{3-5}
 %  &  & RM$_{\text{mean}}$ $\uparrow$ & RM$_{p90}$ $\uparrow$ & Win (\%) $\uparrow$ & True (\%) $\uparrow$ & Info (\%) $\uparrow$ & T$\times$I (\%) $\uparrow$ & PPL $\downarrow$ & Dist-2 $\uparrow$ & Toxic $\downarrow$ \\
 % \midrule
-

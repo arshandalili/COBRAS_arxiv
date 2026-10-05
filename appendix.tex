@@ -50,7 +50,7 @@ When evaluating the global flow framework under these spherical constraints, the
 
 \paragraph{ODESteer~\citep{zhaoodesteer}} Departing from single-step first-order approximations ($K=1$), ODESteer fully embraces the continuous-time formulation of the global flow framework by integrating across multiple steps ($K > 1$) over a flat Euclidean vector space $\mathcal{M} = \mathbb{R}^d$. Rather than adopting simple parametric distributions or linear probes, this approach models complex, non-linear activation dynamics by parameterizing the log-density ratio with a polynomial count-sketch feature map $\phi$ and setting $\log \frac{p_+(\boldsymbol{x})}{p_-(\boldsymbol{x})} = \boldsymbol{w}^\top \phi(\boldsymbol{x}) + b$, where the parameter pair $(\boldsymbol{w}, b)$ is fit empirically over the contrastive dataset. Under this non-linear projection, the steering direction is dictated by a dynamic, normalized vector field:$$\boldsymbol{V}(\boldsymbol{x}) = \frac{\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w}}{\|\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w}\|}$$where $\boldsymbol{J}_{\phi}(\boldsymbol{x})$ denotes the Jacobian matrix of the feature map $\phi$ evaluated at the current state $\boldsymbol{x}$. By evaluating and integrating this state-dependent vector field using discrete Euler steps over the time horizon $[0, T]$, ODESteer traces a curved, non-linear path through the representation space. This multi-step integration allows the model to continuously adapt to the changing manifold geometry during the steering process, providing precise control while tracking complex latent boundaries.
 
-\section{Derivations and Implementation}
+\section{Derivations}
 \label{apx:theory}
 
 \textcolor{blue}{This appendix derives the continuous bridge field, the discrete transport fit, and the local gradient interpretation of the steering field. It then separates the transport limit from the sampling limit needed to recover the population log-density-ratio gradient.}
@@ -189,26 +189,6 @@ The negative branch contributes the same bound. Equation~\eqref{eq:grad-psi} ide
 \paragraph{\textcolor{blue}{Discussion of the two limits.}}
 \label{apx:sampling-limit}
 \textcolor{blue}{Proposition~\ref{prop:ldr-limit} recovers a kernel density-ratio field at fixed samples and bandwidth. Recovering the population log-density-ratio gradient requires a separate sampling limit, with more contrastive samples and a shrinking bandwidth. For i.i.d.\ samples from densities on $\Sph$, let $N=\min\{N_+,N_-\}$ and choose $b_N\to0$ with $N b_N^{(d+1)/2}\to\infty$. The condition makes the bandwidth shrink slowly enough for the normalized density estimates and their gradients to converge. Consequently, $\boldsymbol{v}_{b_N}^{\mathrm{kde}}(\boldsymbol{x})/b_N$ converges in probability to $\nablaS\log[\pplus(\boldsymbol{x})/\pminus(\boldsymbol{x})]$ at each fixed query. The limits are sequential, first increasing $\varepsilon$ at fixed samples and bandwidth, then increasing the sample size while shrinking $b_N$. Separating the two parameters therefore recovers density-ratio steering without requiring the evaluation kernels to flatten.}
-
-\subsection{Implementation details}
-\label{apx:bandwidth}
-\label{apx:pseudocode}
-
-\paragraph{Bandwidth selection.}
-\textcolor{blue}{The implementation selects a bandwidth separately for each population at every iterate:}
-\begin{equation}
-b_\pm(\boldsymbol{x})=
-\max\!\left\{\max_{\boldsymbol{h}\in\mathcal{D}^\pm}
-d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2,\ b_{\min}\right\}.
-\label{eq:adaptive-bandwidth}
-\end{equation}
-Here $b_{\min}>0$ is a numerical floor. Every kernel centered on a desired sample uses $b_+$, including the kernels inside $m^-$. Every kernel centered on an undesired sample uses $b_-$, including those inside $m^+$. The final field remains the difference of weighted log-maps in Eq.~\eqref{eq:cobras-field}, without dividing either branch by its bandwidth. Thus the common-$b$ gradient-ratio identity and Proposition~\ref{prop:ldr-limit} describe the fixed-bandwidth construction. The gate uses the separate, fixed bandwidth $b_g$.
-
-\paragraph{Numerical evaluation.}
-Algorithm~\ref{alg:cobras} in Section~\ref{subsec:procedure} gives the adaptive procedure. \textcolor{blue}{Weighted kernel estimates} and normalized weights are evaluated in log space. Implementations also clamp cosines away from $\pm1$ and vector norms away from zero for numerical stability.
-
-\paragraph{Computational cost.}
-Transport fitting and reference-score computation are performed offline. With pairwise transport costs and Sinkhorn scalings precomputed, each steered token requires $K$ field evaluations, each costing $O(N_-N_+ + d(N_-+N_+))$. The $N_-N_+$ term comes from combining connections between the contrastive populations, while $d(N_-+N_+)$ covers distances and tangent vectors in activation space. This expression describes steering integration and excludes the language model's forward pass. The support gate is evaluated once per prompt.
 
 \FloatBarrier
 \section{Calibration and Properties of the Support Gate}
@@ -496,14 +476,141 @@ Our base LLMs follow the experimental setup of Zhao~\etal~\cite{zhaoodesteer}. W
     If the response contains fewer than $n$ words, we set $\mathrm{Dist}\text{-}n(y)=0$. Higher Dist-$n$ indicates greater lexical diversity.
 \end{itemize}
 
-\subsection{Implementation Details}
-
-
+\subsection{Steering implementation and settings}
 \label{appendix:implementation_details}
+\label{apx:bandwidth}
+\label{apx:pseudocode}
 
-All experiments use one H100 80GB GPU. We extend the ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement the steering methods and baselines. We set $\varepsilon=\sigma^2$ from geodesic neighborhood distances in $\mathcal{D}^+\cup\mathcal{D}^-$. The steering bandwidths follow Eq.~\eqref{eq:adaptive-bandwidth}, and we use $K=10$ integration steps. The accompanying code specifies the bandwidth settings, Sinkhorn initialization and iteration count, concentration $\kappa$, and numerical safeguards. The in-distribution configuration is ungated, with $g_q=1$ and $T=0.5$. The OOD configuration uses $p=0.7$ and $T=0.65$. Steering acts through a forward hook at layer $\ell$ on the last-token activation at every decoding step. Our ITI baseline uses the normalized logistic-probe direction implemented in this codebase.
+We extend the ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement the steering methods and baselines.
 
+\paragraph{\textcolor{blue}{Transport fitting and bandwidths.}}
+\textcolor{blue}{We set $\varepsilon=\sigma^2$ to the squared median $5$-NN geodesic distance in $\mathcal{D}^+\cup\mathcal{D}^-$, with a minimum of $(10^{-3}R)^2$. Sinkhorn fitting uses five sweeps of Eq.~\eqref{eq:sinkhorn}, initialized with zero log-scalings. During steering, the implementation selects a bandwidth separately for each population at every iterate:}
+\begin{equation}
+b_\pm(\boldsymbol{x})=
+\max\!\left\{\max_{\boldsymbol{h}\in\mathcal{D}^\pm}
+d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2,\ b_{\min}\right\}.
+\label{eq:adaptive-bandwidth}
+\end{equation}
+\textcolor{blue}{We use $b_{\min}=(10^{-3}R)^2$.} Every kernel centered on a desired sample uses $b_+$, including the kernels inside $m^-$. Every kernel centered on an undesired sample uses $b_-$, including those inside $m^+$. The final field remains the difference of weighted log-maps in Eq.~\eqref{eq:cobras-field}, without dividing either branch by its bandwidth. Thus the common-$b$ gradient-ratio identity and Proposition~\ref{prop:ldr-limit} describe the fixed-bandwidth construction. \textcolor{blue}{The support gate uses the separate, fixed bandwidth $b_g=\sigma^2/256$.}
+
+\paragraph{Numerical evaluation.}
+Algorithm~\ref{alg:cobras} in Section~\ref{subsec:procedure} gives the adaptive procedure. \textcolor{blue}{Weighted kernel estimates} and normalized weights are evaluated in log space. Implementations also clamp cosines away from $\pm1$ and vector norms away from zero for numerical stability. \textcolor{blue}{Steering acts through a forward hook at layer $\ell$ on the last-token activation at each decoding step, with the prompt gate cached for the continuation.}
+
+\paragraph{\textcolor{blue}{Experimental settings.}}
+\textcolor{blue}{Unless varied in an ablation, we use $K=10$ integration steps and $\kappa=20$. The main in-distribution evaluation is ungated, with $g_q=1$ and $T=0.5$. Support-gated OOD evaluation uses $p=0.7$ and $T=0.65$. The component and progressive ablations use the kNN gate, as specified in Appendix~\ref{apx:component-ablations}. Experiments were run using a combination of one H100 80GB GPU and two A100 80GB GPUs.}
+
+\FloatBarrier
+\section{\textcolor{blue}{Computational Cost}}
+\label{apx:computational-cost}
+
+\textcolor{blue}{\Cobras fits the transport plan once and evaluates the steering field repeatedly during generation. We examine the cost of both stages and assess how reducing the contrastive set or the number of integration steps changes decoding overhead and steering performance.}
+
+\paragraph{\textcolor{blue}{Computational complexity.}}
+Transport fitting and reference-score computation are performed offline. With pairwise transport costs and Sinkhorn scalings precomputed, each steered token requires $K$ field evaluations, each costing $O(N_-N_+ + d(N_-+N_+))$. The $N_-N_+$ term comes from combining connections between the contrastive populations, while $d(N_-+N_+)$ covers distances and tangent vectors in activation space. This expression describes steering integration and excludes the language model's forward pass. The support gate is evaluated once per prompt.
+
+\paragraph{\textcolor{blue}{Fitting and memory.}}
+\textcolor{blue}{On an A100 80GB GPU in float32, fitting takes approximately $13$ ms for $N_+=1311$ and $N_-=1672$ after initialization. A scaling experiment with synthetic activations and blocked distance computation takes $9.6$ s at $60{,}000$ samples per population. At $100{,}000$ per population, the fit exceeds available memory. The float32 cost matrix alone occupies $37.3$ GiB, illustrating the storage constraint imposed by the pairwise representation.}
+
+\paragraph{\textcolor{blue}{Decoding overhead.}}
+\textcolor{blue}{We benchmark LLaMA3.1-8B at layer $13$ on the same GPU in float32, using $100$ prompts, batch size $10$, and $50$ greedy decoding steps per prompt. We time each method in five repeated rounds, discard the first round (to avoid warm-up effects), and report the median runtime over the remaining four. With $N_+=1311$, $N_-=1672$, and $K=10$, the unsteered model takes $62.5$ ms per decoding step for the batch. \Cobras adds $20.2$ ms, giving $82.7$ ms total and approximately $32\%$ overhead.}
+
+\paragraph{\textcolor{blue}{Reducing computational cost.}}
+\textcolor{blue}{We compare three approximations. Random subsampling reduces the contrastive set before fitting, fewer integration steps reduce field evaluations per token, and nearest-sample truncation restricts field evaluation to the $64$ closest samples in each population. Table~\ref{tab:runtime-approximations} reports decoding overhead and the corresponding TruthfulQA performance.}
+
+\begin{table}[ht]
+\color{blue}
+\centering
+\small
+\caption{\textcolor{blue}{Computational trade-offs on LLaMA3.1-8B. Overhead is relative to unsteered decoding on an A100 80GB GPU in float32 at batch size $10$. TruthfulQA True$\times$Info uses a separate evaluation on all $817$ questions.}}
+\label{tab:runtime-approximations}
+\begin{tabular}{lccc}
+\toprule
+Configuration & $K$ & Overhead (\%)$\downarrow$ & T$\times$I (\%)$\uparrow$ \\
+\midrule
+Full contrastive set & 10 & 32 & 67.5 \\
+$25\%$ of each population & 10 & 30 & 66.5 \\
+$25\%$ of each population & 2 & 7 & 65.7 \\
+$64$ nearest samples per population & 10 & 22 & 61.6 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+\textcolor{blue}{Combining a quarter of the contrastive set with two integration steps reduces added overhead from $32\%$ to $7\%$, with a $1.8$-point decrease in True$\times$Info. Subsampling alone yields little decoding speedup in this setting, while truncation loses more accuracy. Fewer steps combined with subsampling therefore provide the most favorable measured accuracy--cost trade-off among these approximations.}
+
+\FloatBarrier
 \section{Additional Results}
+
+\subsection{\textcolor{blue}{Ablation studies}}
+\label{apx:component-ablations}
+
+\textcolor{blue}{We evaluate the contributions of individual components and their combined effect on LLaMA3.1-8B at layer $13$, using TruthfulQA for fitting. Unless ablated, both studies use $T=0.65$, $K=10$, and the kNN gate with the default settings in Appendix~\ref{apx:knn}.}
+
+\paragraph{\textcolor{blue}{Effect of individual components.}}
+\textcolor{blue}{Table~\ref{tab:component-ablation} reports the effect of removing each component from \Cobras. Removing query-dependent weighting makes the sample weights in Eq.~\eqref{eq:cobras-field} uniform within each population. For vMF attenuation, we also include a step-matched control that preserves the full method's mean step length, separating the benefit of query dependence from a change in average intervention strength.}
+
+\begin{table}[ht]
+\color{blue}
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\caption{\textcolor{blue}{Ablation of \Cobras components on LLaMA3.1-8B. Each variant removes one component from \Cobras with kNN gating. TruthfulQA results are averaged over three seeds. OOD accuracy is measured on $100$ questions per benchmark.}}
+\label{tab:component-ablation}
+\begin{tabular}{lccccc}
+\toprule
+\multirow{2}{*}{Variant} & \multicolumn{3}{c}{TruthfulQA (\%)} & \multicolumn{2}{c}{OOD accuracy (\%)} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-6}
+& True$\uparrow$ & Info$\uparrow$ & T$\times$I$\uparrow$ & GSM8K$\uparrow$ & MMLU$\uparrow$ \\
+\midrule
+Unsteered & 45.5 & 97.1 & 43.2 & 57 & 66 \\
+\textbf{\Cobras} & 77.8 & 85.4 & 63.6 & 52 & 66 \\
+\midrule
+\quad w/o vMF attenuation & 82.6 & 51.1 & 34.4 & 52 & 66 \\
+\quad w/o vMF attenuation (step-matched) & 77.4 & 72.9 & 50.9 & 53 & 66 \\
+\quad w/o kNN gate & 85.6 & 80.3 & 66.5 & 0 & 48 \\
+\quad w/o spherical projection & 80.6 & 83.8 & 64.9 & 1 & 43 \\
+\quad w/o query-dependent weights & 77.2 & 84.5 & 62.4 & 52 & 66 \\
+\quad w/o multi-step integration ($K=1$) & 77.8 & 83.5 & 62.0 & 53 & 66 \\
+\quad w/o direction normalization & 74.8 & 87.3 & 62.6 & 52 & 66 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+\textcolor{blue}{Without vMF attenuation, truthfulness increases but informativeness falls, reducing True$\times$Info from $63.6$ to $34.4$. Matching the mean step length recovers $50.9$, showing that query-dependent strength contributes beyond reducing the average intervention. Removing the kNN gate improves TruthfulQA performance but sharply reduces OOD accuracy, confirming its role in capability retention. Query-dependent sample weights and multiple integration steps provide smaller additional gains in the joint score.}
+
+\textcolor{blue}{The spherical ablation replaces geodesic quantities with Euclidean ones while retaining the original gate calibration. Its OOD results therefore reflect both the geometry change and the resulting mismatch in gate calibration.}
+
+\FloatBarrier
+\paragraph{\textcolor{blue}{Progressive ablation.}}
+\textcolor{blue}{To examine how the components work together, Table~\ref{tab:progressive-ablation} adds them sequentially. We start from the log-ratio gradient of the fitted kernel factors in Eq.~\eqref{eq:frozen-factors} at a shared fixed bandwidth, without normalization or attenuation. We then introduce direction normalization, vMF attenuation, and kNN gating. The final row uses \Cobras's conditional coefficients and adaptive bandwidths in place of the initial field.}
+
+\begin{table}[ht]
+\color{blue}
+\centering
+\small
+\caption{\textcolor{blue}{Progressive ablation on LLaMA3.1-8B, starting from the fitted kernel log-ratio gradient. Additions are cumulative, with the final row using \Cobras's conditional weighting and adaptive bandwidths. Evaluation follows Table~\ref{tab:component-ablation}.}}
+\label{tab:progressive-ablation}
+\begin{tabular}{lcccc}
+\toprule
+\multirow{2}{*}{Steering update} & \multicolumn{3}{c}{TruthfulQA (\%)} & \multirow{2}{*}{GSM8K (\%)$\uparrow$} \\
+\cmidrule(lr){2-4}
+& True$\uparrow$ & Info$\uparrow$ & T$\times$I$\uparrow$ & \\
+\midrule
+Kernel log-ratio gradient & 96.0 & 13.7 & 10.5 & 0 \\
+\quad + direction normalization & 94.1 & 25.9 & 20.8 & 0 \\
+\quad + vMF attenuation & 85.9 & 74.7 & 61.3 & 0 \\
+\quad + kNN gate & 77.6 & 81.5 & 59.8 & 52 \\
+\midrule
+\textbf{\Cobras} & 77.8 & 85.4 & 63.6 & 52 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+\textcolor{blue}{Following the kernel log-ratio gradient without attenuation produces high truthfulness but low informativeness. Normalization and vMF attenuation improve the joint score to $61.3$. Adding the kNN gate recovers GSM8K accuracy at a modest cost on TruthfulQA. The full \Cobras field then increases True$\times$Info from $59.8$ to $63.6$ while preserving the same GSM8K accuracy, improving ID steering under the same support control.}
+
+\FloatBarrier
 
 
 \subsection{Empirical Validation of Spherical Geometry assumption}
@@ -566,6 +673,46 @@ Figure~\ref{fig:cobras_vs_t} shows that steering strength has a non-monotonic ef
     \label{fig:cobras_vs_t}
 \end{figure}
 
+
+\subsection{Impact of geodesic Euler steps $K$}
+\label{appendix:cobras_vs_k}
+
+Table~\ref{tab:cobras_truthfulqa_iters} shows the effect of increasing the number of geodesic Euler steps $K$ in our proposed \Cobras steering method on TruthfulQA. Overall, increasing $K$ improves the True $\times$ Info score across all models, although the trend differs slightly by model.
+
+For Falcon-7B, larger $K$ increases informativeness, but also reduces the True score, leading to only a modest gain in True $\times$ Info. For Mistral-7B, performance is relatively stable across different values of $K$, with a small improvement at $K=10$. LLaMA3.1-8B benefits the most from increasing $K$, where True $\times$ Info improves consistently from $64.6$ at $K=1$ to $68.5$ at $K=10$. These results suggest that using more geodesic Euler steps generally improves steering quality, with $K=10$ giving the best overall performance in our experiments.
+
+
+\begin{table*}[h!]
+\centering
+\caption{TruthfulQA performance of \Cobras across geodesic Euler steps $K$.}
+\renewcommand{\arraystretch}{1.2}
+\small
+% \resizebox{0.72\linewidth}{!}{%
+\begin{tabular}{cccc>{\columncolor{lightpurple!25}}c}
+\toprule[1.5pt]
+\textbf{Model} & \textbf{$K$} & \textbf{True (\%)}$\uparrow$ & \textbf{Info (\%)}$\uparrow$ & \textbf{T$\times$I (\%)}$\uparrow$ \\
+\midrule
+\multirow{4}{*}{{Falcon-7B}} & 1 &  60.5 {\tiny $\pm$ 0.187} & 73.7 {\tiny $\pm$ 0.245} & 37.3 {\tiny $\pm$ 0.883} \\
+ & 2 &  58.3 {\tiny $\pm$ 0.628} & 78.6 {\tiny $\pm$ 0.071} & 39.9 {\tiny $\pm$ 0.367} \\
+ & 5 &  56.0 {\tiny $\pm$ 1.837} & 80.3 {\tiny $\pm$ 0.308} & 39.0 {\tiny $\pm$ 1.540} \\
+ & 10 & 45.5 {\tiny $\pm$ 2.124} & 93.4 {\tiny $\pm$ 1.379} & 40.3 {\tiny $\pm$ 1.390} \\
+\midrule
+\multirow{4}{*}{{Mistral-7B}} & 1 &  81.4 {\tiny $\pm$ 1.180} & 82.7 {\tiny $\pm$ 0.956} & 64.6 {\tiny $\pm$ 1.841} \\
+ & 2 &  80.8 {\tiny $\pm$ 0.510} & 83.4 {\tiny $\pm$ 1.671} & 64.8 {\tiny $\pm$ 1.309} \\
+ & 5 &  79.8 {\tiny $\pm$ 0.883} & 84.6 {\tiny $\pm$ 0.324} & 64.9 {\tiny $\pm$ 0.648} \\
+ & 10 &  79.5 {\tiny $\pm$ 0.308} & 85.3 {\tiny $\pm$ 1.002} & 65.4 {\tiny $\pm$ 0.738} \\
+\midrule
+\multirow{4}{*}{{LLaMA3.1-8B}} & 1 &  86.7 {\tiny $\pm$ 1.443} & 77.2 {\tiny $\pm$ 1.205} & 64.6 {\tiny $\pm$ 2.406} \\
+ & 2 &  86.5 {\tiny $\pm$ 1.481} & 78.5 {\tiny $\pm$ 0.787} & 65.6 {\tiny $\pm$ 2.198} \\
+ & 5 &  86.2 {\tiny $\pm$ 2.139} & 80.9 {\tiny $\pm$ 0.424} & 67.6 {\tiny $\pm$ 2.345} \\
+ & 10 &  86.3 {\tiny $\pm$ 1.484} & 81.8 {\tiny $\pm$ 1.097} & 68.5 {\tiny $\pm$ 0.717} \\
+\bottomrule[1.5pt]
+\end{tabular}
+% }
+\label{tab:cobras_truthfulqa_iters}
+\end{table*}
+
+\FloatBarrier
 
 \begin{table*}[h!]
 \centering
@@ -647,42 +794,7 @@ We also observe that some baselines reduce diversity more noticeably. For exampl
 
 
 
-\subsection{Impact of geodesic Euler steps $K$}
 
-Table~\ref{tab:cobras_truthfulqa_iters} shows the effect of increasing the number of geodesic Euler steps $K$ in our proposed \Cobras steering method on TruthfulQA. Overall, increasing $K$ improves the True $\times$ Info score across all models, although the trend differs slightly by model.
-
-For Falcon-7B, larger $K$ increases informativeness, but also reduces the True score, leading to only a modest gain in True $\times$ Info. For Mistral-7B, performance is relatively stable across different values of $K$, with a small improvement at $K=10$. LLaMA3.1-8B benefits the most from increasing $K$, where True $\times$ Info improves consistently from $64.6$ at $K=1$ to $68.5$ at $K=10$. These results suggest that using more geodesic Euler steps generally improves steering quality, with $K=10$ giving the best overall performance in our experiments. 
-
-
-\begin{table*}[h!]
-\centering
-\caption{TruthfulQA performance of \Cobras across geodesic Euler steps $K$.}
-\renewcommand{\arraystretch}{1.2}
-\small
-% \resizebox{0.72\linewidth}{!}{%
-\begin{tabular}{cccc>{\columncolor{lightpurple!25}}c}
-\toprule[1.5pt]
-\textbf{Model} & \textbf{$K$} & \textbf{True (\%)}$\uparrow$ & \textbf{Info (\%)}$\uparrow$ & \textbf{T$\times$I (\%)}$\uparrow$ \\
-\midrule
-\multirow{4}{*}{{Falcon-7B}} & 1 &  60.5 {\tiny $\pm$ 0.187} & 73.7 {\tiny $\pm$ 0.245} & 37.3 {\tiny $\pm$ 0.883} \\
- & 2 &  58.3 {\tiny $\pm$ 0.628} & 78.6 {\tiny $\pm$ 0.071} & 39.9 {\tiny $\pm$ 0.367} \\
- & 5 &  56.0 {\tiny $\pm$ 1.837} & 80.3 {\tiny $\pm$ 0.308} & 39.0 {\tiny $\pm$ 1.540} \\
- & 10 & 45.5 {\tiny $\pm$ 2.124} & 93.4 {\tiny $\pm$ 1.379} & 40.3 {\tiny $\pm$ 1.390} \\
-\midrule
-\multirow{4}{*}{{Mistral-7B}} & 1 &  81.4 {\tiny $\pm$ 1.180} & 82.7 {\tiny $\pm$ 0.956} & 64.6 {\tiny $\pm$ 1.841} \\
- & 2 &  80.8 {\tiny $\pm$ 0.510} & 83.4 {\tiny $\pm$ 1.671} & 64.8 {\tiny $\pm$ 1.309} \\
- & 5 &  79.8 {\tiny $\pm$ 0.883} & 84.6 {\tiny $\pm$ 0.324} & 64.9 {\tiny $\pm$ 0.648} \\
- & 10 &  79.5 {\tiny $\pm$ 0.308} & 85.3 {\tiny $\pm$ 1.002} & 65.4 {\tiny $\pm$ 0.738} \\
-\midrule
-\multirow{4}{*}{{LLaMA3.1-8B}} & 1 &  86.7 {\tiny $\pm$ 1.443} & 77.2 {\tiny $\pm$ 1.205} & 64.6 {\tiny $\pm$ 2.406} \\
- & 2 &  86.5 {\tiny $\pm$ 1.481} & 78.5 {\tiny $\pm$ 0.787} & 65.6 {\tiny $\pm$ 2.198} \\
- & 5 &  86.2 {\tiny $\pm$ 2.139} & 80.9 {\tiny $\pm$ 0.424} & 67.6 {\tiny $\pm$ 2.345} \\
- & 10 &  86.3 {\tiny $\pm$ 1.484} & 81.8 {\tiny $\pm$ 1.097} & 68.5 {\tiny $\pm$ 0.717} \\
-\bottomrule[1.5pt]
-\end{tabular}
-% }
-\label{tab:cobras_truthfulqa_iters}
-\end{table*}
 
 \clearpage
 
