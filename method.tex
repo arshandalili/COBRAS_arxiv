@@ -130,25 +130,11 @@ The field combines attraction toward desired activations $\boldsymbol{h}_i^+$ wi
 \subsection{Adaptive steering strength}
 \label{subsec:strength}
 
-We normalize $\boldsymbol{v}$ to separate the steering direction from the update size. The attenuation coefficient $s$ reduces this size as the activation aligns with the desired activations, while the support gate $g$ attenuates steering for prompts with low support under the contrastive data.
+\textcolor{blue}{Steering should weaken when an activation already aligns with the desired behavior or when the contrastive data provide little support for the prompt. We therefore normalize $\boldsymbol{v}$ and control the update size separately through two factors. The vMF attenuation coefficient $s$ reduces the update as the activation aligns with the desired direction, while the support gate $g$ suppresses steering on prompts with low contrastive support.}
 
 \paragraph{\textcolor{blue}{vMF strength attenuation.}}
-\textcolor{blue}{Following Spherical Steering~\citep{you2026spherical}, we use von Mises--Fisher (vMF) scores to measure alignment with the contrastive axis. Let $\bar{\boldsymbol{h}}^{\pm}$ be the means of the projected samples and define the unit direction toward the desired activations}
-\begin{equation}
-\boldsymbol{\mu}
-=\frac{\bar{\boldsymbol{h}}^+-\bar{\boldsymbol{h}}^-}
-{\|\bar{\boldsymbol{h}}^+-\bar{\boldsymbol{h}}^-\|}.
-\label{eq:mu}
-\end{equation}
-\textcolor{blue}{With mean directions $\boldsymbol{\mu}$ and $-\boldsymbol{\mu}$ and shared concentration $\kappa>0$, the desired and undesired vMF scores are proportional to $e^{\pm\kappa\langle\boldsymbol{x}/R,\boldsymbol{\mu}\rangle}$. We use the normalized undesired score as the strength coefficient,}
-\begin{equation}
-s(\boldsymbol{x})
-=\frac{e^{-\kappa\langle\boldsymbol{x}/R,\boldsymbol{\mu}\rangle}}
-{e^{\kappa\langle\boldsymbol{x}/R,\boldsymbol{\mu}\rangle}+e^{-\kappa\langle\boldsymbol{x}/R,\boldsymbol{\mu}\rangle}}
-=\left(1+e^{2\kappa\langle\boldsymbol{x}/R,\boldsymbol{\mu}\rangle}\right)^{-1}.
-\label{eq:side}
-\end{equation}
-\textcolor{blue}{Thus $s$ decreases as the activation aligns with $\boldsymbol{\mu}$, reducing the intervention on activations already oriented toward the desired direction.} We apply this smooth score directly, with $\kappa$ controlling the sharpness of the attenuation.
+\textcolor{blue}{Following Spherical Steering~\citep{you2026spherical}, we use von Mises--Fisher (vMF) scores to measure alignment with the contrastive axis. Let $\bar{\boldsymbol{h}}^{\pm}$ be the means of the projected samples. We define the unit direction toward the desired activations as $\boldsymbol{\mu}=(\bar{\boldsymbol{h}}^+-\bar{\boldsymbol{h}}^-)/\|\bar{\boldsymbol{h}}^+-\bar{\boldsymbol{h}}^-\|$.}
+\textcolor{blue}{With mean directions $\boldsymbol{\mu}$ and $-\boldsymbol{\mu}$ and shared concentration $\kappa>0$, the desired and undesired vMF scores are proportional to $e^{\pm\kappa\langle\boldsymbol{x}/R,\boldsymbol{\mu}\rangle}$. We use the normalized undesired score as the strength coefficient, $s(\boldsymbol{x})=\left(1+e^{2\kappa\langle\boldsymbol{x}/R,\boldsymbol{\mu}\rangle}\right)^{-1}$. Thus $s$ decreases as the activation aligns with $\boldsymbol{\mu}$, reducing the intervention on activations already oriented toward the desired direction.} We apply this smooth score directly, with $\kappa$ controlling the sharpness of the attenuation.
 
 \paragraph{\textcolor{blue}{Support scoring and gate calibration.}}
 Alignment with $\boldsymbol{\mu}$ alone does not establish proximity to the contrastive data. To limit steering on out-of-distribution (OOD) prompts, we therefore assess the proximity of a prompt activation $\boldsymbol{x}$ to each contrastive population using the \textcolor{blue}{weighted kernel estimates}
@@ -197,7 +183,7 @@ We combine the steering field $\boldsymbol{v}$ with the attenuation coefficient 
 \right).
 \label{eq:step}
 \end{equation}
-At each step, we recompute the direction $\boldsymbol{v}(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. Here $\theta_0R$ is the geodesic distance from $\boldsymbol{x}_0$ to the point $R\boldsymbol{\mu}$ on the sphere, with $\boldsymbol{\mu}$ defined in Eq.~\eqref{eq:mu}, so the total path length on $\Sph$ is $T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0R\le T\theta_0R$: the strength $T$ sets the largest fraction of that distance the activation can travel. Algorithm~\ref{alg:cobras} summarizes the procedure, with experimental settings given in Appendix~\ref{appendix:implementation_details}.
+At each step, we recompute the direction $\boldsymbol{v}(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. \textcolor{blue}{Here $\theta_0R$ is the geodesic distance from $\boldsymbol{x}_0$ to the point $R\boldsymbol{\mu}$ on the sphere, so the total path length on $\Sph$ is $T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0R\le T\theta_0R$: the strength $T$ sets the largest fraction of that distance the activation can travel.} Algorithm~\ref{alg:cobras} summarizes the procedure, with experimental settings given in Appendix~\ref{appendix:implementation_details}.
 
 \begin{algorithm}[t]
 \caption{\Cobras with adaptive bandwidths}
@@ -212,7 +198,7 @@ strength $T$; coverage $p$; steps $K$; concentration $\kappa$
 project all contrastive activations onto $\Sph$
 \State Form $c_{ji}$ using Eq.~\eqref{eq:e-ot}; fit $\log\boldsymbol{a}^\pm$
 using the Sinkhorn updates in Eq.~\eqref{eq:sinkhorn}
-\State Compute $\boldsymbol{\mu}$ using Eq.~\eqref{eq:mu}
+\State \textcolor{blue}{Compute $\boldsymbol{\mu}$ as defined in Section~\ref{subsec:strength}}
 \State Store the sorted scores $u(R\boldsymbol{z}/\|\boldsymbol{z}\|)$
 for $\boldsymbol{z}\in\mathcal{D}_{\mathrm{ref}}$
 \Statex \textbf{Online: edit the current token activation $\hquery$}
