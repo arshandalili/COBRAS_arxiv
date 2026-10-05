@@ -265,7 +265,7 @@ g_{\mathrm{kNN}}(\boldsymbol{x})
 \end{aligned}
 \label{eq:knn-gate}
 \end{equation}
-The gate equals $1/2$ at $\rho_{\mathrm{ref}}$ and decreases smoothly as the query moves away from the undesired samples. The quantile $\tau\in(0,1)$ therefore sets the radius at which steering is halved, and $\gamma>0$ sets how sharply it falls. By contrast, the coverage $p$ in Eq.~\eqref{eq:gate} sets the reference rank up to which steering keeps full strength. We use $k=32$ and $\tau=0.98$, with $\gamma=50$ in Table~\ref{tab:abstain-results} and $\gamma=200$ in Table~\ref{tab:knn-external}.
+The gate equals $1/2$ at $\rho_{\mathrm{ref}}$ and decreases smoothly as the query moves away from the undesired samples. The quantile $\tau\in(0,1)$ therefore sets the radius at which steering is halved, and $\gamma>0$ sets how sharply it falls. By contrast, the coverage $p$ in Eq.~\eqref{eq:gate} sets the reference rank up to which steering keeps full strength. We use $\gamma=200$ throughout, with default settings $k=32$ and $\tau=0.98$.
 
 \textcolor{blue}{We evaluate the kNN gate once at the last prompt activation and reuse it throughout the continuation.} For \Cobras it replaces $g_q$ in Eq.~\eqref{eq:step}. For another method that maps an activation $\boldsymbol{h}$ to $\tilde{\boldsymbol{h}}$, the gated output is $\boldsymbol{h}+g_{\mathrm{kNN}}\,(\tilde{\boldsymbol{h}}-\boldsymbol{h})$, so the gate scales each method's own displacement. \textcolor{blue}{The external module therefore applies support control without changing how the underlying method computes its update. Algorithm~\ref{alg:knn-external} summarizes the procedure.}
 
