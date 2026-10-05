@@ -13,7 +13,7 @@
 
 \begin{table*}[t]
 \centering
-\caption{Performance of Activation Steering methods on Helpfulness (Ultrafeedback), Truthfulness (TruthfulQA), and Detoxification (Real Toxicity Prompts) for 4 LLM models. Results are averaged over three runs with different seeds. Primary metrics are highlighted in light purple. 
+\caption{Performance of Activation Steering methods on Helpfulness (Ultrafeedback), Truthfulness (TruthfulQA), and Detoxification (Real Toxicity Prompts) for 4 LLM models. Results are means $\pm$ standard deviations over three runs with different seeds. Primary metrics are highlighted in light purple.
 }
 \large
 \renewcommand{\arraystretch}{1.2}
@@ -136,7 +136,7 @@ SphericalSteer &  & -7.203 {\tiny $\pm$ 0.208} & 4.309 {\tiny $\pm$ 0.192} & 43.
 \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figures/within_task_ood.png}
-    \caption{Performance of steering methods in Within-task OOD: TriviaQA~\cite{joshi2017triviaqa} and NQ~\cite{kwiatkowski2019natural} performance. We skipped Falcon-7B because the original model's performance was low.}
+    \caption{Within-task OOD evaluation. Answer-ranking accuracy on TriviaQA~\citep{joshi2017triviaqa} and NQ~\citep{kwiatkowski2019natural} is plotted against TruthfulQA True$\times$Info. Falcon-7B is omitted because its unsteered performance was low.}
     \label{fig:within_task_ood}\vspace{-3mm}
 \end{figure}
 
@@ -163,7 +163,7 @@ Activation steering can be brittle under distribution shift, with prior work sho
     \label{fig:cross_task_ood}\vspace{-3mm}
 \end{figure}
 
-\paragraph{\textcolor{blue}{Cross-task OOD.}}~In this experiment, we train all steering methods on TruthfulQA and evaluate OOD performance on MMLU~\cite{hendrycks2020measuring} and GSM8K~\cite{cobbe2021gsm8k}. Figure~\ref{fig:cross_task_ood} plots OOD accuracy against TruthfulQA True$\times$Info; the ideal method appears in the upper-right, improving truthfulness while preserving OOD accuracy. Baselines show inconsistent trade-offs: several methods improve TruthfulQA but substantially reduce OOD performance, especially on GSM8K for LLaMA3.1-8B and Mistral-7B, and on MMLU for Mistral-7B. This suggests that some steering methods sacrifice general reasoning ability for in-distribution gains. By contrast, \Cobras consistently lie near the upper-right across all models and OOD benchmarks. It improves TruthfulQA over the original model while maintaining OOD accuracy close to, or above, the unsteered model, avoiding the severe GSM8K drops seen in several baselines. Overall, \Cobras achieves the most favorable trade-off between in-distribution steering effectiveness and OOD capability preservation.
+\paragraph{\textcolor{blue}{Cross-task OOD.}}~In this experiment, we train all steering methods on TruthfulQA and evaluate OOD performance on MMLU~\cite{hendrycks2020measuring} and GSM8K~\cite{cobbe2021gsm8k}. Figure~\ref{fig:cross_task_ood} plots OOD accuracy against TruthfulQA True$\times$Info; the ideal method appears in the upper-right, improving truthfulness while preserving OOD accuracy. Baselines show inconsistent trade-offs: several methods improve TruthfulQA but substantially reduce OOD performance, especially on GSM8K for LLaMA3.1-8B and Mistral-7B, and on MMLU for Mistral-7B. This suggests that some steering methods sacrifice general reasoning ability for in-distribution gains. By contrast, \Cobras consistently lies near the upper-right across all models and OOD benchmarks. It improves TruthfulQA over the original model while maintaining OOD accuracy close to, or above, the unsteered model, avoiding the severe GSM8K drops seen in several baselines. Overall, \Cobras achieves the most favorable trade-off between in-distribution steering effectiveness and OOD capability preservation.
 
 \paragraph{\textcolor{blue}{kNN gating across steering methods.}}
 \textcolor{blue}{We next examine how much of the OOD retention comes from support gating and whether \Cobras's advantage remains when other methods use the same gate. We attach the kNN gate to CAA, ODESteer, SphericalSteer, and \Cobras on LLaMA3.1-8B, with all methods trained on TruthfulQA. Table~\ref{tab:knn-external} in Appendix~\ref{apx:knn} compares each method with and without the gate, using the same $100$ sampled questions from each OOD benchmark. Across all four methods, gating brings GSM8K accuracy close to the unsteered level and preserves MMLU accuracy, at a modest cost in TruthfulQA performance. Under the shared gate, \Cobras achieves the highest mean TruthfulQA True$\times$Info score of $63.7\%$, compared with $61.7\%$ for SphericalSteer. The comparison shows that support gating benefits several steering methods, while the choice of steering rule remains important for in-distribution gains.}
