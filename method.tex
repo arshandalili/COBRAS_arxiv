@@ -186,7 +186,7 @@ We combine the steering field $\boldsymbol{v}$ with the attenuation coefficient 
 At each step, we recompute the direction $\boldsymbol{v}(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. \textcolor{blue}{Here $\theta_0R$ is the geodesic distance from $\boldsymbol{x}_0$ to the point $R\boldsymbol{\mu}$ on the sphere, so the total path length on $\Sph$ is at most $T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0R\le T\theta_0R$: the strength $T$ sets the largest fraction of that distance the activation can transport.} Algorithm~\ref{alg:cobras} summarizes the procedure, with experimental settings given in Appendix~\ref{appendix:implementation_details}.
 
 \begin{algorithm}[t]
-\caption{\Cobras with adaptive bandwidths}
+\caption{\Cobras}
 \label{alg:cobras}
 \small
 \begin{algorithmic}[1]
