@@ -335,24 +335,78 @@ The gate equals $1/2$ at $\rho_{\mathrm{ref}}$ and decreases smoothly as the que
 
 \paragraph{\textcolor{blue}{Connection to the support score.}}
 \label{apx:knn-connection}
-\textcolor{blue}{To relate the kNN gate to the support score, we examine the kernel factors at small bandwidth. With the fitted scalings held fixed, the nearest samples dominate each factor as $b_g$ shrinks.} For the undesired factor $\widehat{\varphi}_{b_g}$ in Eq.~\eqref{eq:frozen-factors}, write $\rho_1(\boldsymbol{x};\mathcal{D}^-)=\min_j d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_j^-)$. Every kernel in $\widehat{\varphi}_{b_g}$ is at most $\exp[-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)]$, with equality at a nearest sample. Bounding the weight of that sample below by $\min_j a_j^-$ and the total weight above by $\sum_j a_j^-$ gives
+To relate the kNN gate to the support score in Eq.~\eqref{eq:support-score}, we show how nearest-sample distances arise from the kernel factors as $b_g\to0$. We start with the undesired factor and then combine the two factors.
+
+Throughout the derivation, the contrastive samples and positive scalings $a_j^-,a_i^+$ fitted at a fixed $\varepsilon$ remain unchanged. For the undesired factor, let $j_\star$ index a nearest sample to $\boldsymbol{x}$, so $\rho_1(\boldsymbol{x};\mathcal{D}^-)=d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_{j_\star}^-)=\min_j d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_j^-)$. The nearest sample has the largest kernel value by Eq.~\eqref{eq:kernel},
+\[
+K_{b_g}(\boldsymbol{x},\boldsymbol{h}_j^-)
+\le e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}
+=K_{b_g}(\boldsymbol{x},\boldsymbol{h}_{j_\star}^-).
+\]
+Keeping the nearest-sample term gives a lower bound on $\widehat{\varphi}_{b_g}$ in Eq.~\eqref{eq:frozen-factors}, while bounding every kernel by the nearest-sample value gives an upper bound,
+\[
+\begin{aligned}
+\widehat{\varphi}_{b_g}(\boldsymbol{x})
+&=\sum_j a_j^-K_{b_g}(\boldsymbol{x},\boldsymbol{h}_j^-)\\
+&\ge a_{j_\star}^-K_{b_g}(\boldsymbol{x},\boldsymbol{h}_{j_\star}^-)
+\ge\left(\min_j a_j^-\right)e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)},\\
+\widehat{\varphi}_{b_g}(\boldsymbol{x})
+&\le\sum_j a_j^-e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}
+=\left(\sum_j a_j^-\right)e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}.
+\end{aligned}
+\]
+Normalizing by the total weight $\sum_j a_j^-$ makes the factor a weighted average of kernels. Dividing the bounds by this positive sum yields
+\[
+\frac{\min_j a_j^-}{\sum_j a_j^-}
+e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}
+\le\frac{\widehat{\varphi}_{b_g}(\boldsymbol{x})}{\sum_j a_j^-}
+\le e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}.
+\]
+Taking logarithms and multiplying by $-2b_g<0$ reverses the inequalities. Subtracting $\rho_1(\boldsymbol{x};\mathcal{D}^-)^2$ and expanding the logarithm gives
 \begin{equation}
-0\le -2b_g\log\frac{\widehat{\varphi}_{b_g}(\boldsymbol{x})}{\sum_j a_j^-}
--\rho_1(\boldsymbol{x};\mathcal{D}^-)^2
-\le 2b_g\log\frac{\sum_j a_j^-}{\min_j a_j^-}.
+\begin{aligned}
+0&\le -2b_g\log\frac{\widehat{\varphi}_{b_g}(\boldsymbol{x})}{\sum_j a_j^-}
+-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2\\
+&\le -2b_g\log\!\left[
+\frac{\min_j a_j^-}{\sum_j a_j^-}
+e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}\right]
+-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2\\
+&=2b_g\log\frac{\sum_j a_j^-}{\min_j a_j^-}.
+\end{aligned}
 \label{eq:knn-kernel-bound}
 \end{equation}
-The scalings are fitted with $\varepsilon$ fixed and do not depend on $b_g$, so the upper bound vanishes as $b_g\to0$. The same argument applies to $\widehat{\psi}_{b_g}$ with $\rho_1(\boldsymbol{x};\mathcal{D}^+)=\min_i d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_i^+)$, and summing the two gives
+Repeating these steps for the desired factor, with $\rho_1(\boldsymbol{x};\mathcal{D}^+)=\min_i d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_i^+)$, gives
+\[
+\begin{aligned}
+0&\le -2b_g\log\frac{\widehat{\psi}_{b_g}(\boldsymbol{x})}{\sum_i a_i^+}
+-\rho_1(\boldsymbol{x};\mathcal{D}^+)^2\\
+&\le 2b_g\log\frac{\sum_i a_i^+}{\min_i a_i^+}.
+\end{aligned}
+\]
+The upper bounds are constants times $b_g$, so both errors tend to zero as $b_g\to0$. The normalizing sums are fixed, so $2b_g\log\sum_j a_j^-\to0$ and $2b_g\log\sum_i a_i^+\to0$ as well. Hence
+\[
+\begin{aligned}
+-2b_g\log\widehat{\varphi}_{b_g}(\boldsymbol{x})
+&\longrightarrow\rho_1(\boldsymbol{x};\mathcal{D}^-)^2,\\
+-2b_g\log\widehat{\psi}_{b_g}(\boldsymbol{x})
+&\longrightarrow\rho_1(\boldsymbol{x};\mathcal{D}^+)^2.
+\end{aligned}
+\]
+Using $u=-\log\hat{p}_{b_g}$ and $\hat{p}_{b_g}=\widehat{\varphi}_{b_g}\widehat{\psi}_{b_g}$ from Eq.~\eqref{eq:support-score}, we obtain
 \begin{equation}
--2b_g\log\frac{\hat{p}_{b_g}(\boldsymbol{x})}
-{(\sum_j a_j^-)(\sum_i a_i^+)}
-\longrightarrow
-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2
+\begin{aligned}
+2b_g u(\boldsymbol{x})
+&=-2b_g\log\hat{p}_{b_g}(\boldsymbol{x})\\
+&=-2b_g\log\widehat{\varphi}_{b_g}(\boldsymbol{x})
+-2b_g\log\widehat{\psi}_{b_g}(\boldsymbol{x})\\
+&\longrightarrow\rho_1(\boldsymbol{x};\mathcal{D}^-)^2
 +\rho_1(\boldsymbol{x};\mathcal{D}^+)^2
 \quad\text{as }b_g\to0.
+\end{aligned}
 \label{eq:knn-product-limit}
 \end{equation}
-\textcolor{blue}{The left-hand side of Eq.~\eqref{eq:knn-product-limit} is $2b_g u(\boldsymbol{x})$ plus a query-independent constant, so it preserves the ranks used in Eq.~\eqref{eq:gate}. The score $u$ therefore combines proximity to both populations. The kNN gate uses the proximity information captured by the undesired factor in Eq.~\eqref{eq:knn-kernel-bound}, replacing the nearest sample with the $k$-th neighbor to reduce dependence on an individual activation. The kNN gate thus provides support control without fitting transport, while \Cobras's support score uses both populations and the same fitted scalings as its steering weights.}
+
+The support score therefore combines proximity to both populations. The kNN gate uses distance to undesired samples as a surrogate without fitting transport and replaces the nearest sample with the $k$-th neighbor to reduce dependence on an individual activation and make it more robust.
 
 \subsection{\textcolor{blue}{The kNN gate on other steering methods}}
 \label{apx:knn-external}
