@@ -356,35 +356,28 @@ Keeping the nearest-sample term gives a lower bound on $\widehat{\varphi}_{b_g}$
 =\left(\sum_j a_j^-\right)e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}.
 \end{aligned}
 \]
-Normalizing by the total weight $\sum_j a_j^-$ makes the factor a weighted average of kernels. Dividing the bounds by this positive sum yields
-\[
-\frac{\min_j a_j^-}{\sum_j a_j^-}
-e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}
-\le\frac{\widehat{\varphi}_{b_g}(\boldsymbol{x})}{\sum_j a_j^-}
-\le e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}.
-\]
-Taking logarithms and multiplying by $-2b_g<0$ reverses the inequalities. Subtracting $\rho_1(\boldsymbol{x};\mathcal{D}^-)^2$ and expanding the logarithm gives
+Taking logarithms and multiplying by $-2b_g<0$ reverses the inequalities. Expanding the logarithms gives
 \begin{equation}
 \begin{aligned}
-0&\le -2b_g\log\frac{\widehat{\varphi}_{b_g}(\boldsymbol{x})}{\sum_j a_j^-}
--\rho_1(\boldsymbol{x};\mathcal{D}^-)^2\\
-&\le -2b_g\log\!\left[
-\frac{\min_j a_j^-}{\sum_j a_j^-}
-e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}\right]
--\rho_1(\boldsymbol{x};\mathcal{D}^-)^2\\
-&=2b_g\log\frac{\sum_j a_j^-}{\min_j a_j^-}.
+\rho_1(\boldsymbol{x};\mathcal{D}^-)^2
+-2b_g\log\sum_j a_j^-
+&\le -2b_g\log\widehat{\varphi}_{b_g}(\boldsymbol{x})\\
+&\le\rho_1(\boldsymbol{x};\mathcal{D}^-)^2
+-2b_g\log\min_j a_j^-.
 \end{aligned}
 \label{eq:knn-kernel-bound}
 \end{equation}
 Repeating these steps for the desired factor, with $\rho_1(\boldsymbol{x};\mathcal{D}^+)=\min_i d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_i^+)$, gives
 \[
 \begin{aligned}
-0&\le -2b_g\log\frac{\widehat{\psi}_{b_g}(\boldsymbol{x})}{\sum_i a_i^+}
--\rho_1(\boldsymbol{x};\mathcal{D}^+)^2\\
-&\le 2b_g\log\frac{\sum_i a_i^+}{\min_i a_i^+}.
+\rho_1(\boldsymbol{x};\mathcal{D}^+)^2
+-2b_g\log\sum_i a_i^+
+&\le -2b_g\log\widehat{\psi}_{b_g}(\boldsymbol{x})\\
+&\le\rho_1(\boldsymbol{x};\mathcal{D}^+)^2
+-2b_g\log\min_i a_i^+.
 \end{aligned}
 \]
-The upper bounds are constants times $b_g$, so both errors tend to zero as $b_g\to0$. The normalizing sums are fixed, so $2b_g\log\sum_j a_j^-\to0$ and $2b_g\log\sum_i a_i^+\to0$ as well. Hence
+The scalings are fixed and positive, so all terms proportional to $b_g$ vanish as $b_g\to0$. The bounds therefore yield
 \[
 \begin{aligned}
 -2b_g\log\widehat{\varphi}_{b_g}(\boldsymbol{x})
