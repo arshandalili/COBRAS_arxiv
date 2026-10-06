@@ -59,19 +59,15 @@ When evaluating the global flow framework under these spherical constraints, the
 \label{apx:static}
 
 \textcolor{red}{please talk to me about this part.}
-\paragraph{\textcolor{blue}{Probability-flow identity.}}
-\textcolor{blue}{Song et al.~\citep[Sec.~4.3, Eq.~13]{song2020score} give the following statement.}
-\begin{quote}
-\textcolor{blue}{``For all diffusion processes, there exists a corresponding deterministic process whose trajectories share the same marginal probability densities $\{p_t(\boldsymbol{x})\}_{t=0}^{T}$ as the SDE.''}
-\end{quote}
-\textcolor{blue}{For the Euclidean SDE $\mathrm{d}\boldsymbol{x}=\boldsymbol{f}(\boldsymbol{x},t)\,\mathrm{d}t+g(t)\,\mathrm{d}\boldsymbol{w}$, their probability-flow ODE is}
+\paragraph{\textcolor{teal}{Probability-flow identity.}}
+\textcolor{teal}{For the Euclidean SDE $\mathrm{d}\boldsymbol{x}=\boldsymbol{f}(\boldsymbol{x},t)\,\mathrm{d}t+g(t)\,\mathrm{d}\boldsymbol{w}$, their probability-flow ODE is~\citep{song2020score}}
 \[
-\textcolor{blue}{\displaystyle
+\textcolor{teal}{\displaystyle
 \mathrm{d}\boldsymbol{x}
-=\Big[\boldsymbol{f}(\boldsymbol{x},t)-\frac{1}{2}g(t)^2\nabla_{\boldsymbol{x}}\log p_t(\boldsymbol{x})\Big]\,\mathrm{d}t.
+=\Big[\boldsymbol{f}(\boldsymbol{x},t)-\frac{1}{2}g(t)^2\nabla_{\boldsymbol{x}}\log p_t(\boldsymbol{x})\Big]\,\mathrm{d}t,
 }
 \]
-\textcolor{blue}{In the source notation, $\boldsymbol{f}$ is the drift, $g(t)$ is the diffusion amplitude, $\boldsymbol{w}$ is standard Brownian motion, and $T$ is the diffusion time horizon.}
+\textcolor{teal}{where $\boldsymbol{f}$ is the drift, $g(t)$ is the diffusion amplitude, and $\boldsymbol{w}$ is standard Brownian motion.}
 
 \paragraph{\textcolor{teal}{Probability-flow identity.}}
 \textcolor{teal}{For the Euclidean SDE $\mathrm{d}\boldsymbol{x}=\boldsymbol{f}(\boldsymbol{x},t)\,\mathrm{d}t+g(t)\,\mathrm{d}\boldsymbol{w}$, their probability-flow ODE is~\citep{song2020score}}
@@ -167,50 +163,97 @@ The weights in this sum are positive and sum to one. The corresponding expressio
 \subsection{Proof of Proposition~\ref{prop:ldr-limit}}
 \label{apx:proof-ldr-limit}
 
-\textcolor{blue}{We prove Proposition~\ref{prop:ldr-limit} by bounding how much the transport coefficients change the normalized kernel weights. Because $K_b$ depends only on geodesic distance, its integral over $\Sph$ is independent of the kernel center. The kernel estimates defined in Section~\ref{subsec:reduction} therefore share a normalizing constant, which cancels in their ratio.}
+\begin{proof}
+Fix the contrastive activations, a bandwidth $b>0$, and a query $\boldsymbol{x}\in\Sph$ distinct from the contrastive activations' antipodes. Let $c_{\max}=\max_{j,i}c_{ji}$ and define the normalized kernel weights
+\[
+u_k^\pm
+=\frac{K_b(\boldsymbol{x},\boldsymbol{h}_k^\pm)}
+{\sum_\ell K_b(\boldsymbol{x},\boldsymbol{h}_\ell^\pm)},
+\qquad \sum_k u_k^\pm=1.
+\]
+All weights and coefficients below are evaluated at $\boldsymbol{x}$. Since $e^{-c_{\max}}{\le}e^{-c_{ji}}{\le}1$ and $a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)>0$, summing over $j$ gives
+\[
+\begin{aligned}
+e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})
+&=e^{-c_{\max}}\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)\\
+&\le\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)e^{-c_{ji}}
+=m^+_{i,b}\\
+&\le\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)
+=\widehat{\varphi}_b(\boldsymbol{x}).
+\end{aligned}
+\]
+Multiplying the coefficient bounds by $u_k^+>0$, summing over $k$, and using $\sum_k u_k^+=1$ yields
+\[
+\begin{aligned}
+e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})
+&=\sum_k u_k^+e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})\\
+&\le\sum_k u_k^+m^+_{k,b}\\
+&\le\sum_k u_k^+\widehat{\varphi}_b(\boldsymbol{x})
+=\widehat{\varphi}_b(\boldsymbol{x}).
+\end{aligned}
+\]
+Using Eq.~\eqref{eq:weights-pos} and the definition of $u_i^+$, we obtain
+\[
+\begin{aligned}
+\frac{\bar{w}_i^+}{u_i^+}
+&=\frac{m^+_{i,b}K_b(\boldsymbol{x},\boldsymbol{h}_i^+)}
+{\sum_k m^+_{k,b}K_b(\boldsymbol{x},\boldsymbol{h}_k^+)}
+\frac{\sum_k K_b(\boldsymbol{x},\boldsymbol{h}_k^+)}
+{K_b(\boldsymbol{x},\boldsymbol{h}_i^+)}\\
+&=\frac{m^+_{i,b}\sum_k K_b(\boldsymbol{x},\boldsymbol{h}_k^+)}
+{\sum_k m^+_{k,b}K_b(\boldsymbol{x},\boldsymbol{h}_k^+)}\\
+&=\frac{m^+_{i,b}}{\sum_k u_k^+m^+_{k,b}}.
+\end{aligned}
+\]
+Both $m^+_{i,b}$ and $\sum_k u_k^+m^+_{k,b}$ lie between $e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})>0$ and $\widehat{\varphi}_b(\boldsymbol{x})$. Using the lower bound for the numerator and the upper bound for the denominator gives the first inequality below. Reversing these choices gives the second,
+\[
+\begin{aligned}
+\frac{\bar{w}_i^+}{u_i^+}
+&\ge\frac{e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})}
+{\widehat{\varphi}_b(\boldsymbol{x})}
+=e^{-c_{\max}},\\
+\frac{\bar{w}_i^+}{u_i^+}
+&\le\frac{\widehat{\varphi}_b(\boldsymbol{x})}
+{e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})}
+=e^{c_{\max}}.
+\end{aligned}
+\]
+Consequently,
+\[
+\begin{aligned}
+\sum_i|\bar{w}_i^+-u_i^+|
+&=\sum_i u_i^+\left|\frac{\bar{w}_i^+}{u_i^+}-1\right|\\
+&\le(e^{c_{\max}}-1)\sum_i u_i^+
+=e^{c_{\max}}-1.
+\end{aligned}
+\]
+Applying the same argument to Eq.~\eqref{eq:ext-phi} yields $\sum_j|\bar{w}_j^--u_j^-|\le e^{c_{\max}}-1$.
 
-Fix the projected contrastive activations and a shared bandwidth $b>0$, and let $c_{\max}=\max_{j,i}c_{ji}$. For any positive scalings in Eqs.~\eqref{eq:ext-psi}--\eqref{eq:ext-phi}, the following bound holds away from the contrastive activations' antipodes:
+Furthermore, Eq.~\eqref{eq:grad-psi} gives
+\[
+b\nablaS\log\hat{p}_b^\pm(\boldsymbol{x})
+=\sum_k u_k^\pm\log_{\boldsymbol{x}}(\boldsymbol{h}_k^\pm).
+\]
+Combining this identity with Eq.~\eqref{eq:cobras-field}, the triangle inequality, and $\|\log_{\boldsymbol{x}}(\boldsymbol{h}_k^\pm)\|\le\pi R$ gives
 \begin{equation}
+\begin{aligned}
 \|\boldsymbol{v}(\boldsymbol{x})-\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})\|
-\le 2\pi R(e^{c_{\max}}-1).
+&\le\pi R\left(\sum_i|\bar{w}_i^+-u_i^+|
++\sum_j|\bar{w}_j^--u_j^-|\right)\\
+&\le2\pi R(e^{c_{\max}}-1).
+\end{aligned}
 \label{eq:prop1-bound}
 \end{equation}
-
-\begin{proof}
-\textcolor{teal}{Since $0\le c_{ji}\le c_{\max}$, the undesired factor $\widehat{\varphi}_b$ in Eq.~\eqref{eq:frozen-factors} bounds every desired coefficient,}
+Finally, $d_{\Sph}(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)\le\pi R$ implies $c_{\max}\le\pi^2R^2/(2\varepsilon)$, so
 \[
-\textcolor{teal}{e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})
-\le m^+_{i,b}(\boldsymbol{x})\le\widehat{\varphi}_b(\boldsymbol{x}).}
+\|\boldsymbol{v}(\boldsymbol{x})-\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})\|
+\le2\pi R\left(e^{\pi^2R^2/(2\varepsilon)}-1\right)
+=O(1/\varepsilon).
 \]
-\textcolor{teal}{The log-coefficients therefore differ by at most $c_{\max}$ across desired samples, independently of the positive scalings. The same argument applies to the undesired coefficients.}
-
-\textcolor{blue}{For a probability vector $\boldsymbol{u}$, reweighting by positive coefficients whose logarithms differ by at most $c_{\max}$ gives $w_i=u_i m_i/\sum_k u_km_k$. After a common rescaling, both $m_i$ and their weighted mean lie in $[1,e^{c_{\max}}]$. Consequently, $\|\boldsymbol{w}-\boldsymbol{u}\|_1\le e^{c_{\max}}-1$. Apply this to the kernel-only weights $u_i^+\propto K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$ and the conditional weights $\bar{w}_i^+$. Each log-map has norm at most $\pi R$, so}
-\[
-\left\|\sum_i(\bar{w}_i^+-u_i^+)
-\log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)\right\|
-\le\pi R(e^{c_{\max}}-1).
-\]
-The negative branch contributes the same bound. Equation~\eqref{eq:grad-psi} identifies their kernel-only difference with $\boldsymbol{v}_b^{\mathrm{kde}}$, proving Eq.~\eqref{eq:prop1-bound}. Finally, $c_{\max}\le\pi^2R^2/(2\varepsilon)$ gives uniform convergence and the $O(1/\varepsilon)$ rate at fixed $b$.
+The bound is independent of $\boldsymbol{x}$, establishing the claimed uniform convergence.
 \end{proof}
 
-\begin{proof}
-\textcolor{blue}{Since $0\le c_{ji}\le c_{\max}$, the undesired factor $\widehat{\varphi}_b$ in Eq.~\eqref{eq:frozen-factors} bounds every desired coefficient,}
-\[
-\textcolor{blue}{e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})
-\le m^+_{i,b}(\boldsymbol{x})\le\widehat{\varphi}_b(\boldsymbol{x}).}
-\]
-\textcolor{blue}{The log-coefficients therefore differ by at most $c_{\max}$ across desired samples, independently of the positive scalings. The same argument applies to the undesired coefficients.}
-
-\textcolor{blue}{For a probability vector $\boldsymbol{u}$, reweighting by positive coefficients whose logarithms differ by at most $c_{\max}$ gives $w_i=u_i m_i/\sum_k u_km_k$. After a common rescaling, both $m_i$ and their weighted mean lie in $[1,e^{c_{\max}}]$. Consequently, $\|\boldsymbol{w}-\boldsymbol{u}\|_1\le e^{c_{\max}}-1$. Apply this to the kernel-only weights $u_i^+\propto K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$ and the conditional weights $\bar{w}_i^+$. Each log-map has norm at most $\pi R$, so}
-\[
-\left\|\sum_i(\bar{w}_i^+-u_i^+)
-\log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)\right\|
-\le\pi R(e^{c_{\max}}-1).
-\]
-The negative branch contributes the same bound. Equation~\eqref{eq:grad-psi} identifies their kernel-only difference with $\boldsymbol{v}_b^{\mathrm{kde}}$, proving Eq.~\eqref{eq:prop1-bound}. Finally, $c_{\max}\le\pi^2R^2/(2\varepsilon)$ gives uniform convergence and the $O(1/\varepsilon)$ rate at fixed $b$.
-\end{proof}
-
-\textcolor{blue}{The bound shows that the effect of transport reweighting vanishes as $\varepsilon$ increases, while the proximity weighting at bandwidth $b$ remains intact. Since the bound requires only positive scalings, it also holds after finitely many Sinkhorn iterations. It controls the unnormalized field. Normalized directions converge wherever the limiting field's norm is bounded away from zero.}
+\textcolor{blue}{The bound shows that the effect of transport reweighting vanishes as $\varepsilon$ increases, while the proximity weighting at bandwidth $b$ remains intact}
 
 \paragraph{Discussion of the two limits.}
 \label{apx:sampling-limit}
@@ -302,24 +345,78 @@ The gate equals $1/2$ at $\rho_{\mathrm{ref}}$ and decreases smoothly as the que
 
 \paragraph{\textcolor{blue}{Connection to the support score.}}
 \label{apx:knn-connection}
-\textcolor{blue}{To relate the kNN gate to the support score, we examine the kernel factors at small bandwidth. With the fitted scalings held fixed, the nearest samples dominate each factor as $b_g$ shrinks.} For the undesired factor $\widehat{\varphi}_{b_g}$ in Eq.~\eqref{eq:frozen-factors}, write $\rho_1(\boldsymbol{x};\mathcal{D}^-)=\min_j d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_j^-)$. Every kernel in $\widehat{\varphi}_{b_g}$ is at most $\exp[-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)]$, with equality at a nearest sample. Bounding the weight of that sample below by $\min_j a_j^-$ and the total weight above by $\sum_j a_j^-$ gives
+To relate the kNN gate to the support score in Eq.~\eqref{eq:support-score}, we show how nearest-sample distances arise from the kernel factors as $b_g\to0$. We start with the undesired factor and then combine the two factors.
+
+Throughout the derivation, the contrastive samples and positive scalings $a_j^-,a_i^+$ fitted at a fixed $\varepsilon$ remain unchanged. For the undesired factor, let $j_\star$ index a nearest sample to $\boldsymbol{x}$, so $\rho_1(\boldsymbol{x};\mathcal{D}^-)=d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_{j_\star}^-)=\min_j d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_j^-)$. The nearest sample has the largest kernel value by Eq.~\eqref{eq:kernel},
+\[
+K_{b_g}(\boldsymbol{x},\boldsymbol{h}_j^-)
+\le e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}
+=K_{b_g}(\boldsymbol{x},\boldsymbol{h}_{j_\star}^-).
+\]
+Keeping the nearest-sample term gives a lower bound on $\widehat{\varphi}_{b_g}$ in Eq.~\eqref{eq:frozen-factors}, while bounding every kernel by the nearest-sample value gives an upper bound,
+\[
+\begin{aligned}
+\widehat{\varphi}_{b_g}(\boldsymbol{x})
+&=\sum_j a_j^-K_{b_g}(\boldsymbol{x},\boldsymbol{h}_j^-)\\
+&\ge a_{j_\star}^-K_{b_g}(\boldsymbol{x},\boldsymbol{h}_{j_\star}^-)
+\ge\left(\min_j a_j^-\right)e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)},\\
+\widehat{\varphi}_{b_g}(\boldsymbol{x})
+&\le\sum_j a_j^-e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}
+=\left(\sum_j a_j^-\right)e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}.
+\end{aligned}
+\]
+Normalizing by the total weight $\sum_j a_j^-$ makes the factor a weighted average of kernels. Dividing the bounds by this positive sum yields
+\[
+\frac{\min_j a_j^-}{\sum_j a_j^-}
+e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}
+\le\frac{\widehat{\varphi}_{b_g}(\boldsymbol{x})}{\sum_j a_j^-}
+\le e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}.
+\]
+Taking logarithms and multiplying by $-2b_g<0$ reverses the inequalities. Subtracting $\rho_1(\boldsymbol{x};\mathcal{D}^-)^2$ and expanding the logarithm gives
 \begin{equation}
-0\le -2b_g\log\frac{\widehat{\varphi}_{b_g}(\boldsymbol{x})}{\sum_j a_j^-}
--\rho_1(\boldsymbol{x};\mathcal{D}^-)^2
-\le 2b_g\log\frac{\sum_j a_j^-}{\min_j a_j^-}.
+\begin{aligned}
+0&\le -2b_g\log\frac{\widehat{\varphi}_{b_g}(\boldsymbol{x})}{\sum_j a_j^-}
+-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2\\
+&\le -2b_g\log\!\left[
+\frac{\min_j a_j^-}{\sum_j a_j^-}
+e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}\right]
+-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2\\
+&=2b_g\log\frac{\sum_j a_j^-}{\min_j a_j^-}.
+\end{aligned}
 \label{eq:knn-kernel-bound}
 \end{equation}
-The scalings are fitted with $\varepsilon$ fixed and do not depend on $b_g$, so the upper bound vanishes as $b_g\to0$. The same argument applies to $\widehat{\psi}_{b_g}$ with $\rho_1(\boldsymbol{x};\mathcal{D}^+)=\min_i d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_i^+)$, and summing the two gives
+Repeating these steps for the desired factor, with $\rho_1(\boldsymbol{x};\mathcal{D}^+)=\min_i d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_i^+)$, gives
+\[
+\begin{aligned}
+0&\le -2b_g\log\frac{\widehat{\psi}_{b_g}(\boldsymbol{x})}{\sum_i a_i^+}
+-\rho_1(\boldsymbol{x};\mathcal{D}^+)^2\\
+&\le 2b_g\log\frac{\sum_i a_i^+}{\min_i a_i^+}.
+\end{aligned}
+\]
+The upper bounds are constants times $b_g$, so both errors tend to zero as $b_g\to0$. The normalizing sums are fixed, so $2b_g\log\sum_j a_j^-\to0$ and $2b_g\log\sum_i a_i^+\to0$ as well. Hence
+\[
+\begin{aligned}
+-2b_g\log\widehat{\varphi}_{b_g}(\boldsymbol{x})
+&\longrightarrow\rho_1(\boldsymbol{x};\mathcal{D}^-)^2,\\
+-2b_g\log\widehat{\psi}_{b_g}(\boldsymbol{x})
+&\longrightarrow\rho_1(\boldsymbol{x};\mathcal{D}^+)^2.
+\end{aligned}
+\]
+Using $u=-\log\hat{p}_{b_g}$ and $\hat{p}_{b_g}=\widehat{\varphi}_{b_g}\widehat{\psi}_{b_g}$ from Eq.~\eqref{eq:support-score}, we obtain
 \begin{equation}
--2b_g\log\frac{\hat{p}_{b_g}(\boldsymbol{x})}
-{(\sum_j a_j^-)(\sum_i a_i^+)}
-\longrightarrow
-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2
+\begin{aligned}
+2b_g u(\boldsymbol{x})
+&=-2b_g\log\hat{p}_{b_g}(\boldsymbol{x})\\
+&=-2b_g\log\widehat{\varphi}_{b_g}(\boldsymbol{x})
+-2b_g\log\widehat{\psi}_{b_g}(\boldsymbol{x})\\
+&\longrightarrow\rho_1(\boldsymbol{x};\mathcal{D}^-)^2
 +\rho_1(\boldsymbol{x};\mathcal{D}^+)^2
 \quad\text{as }b_g\to0.
+\end{aligned}
 \label{eq:knn-product-limit}
 \end{equation}
-\textcolor{blue}{The left-hand side of Eq.~\eqref{eq:knn-product-limit} is $2b_g u(\boldsymbol{x})$ plus a query-independent constant, so it preserves the ranks used in Eq.~\eqref{eq:gate}. The score $u$ therefore combines proximity to both populations. The kNN gate uses the proximity information captured by the undesired factor in Eq.~\eqref{eq:knn-kernel-bound}, replacing the nearest sample with the $k$-th neighbor to reduce dependence on an individual activation. The kNN gate thus provides support control without fitting transport, while \Cobras's support score uses both populations and the same fitted scalings as its steering weights.}
+
+The support score therefore combines proximity to both populations. The kNN gate uses distance to undesired samples as a surrogate without fitting transport and replaces the nearest sample with the $k$-th neighbor to reduce dependence on an individual activation and make it more robust.
 
 \subsection{\textcolor{blue}{The kNN gate on other steering methods}}
 \label{apx:knn-external}
