@@ -69,8 +69,18 @@ When evaluating the global flow framework under these spherical constraints, the
 \]
 \textcolor{teal}{where $\boldsymbol{f}$ is the drift, $g(t)$ is the diffusion amplitude, and $\boldsymbol{w}$ is standard Brownian motion.}
 
+\paragraph{\textcolor{teal}{Probability-flow identity.}}
+\textcolor{teal}{For the Euclidean SDE $\mathrm{d}\boldsymbol{x}=\boldsymbol{f}(\boldsymbol{x},t)\,\mathrm{d}t+g(t)\,\mathrm{d}\boldsymbol{w}$, their probability-flow ODE is~\citep{song2020score}}
+\[
+\textcolor{teal}{\displaystyle
+\mathrm{d}\boldsymbol{x}
+=\Big[\boldsymbol{f}(\boldsymbol{x},t)-\frac{1}{2}g(t)^2\nabla_{\boldsymbol{x}}\log p_t(\boldsymbol{x})\Big]\,\mathrm{d}t,
+}
+\]
+\textcolor{teal}{where $\boldsymbol{f}$ is the drift, $g(t)$ is the diffusion amplitude, and $\boldsymbol{w}$ is standard Brownian motion.}
+
 \paragraph{\textcolor{blue}{Application to the spherical bridge.}}
-\textcolor{blue}{The formula above is stated in Euclidean coordinates. De Bortoli et al.~\cite{de2022riemannian} give the corresponding construction for Brownian motion on a Riemannian manifold, using intrinsic gradients and densities with respect to Riemannian volume. In forward time on $\Sph$, the probability-flow drift is $\boldsymbol{u}-\tfrac{\sigma^2}{2}\nablaS\log p_t$ for tangent drift $\boldsymbol{u}$ and constant diffusion variance $\sigma^2$. For smooth positive endpoint densities, the bridge drift is $\boldsymbol{u}(\boldsymbol{x},t)=\sigma^2\nablaS\log\psi(\boldsymbol{x},t)$~\citep{leonard2013survey}. Combining this drift with $p_t\propto\varphi\psi$ from Eq.~\eqref{eq:product} gives}
+\textcolor{blue}{The equation above is stated in Euclidean coordinates. De Bortoli et al.~\cite{de2022riemannian} give the corresponding construction for Brownian motion on a Riemannian manifold, using intrinsic gradients and densities with respect to Riemannian volume. In forward time on $\Sph$, the probability-flow drift is $\boldsymbol{u}-\tfrac{\sigma^2}{2}\nablaS\log p_t$ for tangent drift $\boldsymbol{u}$ and constant diffusion variance $\sigma^2$. For smooth positive endpoint densities, the bridge drift is $\boldsymbol{u}(\boldsymbol{x},t)=\sigma^2\nablaS\log\psi(\boldsymbol{x},t)$~\citep{leonard2013survey}. Combining this drift with $p_t\propto\varphi\psi$ from Eq.~\eqref{eq:product} gives}
 \[
 \textcolor{blue}{\displaystyle
 \begin{aligned}
