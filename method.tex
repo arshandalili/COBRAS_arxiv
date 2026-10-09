@@ -44,13 +44,13 @@ In this section, we first cast steering as a distribution transportation problem
 
 We formulate steering as transporting the undesired activation distribution $\pminus$ to the desired distribution $\pplus$ on $\Sph$. Let $P$ be a probability distribution over continuous activation trajectories, and let $P_t$ denote the distribution of activations at transport time $t\in[0,1]$ when trajectories are drawn from $P$. To choose among transports with these endpoints, we compare $P$ with a reference trajectory distribution $Q$. We take $Q$ to be the Brownian motion on $\Sph$ with diffusion scale $\sigma^2$ and a uniform initial distribution, providing random motion on the sphere without a preferred direction. The Schr\"{o}dinger bridge (SB) is the trajectory distribution that matches the two endpoints while minimizing the Kullback--Leibler (KL) divergence from $Q$~\citep{schrodinger1932theorie, de2021diffusion},
 \begin{equation}
-P^\star=\operatorname*{arg\,min}_{P}\KL(P\,\Vert\,Q)
+P^\star=\operatorname*{arg\,min}\nolimits_{P}\KL(P\,\Vert\,Q)
 \qquad\text{s.t.}\qquad P_0=\pminus,\quad P_1=\pplus.
 \label{eq:sb}
 \end{equation}
 Thus the endpoint constraints specify the desired population change, and relative entropy selects the evolution closest to the reference motion. The time variable $t\in[0,1]$ indexes this population transport independently of token positions in the generated sequence.
 
-\textcolor{blue}{The trajectory optimization in Eq.~\eqref{eq:sb} reduces to finding an endpoint coupling, the joint distribution of starting and ending activations. For a fixed coupling, the KL divergence is minimized by using the reference Brownian motion conditioned on each pair of endpoints. We use the resulting endpoint problem to motivate the discrete transport formulation in Section~\ref{subsec:estimation}.}
+The trajectory optimization in Eq.~\eqref{eq:sb} reduces to finding an endpoint coupling, the joint distribution of starting and ending activations. For a fixed coupling, the KL divergence is minimized by using the reference Brownian motion conditioned on each pair of endpoints. We use the resulting endpoint problem to motivate the discrete transport formulation in Section~\ref{subsec:estimation}.
 
 The solution to SB is characterized by two positive Schr\"{o}dinger potentials, $\varphi(\boldsymbol{x},t)$ and $\psi(\boldsymbol{x},t)$, which propagate information from the undesired forward and desired endpoints backward, respectively~\citep{leonard2013survey}. Together they determine the bridge density through their product,
 \begin{equation}
@@ -66,13 +66,15 @@ p_t(\boldsymbol{x})\propto\varphi(\boldsymbol{x},t)\psi(\boldsymbol{x},t).
 \end{equation}
 These identities in Eqs.~\eqref{eq:product} and \eqref{eq:ldr} motivate a potential \emph{ratio} for the steering direction and a potential \emph{product} for determining whether the obtained transport plan has support for the given activation at inference or not. \textcolor{blue}{Appendix~\ref{apx:static} gives the assumptions and derivation.}
 
+\textcolor{red}{MM: there is no reference to Figure 2 in main body}
 \subsection{Computing the direction from contrastive samples}
 \label{subsec:estimation}
-
 Motivated by the bridge formulation, we construct a steering direction from contrastive activations.
 
-\paragraph{Transport plan estimation.}
-Project $\mathcal{D}^\pm$ onto $\Sph$ and define the kernel
+\textcolor{red}{Here you start by defining $K_b$, and then $K_{\epsilon}$ and then no mentioning in this paragraph, why do not you just define where you need it???????. what are we doing here? What kind of language is this, "Project ...", "Solve ....". This is just not acceptable. I am stopping here}
+
+
+\noindent\textbf{Transport plan estimation.}~Project $\mathcal{D}^\pm$ onto $\Sph$ and define the kernel
 \begin{equation}
 K_b(\boldsymbol{x},\boldsymbol{y})
 =\exp\!\left[-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{y})^2}{2b}\right],
@@ -83,9 +85,9 @@ The bandwidth $b$ sets the scale of this kernel, whose form is motivated by the 
 \begin{equation}
 \textcolor{blue}{\displaystyle
 \pi^\star=\operatorname*{arg\,min}_{\pi\in\mathcal{U}}
-\sum_{j,i}\pi_{ji}c_{ji}+\sum_{j,i}\pi_{ji}\log\pi_{ji},
+\sum\nolimits_{j,i}\pi_{ji}c_{ji}+\sum\nolimits_{j,i}\pi_{ji}\log\pi_{ji},
 \qquad
-c_{ji}=\frac{d_{\Sph}(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)^2}{2\varepsilon}.
+c_{ji}={d_{\Sph}(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)^2}/{2\varepsilon}.
 }
 \label{eq:e-ot}
 \end{equation}
@@ -99,8 +101,8 @@ The entry $\pi^\star_{ji}$ assigns mass from undesired sample $j$ to desired sam
 \textcolor{blue}{We fit the transport plan once and keep the costs $c_{ji}$ and scalings $a_j^-,a_i^+$ fixed during generation. Steering a new token activation then requires combining the fitted connections with the activation's proximity to the contrastive samples.}
 %For the current token activation $\boldsymbol{x}$ being steered
 % Target activations $\boldsymbol{h}_i^+$ coupled via transport mappings to negative instances near $\boldsymbol{x}$ provide optimal contrastive resolution. Weighting $\boldsymbol{h}_i^+$ proportionally to these couplings accelerates boundary traversal and prevents steering vectors from drifting toward adjacent unintended regions
-\paragraph{\textcolor{blue}{Steering direction from the transport plan.}}
-To steer the current token activation $\boldsymbol{x}$, we weight each desired contrastive activation $\boldsymbol{h}_i^+$ by both its proximity to $\boldsymbol{x}$ and its transport connections to undesired contrastive activations $\boldsymbol{h}_j^-$ near $\boldsymbol{x}$. We encode these connections by
+
+\noindent\textbf{\textcolor{blue}{Steering direction from the transport plan.}}~To steer the current token activation $\boldsymbol{x}$, we weight each desired contrastive activation $\boldsymbol{h}_i^+$ by both its proximity to $\boldsymbol{x}$ and its transport connections to undesired contrastive activations $\boldsymbol{h}_j^-$ near $\boldsymbol{x}$. We encode these connections by
 \begin{align}
 m^+_{i,b}(\boldsymbol{x})
 &=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)\,e^{-c_{ji}},
@@ -138,9 +140,9 @@ The field combines attraction toward desired activations $\boldsymbol{h}_i^+$ wi
 \paragraph{\textcolor{blue}{Support scoring and gate calibration.}}
 Alignment with $\boldsymbol{\mu}$ alone does not establish proximity to the contrastive data. To limit steering on out-of-distribution (OOD) prompts, we therefore assess the proximity of a prompt activation $\boldsymbol{x}$ to each contrastive population using the \textcolor{blue}{weighted kernel estimates}
 \begin{equation}
-\widehat{\varphi}_b(\boldsymbol{x})=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-),
+\widehat{\varphi}_b(\boldsymbol{x})=\sum\nolimits_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-),
 \qquad
-\widehat{\psi}_b(\boldsymbol{x})=\sum_i a_i^+K_b(\boldsymbol{x},\boldsymbol{h}_i^+).
+\widehat{\psi}_b(\boldsymbol{x})=\sum\nolimits_i a_i^+K_b(\boldsymbol{x},\boldsymbol{h}_i^+).
 \label{eq:frozen-factors}
 \end{equation}
 \textcolor{blue}{The ratio $\widehat{\psi}_b(\boldsymbol{x})/\widehat{\varphi}_b(\boldsymbol{x})$ can be large even when both fitted factors are small, so relative preference alone does not establish proximity to the contrastive data. Multiplying the factors retains information about their joint magnitude.} Following the product form of the bridge density in Eq.~\eqref{eq:product}, \textcolor{blue}{we use the fitted factors to define} an unnormalized support score at bandwidth $b_g$,
@@ -151,9 +153,7 @@ Alignment with $\boldsymbol{\mu}$ alone does not establish proximity to the cont
 u(\boldsymbol{x})=-\log\hat{p}_{b_g}(\boldsymbol{x}).
 \label{eq:support-score}
 \end{equation}
-\textcolor{blue}{The support score uses the same fitted transport scalings $a_j^-,a_i^+$ as the steering weights.} Larger values of $u$ indicate lower support.
-
-We calibrate $u$ using a reference set $\mathcal{D}_{\mathrm{ref}}$ of in-distribution prompt activations held out from evaluation. Both reference and query activations are extracted from the last prompt token at the steering layer and projected onto $\Sph$. For $n=|\mathcal{D}_{\mathrm{ref}}|$, we rank a query prompt's score against the reference scores and convert its rank into the gate
+\textcolor{blue}{The support score uses the same fitted transport scalings $a_j^-,a_i^+$ as the steering weights.} Larger values of $u$ indicate lower support. We calibrate $u$ using a reference set $\mathcal{D}_{\mathrm{ref}}$ of in-distribution prompt activations held out from evaluation. Both reference and query activations are extracted from the last prompt token at the steering layer and projected onto $\Sph$. For $n=|\mathcal{D}_{\mathrm{ref}}|$, we rank a query prompt's score against the reference scores and convert its rank into the gate \textcolor{red}{MM}
 \begin{equation}
 r(\boldsymbol{x})
 =\frac{|\{\boldsymbol{z}\in\mathcal{D}_{\mathrm{ref}}:u(\boldsymbol{z})<u(\boldsymbol{x})\}|}{n},
@@ -164,14 +164,13 @@ g(\boldsymbol{x})=\min\!\left\{1,\frac{1-r(\boldsymbol{x})}{1-p}\right\}.
 With coverage parameter $p\in(0,1)$, the gate leaves the steering strength unchanged up to the reference $p$-quantile and then decreases linearly with rank, reaching zero for scores above all reference scores. Appendix~\ref{apx:ood-gate} explains how $p$ controls in-distribution steering strength and evaluates how well the support scores separate OOD prompts.
 
 \begin{remark}
-\textcolor{blue}{We also implement a kNN distance gate that can be attached as an external module to other steering methods. The gate depends only on the query and contrastive activations and scales each method's own intervention. Appendix~\ref{apx:knn} presents the gate, its connection to the support score, and evaluations across steering methods.}
+Building upon  proposed  framework, we demonstrate that a simplified version of our algorithm yields a universal kNN distance gate that can be seamlessly integrated as an external module into existing methods. This lightweight gate relies solely on the query and contrastive activations to dynamically scale  baseline method's intervention. Appendix~\ref{apx:knn} formulates the gate, its  connection to the support score, and comprehensive  evaluations across steering methods.
 \end{remark}
 
-\textcolor{red}{Building upon our proposed steering framework, we demonstrate that a simplified version of our algorithm yields a universal kNN distance gate that can be seamlessly integrated as an external module into existing methods. This lightweight gate relies solely on the query and contrastive activations to dynamically scale each baseline method's intervention. Appendix~\ref{apx:knn} details the formulation of the gate, its  connection to the support score, and comprehensive  evaluations across steering methods.}
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
 
-We combine the steering field $\boldsymbol{v}$ with the attenuation coefficient $s$ and support gate $g$ to update activations during generation. We compute the support gate $g_q$ once from the last prompt token's activation and reuse it throughout generation. For each incoming token activation $\hquery$ at layer $\ell$, we project it onto $\Sph$ as $\boldsymbol{x}_0=R\hquery/\|\hquery\|$ and evaluate the attenuation coefficient $s(\boldsymbol{x}_0)$. We then apply $K$ geodesic Euler steps with steering strength $T\ge0$,
+\textcolor{red}{We combine the steering field $\boldsymbol{v}$ with the attenuation coefficient $s$ and support gate $g$} to update activations during generation. We compute the support gate \textcolor{red}{$g_q$} once from the last prompt token's activation and reuse it throughout generation. For each incoming token activation $\hquery$ at layer $\ell$, we project it onto $\Sph$ as $\boldsymbol{x}_0=R\hquery/\|\hquery\|$ and evaluate the attenuation coefficient $s(\boldsymbol{x}_0)$. We then apply $K$ geodesic Euler steps with steering strength $T\ge0$,
 \begin{equation}
 \Delta=T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0\frac{R}{K},
 \qquad
@@ -183,7 +182,7 @@ We combine the steering field $\boldsymbol{v}$ with the attenuation coefficient 
 \right).
 \label{eq:step}
 \end{equation}
-At each step, we recompute the direction $\boldsymbol{v}(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. \textcolor{blue}{Here $\theta_0R$ is the geodesic distance from $\boldsymbol{x}_0$ to the point $R\boldsymbol{\mu}$ on the sphere, so the total path length on $\Sph$ is at most $T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0R\le T\theta_0R$: the strength $T$ sets the largest fraction of that distance the activation can transport.} Algorithm~\ref{alg:cobras} summarizes the procedure, with experimental settings given in Appendix~\ref{appendix:implementation_details}.
+At each step, we recompute the direction $\boldsymbol{v}(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. \textcolor{blue}{Here $\theta_0R$ is the geodesic distance from $\boldsymbol{x}_0$ to the point $R\boldsymbol{\mu}$ on the sphere, so the total path length on $\Sph$ is at most $T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0R\le T\theta_0R$: the strength $T$ sets the largest fraction of that distance the activation can transport.} Algorithm~\ref{alg:cobras} summarizes the procedure, \textcolor{blue}{Figure~\ref{fig:overview} provides and overview of the method.}\textcolor{red}{with experimental settings given in Appendix~\ref{appendix:implementation_details}. just a random sentence, why would you mention "experimental settings" here?????}
 
 \begin{algorithm}[t]
 \caption{\Cobras}
