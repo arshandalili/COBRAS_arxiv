@@ -74,7 +74,7 @@ P_t(\boldsymbol{x})
 }
 \label{eq:product}
 \end{equation}
-\textcolor{teal}{To determine the endpoint factors, we next express the trajectory optimization as a static problem over the joint distribution of starting and ending activations and solve its discrete approximation using the celebrated Sinkhorn algorithm~\citep{cuturi2013sinkhorn}.}
+\textcolor{teal}{To determine the endpoint factors $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{x},1)$, we next express the trajectory optimization as a static problem over the joint distribution of starting and ending activations and solve its discrete approximation using the celebrated Sinkhorn algorithm~\citep{cuturi2013sinkhorn}.}
 
 \textcolor{blue}{Starting from $\pminus$, a deterministic flow can reproduce the bridge's activation distribution $P_t$ at every time $t$~\citep{song2020score}. The flow follows the gradient of the log-ratio of the two potentials,}
 \begin{equation}
