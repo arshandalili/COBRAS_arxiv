@@ -27,15 +27,16 @@ We write $\Pi_{\boldsymbol{x}}=\boldsymbol{I}-R^{-2}\boldsymbol{x}\boldsymbol{x}
 \end{equation}
 The steering field derived below is a weighted sum of logarithm maps toward the contrastive samples, and each steering step is an exponential map. At zero tangent length or zero angular separation, the formulas use their continuous limits.
 
-\section{LLM Steering as a Schr\"{o}dinger Bridge}
+\section{Activation Steering as a Schr\"{o}dinger Bridge}
 \label{sec:method}
 
-In this section, we first cast steering as a distribution transportation problem and then derive our method. We first derive the continuous bridge identities that motivate our construction (Section~\ref{subsec:sb}), then derive the direction, strength controls, and inference procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction} establishes the connection to density-ratio steering, which is implicitly optimized in prior work.
+In this section, we cast steering as a distribution transportation problem and then derive our method. We first derive the continuous bridge identities that motivate our construction (Section~\ref{subsec:sb}), then derive the direction, strength controls, and inference procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction} establishes the connection to density-ratio steering, which prior work implicitly optimizes. \textcolor{blue}{Figure~\ref{fig:overview} provides the overview of the method.}
+
 
 \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figures/cobras_overview.pdf}
-    \caption{Overview of \Cobras. \textbf{(a)} Contrastive activations are projected onto $\Sph$. \textbf{(b)} Entropic transport connects the undesired and desired populations; these connections reweight attraction and repulsion at each steering step. \textbf{(c)} A fixed-vector intervention is shown for comparison. \textbf{(d)} The support gate can leave low-support prompts unchanged. \textbf{(e)} Selected generations on TruthfulQA and an OOD GSM8K question.}
+    \caption{Overview of \Cobras. \textbf{(a)} Contrastive activations are projected onto $\Sph$. \textbf{(b)} Entropic transport connects the undesired and desired populations; these connections reweight attraction and repulsion at each steering step. \textbf{(c)} A fixed-vector intervention. \textbf{(d)} The support gate can leave low-support prompts unchanged. \textbf{(e)} Generations on TruthfulQA and an OOD GSM8K question.}
     \label{fig:overview}
 \end{figure}
 
@@ -66,7 +67,7 @@ p_t(\boldsymbol{x})\propto\varphi(\boldsymbol{x},t)\psi(\boldsymbol{x},t).
 \end{equation}
 These identities in Eqs.~\eqref{eq:product} and \eqref{eq:ldr} motivate a potential \emph{ratio} for the steering direction and a potential \emph{product} for determining whether the obtained transport plan has support for the given activation at inference or not. \textcolor{blue}{Appendix~\ref{apx:static} gives the assumptions and derivation.}
 
-\textcolor{red}{MM: there is no reference to Figure 2 in main body}
+
 \subsection{Computing the direction from contrastive samples}
 \label{subsec:estimation}
 Motivated by the bridge formulation, we construct a steering direction from contrastive activations.
@@ -182,7 +183,7 @@ Building upon  proposed  framework, we demonstrate that a simplified version of 
 \right).
 \label{eq:step}
 \end{equation}
-At each step, we recompute the direction $\boldsymbol{v}(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. \textcolor{blue}{Here $\theta_0R$ is the geodesic distance from $\boldsymbol{x}_0$ to the point $R\boldsymbol{\mu}$ on the sphere, so the total path length on $\Sph$ is at most $T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0R\le T\theta_0R$: the strength $T$ sets the largest fraction of that distance the activation can transport.} Algorithm~\ref{alg:cobras} summarizes the procedure, \textcolor{blue}{Figure~\ref{fig:overview} provides and overview of the method.}\textcolor{red}{with experimental settings given in Appendix~\ref{appendix:implementation_details}. just a random sentence, why would you mention "experimental settings" here?????}
+At each step, we recompute the direction $\boldsymbol{v}(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. \textcolor{blue}{Here $\theta_0R$ is the geodesic distance from $\boldsymbol{x}_0$ to the point $R\boldsymbol{\mu}$ on the sphere, so the total path length on $\Sph$ is at most $T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0R\le T\theta_0R$: the strength $T$ sets the largest fraction of that distance the activation can transport.} Algorithm~\ref{alg:cobras} summarizes the procedure, \textcolor{red}{with experimental settings given in Appendix~\ref{appendix:implementation_details}. just a random sentence, why would you mention "experimental settings" here?????}
 
 \begin{algorithm}[t]
 \caption{\Cobras}
