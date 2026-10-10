@@ -153,7 +153,28 @@ Schr\"{o}dinger Bridge therefore solves}
 \label{eq:discrete-sb}
 \end{equation}
 
-\textcolor{blue}{Starting from $\pminus$, a deterministic flow can reproduce the bridge's activation distribution $P_t$ at every time $t$~\citep{song2020score}. The flow follows the gradient of the log-ratio of the two potentials,}
+\textcolor{teal}{As in Eq.~\eqref{eq:static-sb}, the optimal joint endpoint
+distribution factorizes into the reference distribution
+and two endpoint factors:}
+\begin{equation}
+\textcolor{teal}{\displaystyle
+\widehat{P}_{01,ji}^{\star}
+=
+\widehat{\varphi}_{0,j}\,
+\widehat{\psi}_{1,i}\,
+\widehat{Q}_{01,ji}.
+}
+\label{eq:discrete-factors}
+\end{equation}
+\textcolor{teal}{Here $\widehat{\varphi}_{0,j}$ and $\widehat{\psi}_{1,i}$
+are discrete counterparts of
+$\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{y},1)$,
+associated with undesired sample $j$ and desired sample $i$,
+respectively. We compute these factors using the celebrated
+Sinkhorn algorithm~\citep{cuturi2013sinkhorn}, which
+alternately updates $\widehat{\varphi}_{0,j}$ to enforce
+the undesired marginal and $\widehat{\psi}_{1,i}$ to enforce
+the desired marginal.}
 \begin{equation}
 \frac{\mathrm{d}\boldsymbol{x}_t}{\mathrm{d}t}
 =\frac{\sigma^2}{2}\nablaS\log
