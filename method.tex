@@ -55,13 +55,29 @@ P^\star=\operatorname*{arg\,min}\nolimits_{P}\KL(P\,\Vert\,Q)
 \end{equation}
 \textcolor{teal}{We next characterize the solution to this optimization problem and leverage it for steering individual activations.}
 
-The trajectory optimization in Eq.~\eqref{eq:sb} reduces to finding an endpoint coupling, the joint distribution of starting and ending activations. For a fixed coupling, the KL divergence is minimized by using the reference Brownian motion conditioned on each pair of endpoints. We use the resulting endpoint problem to motivate the discrete transport formulation in Section~\ref{subsec:estimation}.
-
-The solution to SB is characterized by two positive Schr\"{o}dinger potentials, $\varphi(\boldsymbol{x},t)$ and $\psi(\boldsymbol{x},t)$, which propagate information from the undesired forward and desired endpoints backward, respectively~\citep{leonard2013survey}. Together they determine the bridge density through their product,
+\textcolor{teal}{Under the regularity assumptions stated in Appendix~\ref{apx:static}, the optimal solution to Eq.~\eqref{eq:sb} admits the factorized representation~\citep{leonard2013survey}}
 \begin{equation}
-p_t(\boldsymbol{x})\propto\varphi(\boldsymbol{x},t)\psi(\boldsymbol{x},t).
+\textcolor{teal}{
+P^\star(\mathrm{d}\boldsymbol{x}_{[0,1]})
+=
+\varphi(\boldsymbol{x}_0,0)\,
+\psi(\boldsymbol{x}_1,1)\,
+Q(\mathrm{d}\boldsymbol{x}_{[0,1]}),
+}
+\label{eq:sb-factorization}
+\end{equation}
+\textcolor{teal}{where $\boldsymbol{x}_{[0,1]}=(\boldsymbol{x}_t)_{t\in[0,1]}$ denotes a continuous activation trajectory. The positive functions $\varphi,\psi:\Sph\times[0,1]\to(0,\infty)$ are called \emph{Schr\"{o}dinger potentials}. Their endpoint factors $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{x},1)$ are determined jointly to satisfy $P^\star_0=\pminus$ and $P^\star_1=\pplus$. The reference Brownian dynamics propagate the former forward and the latter backward in time, determining $\varphi(\boldsymbol{x},t)$ and $\psi(\boldsymbol{x},t)$ at intermediate time $t$.}
+
+\textcolor{teal}{For $P=P^\star$, we write $P_t(\boldsymbol{x})$ for the density of the marginal $P_t$ with respect to spherical volume. Since the reference has uniform time marginals, this density is proportional to the product of the potentials:}
+\begin{equation}
+\textcolor{teal}{
+P_t(\boldsymbol{x})
+\propto \varphi(\boldsymbol{x},t)\psi(\boldsymbol{x},t).
+}
 \label{eq:product}
 \end{equation}
+\textcolor{teal}{To determine the endpoint factors, we next express the trajectory optimization as a static problem over the joint distribution of starting and ending activations and solve its discrete approximation using the celebrated Sinkhorn algorithm~\citep{cuturi2013sinkhorn}.}
+
 \textcolor{blue}{Starting from $\pminus$, a deterministic flow can reproduce the bridge's activation distribution $P_t$ at every time $t$~\citep{song2020score}. The flow follows the gradient of the log-ratio of the two potentials,}
 \begin{equation}
 \frac{\mathrm{d}\boldsymbol{x}_t}{\mathrm{d}t}
