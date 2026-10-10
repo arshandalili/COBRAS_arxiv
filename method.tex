@@ -74,7 +74,33 @@ P_t(\boldsymbol{x})
 }
 \label{eq:product}
 \end{equation}
-\textcolor{teal}{To determine the endpoint factors $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{x},1)$, we next express the trajectory optimization as a static problem over the joint distribution of starting and ending activations and solve its discrete approximation using the celebrated Sinkhorn algorithm~\citep{cuturi2013sinkhorn}.}
+
+\textcolor{teal}{The bridge $P^\star$ describes a distribution over
+stochastic activation trajectories. To motivate a deterministic
+steering direction, we consider its probability-flow ODE,
+whose solutions have distribution $P_t$ at every time $t$
+when initialized with $\boldsymbol{x}_0\sim\pminus$
+~\citep{song2020score, de2022riemannian}. For the Brownian
+reference $Q$, this ODE takes the form}
+\begin{equation}
+\textcolor{teal}{\displaystyle
+\frac{\mathrm{d}\boldsymbol{x}_t}{\mathrm{d}t}
+=
+\frac{\sigma^2}{2}\nablaS
+\log\frac{\psi(\boldsymbol{x}_t,t)}
+{\varphi(\boldsymbol{x}_t,t)}.
+}
+\label{eq:ldr}
+\end{equation}
+\textcolor{teal}{The probability-flow identity motivates constructing a
+steering direction from the gradient of the potentials' log-ratio.
+To develop a sample-based construction, we first estimate discrete
+counterparts of the endpoint factors $\varphi(\boldsymbol{x},0)$ and
+$\psi(\boldsymbol{x},1)$. To this end, we express the trajectory
+optimization in Eq.~\eqref{eq:sb} as a static problem over the joint
+distribution of starting and ending activations and solve its
+discrete approximation using the celebrated Sinkhorn
+algorithm~\citep{cuturi2013sinkhorn}.}
 
 \textcolor{teal}{Let $P_{01}$ and $Q_{01}$ denote the joint distributions of
 starting and ending activations under $P$ and $Q$, respectively.
@@ -170,18 +196,17 @@ and two endpoint factors:}
 are discrete counterparts of
 $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{y},1)$,
 associated with undesired sample $j$ and desired sample $i$,
-respectively. We compute these factors using the celebrated
+respectively. We compute these factors using the
 Sinkhorn algorithm~\citep{cuturi2013sinkhorn}, which
 alternately updates $\widehat{\varphi}_{0,j}$ to enforce
 the undesired marginal and $\widehat{\psi}_{1,i}$ to enforce
 the desired marginal.}
-\begin{equation}
-\frac{\mathrm{d}\boldsymbol{x}_t}{\mathrm{d}t}
-=\frac{\sigma^2}{2}\nablaS\log
-\frac{\psi(\boldsymbol{x}_t,t)}{\varphi(\boldsymbol{x}_t,t)}.
-\label{eq:ldr}
-\end{equation}
-These identities in Eqs.~\eqref{eq:product} and \eqref{eq:ldr} motivate a potential \emph{ratio} for the steering direction and a potential \emph{product} for determining whether the obtained transport plan has support for the given activation at inference or not. \textcolor{blue}{Appendix~\ref{apx:static} gives the assumptions and derivation.}
+
+\textcolor{teal}{Section~\ref{subsec:estimation} constructs a local steering
+field motivated by Eq.~\eqref{eq:ldr} using the fitted endpoint
+factors and transport connections. The product identity
+in Eq.~\eqref{eq:product} further motivates the support
+score introduced in Section~\ref{subsec:strength}.}
 
 
 \subsection{Computing the direction from contrastive samples}
