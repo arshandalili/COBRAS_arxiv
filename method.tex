@@ -105,6 +105,54 @@ sets $\mathcal{D}^-$ and $\mathcal{D}^+$. To estimate the endpoint
 factors from these data, we therefore discretize the static
 problem on the contrastive samples.}
 
+\textcolor{teal}{We use the contrastive sets
+$\mathcal{D}^-=\{\boldsymbol{h}_j^-\}_{j=1}^{N_-}$ and
+$\mathcal{D}^+=\{\boldsymbol{h}_i^+\}_{i=1}^{N_+}$. The discrete counterpart
+of $P_{01}$ is a joint endpoint distribution
+$\widehat{P}_{01}$, represented by a nonnegative matrix
+whose entry $\widehat{P}_{01,ji}$ assigns probability mass
+to the sample pair
+$(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)$.
+Its marginals must match the empirical endpoint
+distributions, requiring
+$\sum_i\widehat{P}_{01,ji}=1/N_-$ and
+$\sum_j\widehat{P}_{01,ji}=1/N_+$.}
+
+\textcolor{teal}{We also replace $Q_{01}$ with a discrete reference
+distribution $\widehat{Q}_{01}$ on the same sample pairs.
+We construct this reference using a geodesic surrogate
+for the Brownian transition density:}
+\begin{equation}
+\textcolor{teal}{\displaystyle
+\widehat{Q}_{01,ji}
+=
+\frac{e^{-c_{ji}}}{\sum_{j',i'}e^{-c_{j'i'}}},
+\qquad
+c_{ji}
+=
+\frac{d_{\Sph}(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)^2}
+{2\varepsilon},
+}
+\end{equation}
+\textcolor{teal}{where $\varepsilon>0$ controls the spread of the reference
+weights across sample pairs. The discrete
+Schr\"{o}dinger Bridge therefore solves}
+\begin{equation}
+\textcolor{teal}{\displaystyle
+\widehat{P}_{01}^{\star}
+=
+\operatorname*{arg\,min}_{\widehat{P}_{01}}
+\underset{
+\text{s.t.}\;
+\sum_i\widehat{P}_{01,ji}=1/N_-,
+\;\sum_j\widehat{P}_{01,ji}=1/N_+
+}{
+\KL(\widehat{P}_{01}\,\Vert\,\widehat{Q}_{01})
+}.
+}
+\label{eq:discrete-sb}
+\end{equation}
+
 \textcolor{blue}{Starting from $\pminus$, a deterministic flow can reproduce the bridge's activation distribution $P_t$ at every time $t$~\citep{song2020score}. The flow follows the gradient of the log-ratio of the two potentials,}
 \begin{equation}
 \frac{\mathrm{d}\boldsymbol{x}_t}{\mathrm{d}t}
