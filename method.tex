@@ -82,9 +82,9 @@ The optimization in Eq.~\eqref{eq:sb} reduces to the static
 Schr\"{o}dinger Bridge problem:}
 \begin{equation}
 \textcolor{teal}{\displaystyle
-\min_{\substack{P_{01}(\cdot,\Sph)=\pminus\\
-P_{01}(\Sph,\cdot)=\pplus}}
-\KL(P_{01}\,\Vert\,Q_{01})
+\min_{P_{01}}\,
+\underset{\text{s.t.}\;P_{01}(\cdot,\Sph)=\pminus,\;P_{01}(\Sph,\cdot)=\pplus}
+{\KL(P_{01}\,\Vert\,Q_{01})}
 \quad\Longrightarrow\quad
 P^\star_{01}(\mathrm{d}\boldsymbol{x},\mathrm{d}\boldsymbol{y})
 =
