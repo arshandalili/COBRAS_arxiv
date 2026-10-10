@@ -45,13 +45,15 @@ In this section, we cast steering as a distribution transportation problem and t
 \subsection{Schr\"{o}dinger Bridge and transport objective}
 \label{subsec:sb}
 
-We formulate steering as transporting the undesired activation distribution $\pminus$ to the desired distribution $\pplus$ on $\Sph$. Let $P$ be a probability distribution over continuous activation trajectories, and let $P_t$ denote the distribution of activations at transport time $t\in[0,1]$ when trajectories are drawn from $P$. To choose among transports with these endpoints, we compare $P$ with a reference trajectory distribution $Q$. We take $Q$ to be the Brownian motion on $\Sph$ with diffusion scale $\sigma^2$ and a uniform initial distribution, providing random motion on the sphere without a preferred direction. The Schr\"{o}dinger bridge (SB) is the trajectory distribution that matches the two endpoints while minimizing the Kullback--Leibler (KL) divergence from $Q$~\citep{schrodinger1932theorie, de2021diffusion},
+\textcolor{teal}{We first study steering at the population level. Recall that we seek a transport from the undesired activation distribution $\pminus$ to the desired distribution $\pplus$ on $\Sph$. This characterization will provide us with a direction of motion that can be evaluated at a given activation during inference. A trajectory describes how one activation moves during steering, with $t\in[0,1]$ indexing steering progress independently of token positions. Let $P$ denote a probability distribution over these continuous trajectories, and let $P_t$ denote the resulting activation distribution at time $t$. We require $P_0=\pminus$ and $P_1=\pplus$.}
+
+\textcolor{teal}{The endpoint distributions alone do not specify how activations should move between them. To select a trajectory distribution, we introduce a reference trajectory distribution $Q$ and minimize deviation from it, measured by Kullback--Leibler (KL) divergence. We choose $Q$ to be Brownian motion on $\Sph$, with diffusion scale $\sigma^2$ and a uniform initial distribution, providing a geometric reference with no preferred starting location or direction. The Schr\"{o}dinger Bridge (SB) is the trajectory distribution closest to this reference subject to the prescribed endpoints~\citep{schrodinger1932theorie, de2021diffusion}:}
 \begin{equation}
 P^\star=\operatorname*{arg\,min}\nolimits_{P}\KL(P\,\Vert\,Q)
 \qquad\text{s.t.}\qquad P_0=\pminus,\quad P_1=\pplus.
 \label{eq:sb}
 \end{equation}
-Thus the endpoint constraints specify the desired population change, and relative entropy selects the evolution closest to the reference motion. The time variable $t\in[0,1]$ indexes this population transport independently of token positions in the generated sequence.
+\textcolor{teal}{We next characterize the solution to this optimization problem and leverage it for steering individual activations.}
 
 The trajectory optimization in Eq.~\eqref{eq:sb} reduces to finding an endpoint coupling, the joint distribution of starting and ending activations. For a fixed coupling, the KL divergence is minimized by using the reference Brownian motion conditioned on each pair of endpoints. We use the resulting endpoint problem to motivate the discrete transport formulation in Section~\ref{subsec:estimation}.
 
