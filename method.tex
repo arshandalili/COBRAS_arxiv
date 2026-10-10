@@ -99,8 +99,11 @@ and ending activations, and the two constraints prescribe
 their marginal distributions. Enforcing these constraints
 yields coupled equations for the endpoint factors
 $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{y},1)$.
-We next discretize this problem using the contrastive samples
-to compute their fitted counterparts.}
+In practice, however, the endpoint distributions $\pminus$ and
+$\pplus$ are observed only through the finite contrastive sample
+sets $\mathcal{D}^-$ and $\mathcal{D}^+$. To estimate the endpoint
+factors from these data, we therefore discretize the static
+problem on the contrastive samples.}
 
 \textcolor{blue}{Starting from $\pminus$, a deterministic flow can reproduce the bridge's activation distribution $P_t$ at every time $t$~\citep{song2020score}. The flow follows the gradient of the log-ratio of the two potentials,}
 \begin{equation}
