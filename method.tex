@@ -81,20 +81,16 @@ starting and ending activations under $P$ and $Q$, respectively.
 The optimization in Eq.~\eqref{eq:sb} reduces to the static
 Schr\"{o}dinger Bridge problem:}
 \begin{equation}
-\textcolor{teal}{
-\begin{aligned}
-&\min_{P_{01}}\ \KL(P_{01}\,\Vert\,Q_{01})
-\quad\text{s.t.}\quad
-P_{01}(\cdot,\Sph)=\pminus,\qquad
-P_{01}(\Sph,\cdot)=\pplus
-\\[3pt]
-&\xrightarrow{\text{optimal solution}}\quad
+\textcolor{teal}{\displaystyle
+\min_{\substack{P_{01}(\cdot,\Sph)=\pminus\\
+P_{01}(\Sph,\cdot)=\pplus}}
+\KL(P_{01}\,\Vert\,Q_{01})
+\quad\Longrightarrow\quad
 P^\star_{01}(\mathrm{d}\boldsymbol{x},\mathrm{d}\boldsymbol{y})
 =
 \varphi(\boldsymbol{x},0)\,
 \psi(\boldsymbol{y},1)\,
 Q_{01}(\mathrm{d}\boldsymbol{x},\mathrm{d}\boldsymbol{y}).
-\end{aligned}
 }
 \label{eq:static-sb}
 \end{equation}
