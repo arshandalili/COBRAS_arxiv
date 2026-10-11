@@ -337,26 +337,23 @@ Building upon  proposed  framework, we demonstrate that a simplified version of 
 \label{alg:cobras}
 \small
 \begin{algorithmic}[1]
-\Require Contrastive activations $\mathcal{D}^\pm$, reference prompt activations $\mathcal{D}_{\mathrm{ref}}$,
+\Require Contrastive activations $\mathcal{D}^\pm\subset\Sph$, reference prompt activations $\mathcal{D}_{\mathrm{ref}}\subset\Sph$,
 regularization strength $\varepsilon$, support bandwidth $b_g$,
 integration horizon $T$, coverage $p$, steps $K$, concentration $\kappa$
 \Statex \textbf{Offline fitting and calibration}
-\State Set $R$ to the mean norm over $\mathcal{D}^+\cup\mathcal{D}^-$ and project all contrastive and reference activations onto $\Sph$
 \State Form the reference weights $\widehat{Q}_{01,ji}$ by Eq.~\eqref{eq:discrete-reference}
 \State Fit the endpoint potentials $\widehat{\varphi}_{0,j}$ and $\widehat{\psi}_{1,i}$ using Sinkhorn as described in Section~\ref{subsec:sb}
 \State Compute the contrastive axis $\boldsymbol{\mu}$ as defined in Section~\ref{subsec:strength}
 \State Store the sorted reference scores $u(\boldsymbol{z})$ for $\boldsymbol{z}\in\mathcal{D}_{\mathrm{ref}}$ using Eq.~\eqref{eq:support-score}
-\Statex \textbf{Online steering of $\hquery$ at layer $\ell$, starting with the last prompt token}
-\State $\boldsymbol{x}_0\gets R\hquery/\|\hquery\|$
-\label{alg:cobras:norm_equation}
-\If{$\hquery$ is the last prompt token's activation}
+\Statex \textbf{Online steering of $\boldsymbol{x}_0\in\Sph$, starting with the last prompt token}
+\If{$\boldsymbol{x}_0$ is the last prompt token's activation}
     \State Compute $g_{\mathrm{prompt}}\gets g(\boldsymbol{x}_0)$ by Eq.~\eqref{eq:gate} and cache it for the continuation
 \Else
     \State Reuse the cached $g_{\mathrm{prompt}}$ for the current prompt
 \EndIf
 \State Evaluate $s(\boldsymbol{x}_0)$ and compute the fixed step size $\Delta$ using Eq.~\eqref{eq:step}
 \If{$\Delta=0$}
-    \State \Return $\hquery$
+    \State \Return $\boldsymbol{x}_0$
 \EndIf
 \For{$k=0,\ldots,K-1$}
     \State Compute $\boldsymbol{v}_k\gets\boldsymbol{v}(\boldsymbol{x}_k)$ using the steering construction in Section~\ref{subsec:estimation}
@@ -367,7 +364,7 @@ integration horizon $T$, coverage $p$, steps $K$, concentration $\kappa$
         \State $\boldsymbol{x}_{k+1}\gets\boldsymbol{x}_k$
     \EndIf
 \EndFor
-\State \Return $\|\hquery\|\boldsymbol{x}_K/R$
+\State \Return $\boldsymbol{x}_K$
 \end{algorithmic}
 \end{algorithm}
 
