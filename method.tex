@@ -256,10 +256,23 @@ K_b(\boldsymbol{x},\boldsymbol{h}_i^+).}
 \subsection{Adaptive steering strength}
 \label{subsec:strength}
 
-\textcolor{teal}{Activation steering should weaken when an activation already aligns with the desired behavior or when the contrastive data provide little support for the prompt. We therefore normalize $\boldsymbol{v}(\boldsymbol{x})$ and control the update size separately through two factors. The coefficient $s$ reduces the steering strength for activations already aligned with the desired behavior, while the gate $g$ attenuates or disables steering on prompts with little contrastive support.}
+\textcolor{teal}{Activation steering should weaken when an activation already aligns with the desired behavior or when the contrastive data provide little support for the prompt. We therefore normalize $\boldsymbol{v}(\boldsymbol{x})$ and control the intervention size separately through two factors. The coefficient $s$ reduces the steering strength for activations already aligned with the desired behavior, while the gate $g$ attenuates or disables steering on prompts with little contrastive support.}
 
-\paragraph{\textcolor{blue}{vMF strength attenuation.}}
-\textcolor{blue}{Let $\bar{\boldsymbol{h}}^{\pm}$ denote the means of the projected samples and define the contrastive axis \mbox{$\boldsymbol{\mu}=(\bar{\boldsymbol{h}}^+-\bar{\boldsymbol{h}}^-)/\|\bar{\boldsymbol{h}}^+-\bar{\boldsymbol{h}}^-\|$}. Following Spherical Steering~\citep{you2026spherical}, we evaluate desired and undesired von Mises--Fisher (vMF) scores at $\boldsymbol{x}/R$ with mean directions $\boldsymbol{\mu}$ and $-\boldsymbol{\mu}$, respectively, and shared concentration $\kappa>0$. Dividing the undesired score by the sum of the two scores gives the attenuation coefficient $s(\boldsymbol{x})=\left(1+e^{2\kappa\langle\boldsymbol{x}/R,\boldsymbol{\mu}\rangle}\right)^{-1}$. The concentration $\kappa$ controls how sharply $s$ changes with alignment. Closer alignment with $\boldsymbol{\mu}$ lowers $s$, reducing the intervention on activations already oriented toward the desired direction.}
+\noindent\textbf{\textcolor{teal}{Alignment coefficient.}}~\textcolor{teal}{To determine $s$, we measure alignment with a unit contrastive axis $\boldsymbol{\mu}$, obtained by normalizing the difference between the desired and undesired sample means. We write $\cos(\boldsymbol{x},\boldsymbol{\mu})$ for their cosine similarity, with larger values indicating stronger alignment with the desired behavior.}
+
+\textcolor{teal}{Following Spherical Steering~\citep{you2026spherical}, we use von Mises--Fisher (vMF) scores for the desired direction $\boldsymbol{\mu}$ and the undesired direction $-\boldsymbol{\mu}$. With concentration $\kappa>0$, the desired and undesired scores are $e^{\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}$ and $e^{-\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}$, respectively. We divide the undesired score by the sum of both scores to obtain}
+\[
+\textcolor{teal}{\displaystyle
+s(\boldsymbol{x})
+=
+\frac{e^{-\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}}
+{e^{\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}
++e^{-\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}}
+=
+\frac{1}{1+e^{2\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}}.
+}
+\]
+\textcolor{teal}{When the desired score dominates, $s$ is smaller and the intervention weakens. The concentration $\kappa$ controls how sharply the strength changes with alignment.}
 
 \paragraph{\textcolor{blue}{Support scoring and gate calibration.}}
 Alignment with $\boldsymbol{\mu}$ alone does not establish proximity to the contrastive data. To limit steering on out-of-distribution (OOD) prompts, we therefore assess the proximity of a prompt activation $\boldsymbol{x}$ to each contrastive population using the \textcolor{blue}{weighted kernel estimates}
