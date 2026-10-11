@@ -223,37 +223,35 @@ K_b(\boldsymbol{x},\boldsymbol{h})
 \end{equation}
 \textcolor{teal}{where $\boldsymbol{h}\in\mathcal{D}^-\cup\mathcal{D}^+$ and $b$ is the bandwidth.}
 
-\textcolor{teal}{We weight each desired sample by its proximity to
-$\boldsymbol{x}$ and its connections to undesired samples near
-$\boldsymbol{x}$. To collect the contributions from the opposite
-population, we define}
+\textcolor{teal}{Combining these proximity weights with the fitted endpoint potentials and reference distribution, we define}
 \begin{align}
-\textcolor{teal}{m^+_{i,b}(\boldsymbol{x})}
-&\textcolor{teal}{=\sum_j \widehat{\varphi}_{0,j}\,
-\widehat{Q}_{01,ji}\,K_b(\boldsymbol{x},\boldsymbol{h}_j^-),}
-\label{eq:ext-psi}\\
-\textcolor{teal}{m^-_{j,b}(\boldsymbol{x})}
-&\textcolor{teal}{=\sum_i \widehat{\psi}_{1,i}\,
-\widehat{Q}_{01,ji}\,K_b(\boldsymbol{x},\boldsymbol{h}_i^+).}
-\label{eq:ext-phi}
+\textcolor{teal}{\widetilde{\varphi}_b(\boldsymbol{x})}
+&\textcolor{teal}{=\sum_j
+\left[\sum_i \widehat{\psi}_{1,i}\,\widehat{Q}_{01,ji}\,
+K_b(\boldsymbol{x},\boldsymbol{h}_i^+)\right]
+K_b(\boldsymbol{x},\boldsymbol{h}_j^-),}
+\label{eq:local-phi}\\
+\textcolor{teal}{\widetilde{\psi}_b(\boldsymbol{x})}
+&\textcolor{teal}{=\sum_i
+\left[\sum_j \widehat{\varphi}_{0,j}\,\widehat{Q}_{01,ji}\,
+K_b(\boldsymbol{x},\boldsymbol{h}_j^-)\right]
+K_b(\boldsymbol{x},\boldsymbol{h}_i^+).}
+\label{eq:local-psi}
 \end{align}
-The coefficient $m^+_{i,b}(\boldsymbol{x})$ combines the proximity of undesired activations $\boldsymbol{h}_j^-$ to $\boldsymbol{x}$ with their transport costs to the desired activation $\boldsymbol{h}_i^+$, weighted by the fitted scalings $a_j^-$. Multiplying by $K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$ accounts for the desired activation's proximity, and normalization gives
+\textcolor{teal}{In $\widetilde{\psi}_b$, the bracketed coefficient for each desired sample aggregates contributions from undesired samples, weighted by their fitted endpoint potentials, their proximity to $\boldsymbol{x}$, and their reference weights connecting them to that desired sample. The outer kernel additionally accounts for the desired sample's proximity to $\boldsymbol{x}$. The construction of $\widetilde{\varphi}_b$ exchanges the roles of the two populations.}
+
+\textcolor{teal}{We define the steering field from the spatial gradient of the log-ratio of these two sums, holding the bracketed coefficients fixed at their values computed at $\boldsymbol{x}$ during differentiation:}
 \begin{equation}
-\bar{w}_i^+(\boldsymbol{x})
-=\frac{m^+_{i,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_i^+)}
-{\sum_{i'}m^+_{i',b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_{i'}^+)},
-\label{eq:weights-pos}
-\end{equation}
-with $\bar{w}_j^-$ defined symmetrically. The steering field is
-\begin{equation}
+\textcolor{teal}{\displaystyle
 \boldsymbol{v}(\boldsymbol{x})
-=\underbrace{\sum_i\bar{w}_i^+(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)}_{\text{attraction}}
--\underbrace{\sum_j\bar{w}_j^-(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_j^-)}_{\text{repulsion}}.
+=b\nablaS
+\log\frac{\widetilde{\psi}_b(\boldsymbol{x})}
+{\widetilde{\varphi}_b(\boldsymbol{x})}.
+}
 \label{eq:cobras-field}
 \end{equation}
-The field combines attraction toward desired activations $\boldsymbol{h}_i^+$ with repulsion from undesired activations $\boldsymbol{h}_j^-$, with weights recomputed at each steering step.
 
-\textcolor{blue}{To relate the field in Eq.~\eqref{eq:cobras-field} to the log-ratio direction in Eq.~\eqref{eq:ldr}, consider a shared fixed bandwidth $b$. Holding the coefficients $m^+_{i,b}$ and $m^-_{j,b}$ at their current values during differentiation gives $\boldsymbol{v}(\boldsymbol{x})$ as $b$ times the Riemannian gradient of the log-ratio of the weighted kernel estimates for the desired and undesired populations. The field is therefore an ascent direction for the local log-ratio defined by the current coefficients. Appendix~\ref{app:grad-psi} provides the derivation and the additional terms from differentiating through the coefficients. During inference, we recompute the coefficients and adapt the bandwidth for each population at every step (Appendix~\ref{apx:bandwidth}). Reweighting the contrastive samples as the activation moves lets the steering direction adapt along the trajectory while reusing the fitted transport connections.}
+\textcolor{teal}{Expanding Eq.~\eqref{eq:cobras-field} gives a weighted average of tangent vectors toward desired samples minus a weighted average toward undesired samples, yielding attraction and repulsion, respectively (Figure~\ref{fig:overview}b). Having defined the steering direction, we next determine how strongly to apply it to each activation in Section~\ref{subsec:strength}.}
 
 \subsection{Adaptive steering strength}
 \label{subsec:strength}
