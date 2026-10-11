@@ -293,15 +293,21 @@ u(\boldsymbol{x})=-\log\hat{p}_{b_g}(\boldsymbol{x}).
 }
 \label{eq:support-score}
 \end{equation}
-\textcolor{blue}{The support score uses the same fitted transport scalings $a_j^-,a_i^+$ as the steering weights.} Larger values of $u$ indicate lower support. We calibrate $u$ using a reference set $\mathcal{D}_{\mathrm{ref}}$ of in-distribution prompt activations held out from evaluation. Both reference and query activations are extracted from the last prompt token at the steering layer and projected onto $\Sph$. For $n=|\mathcal{D}_{\mathrm{ref}}|$, we rank a query prompt's score against the reference scores and convert its rank into the gate \textcolor{red}{MM}
-\begin{equation}
+\textcolor{teal}{Larger values of $u$ indicate lower support. To assess whether the prompt activation $\boldsymbol{x}$ is out of distribution (OOD), we compare $u(\boldsymbol{x})$ with scores computed on a reference set $\mathcal{D}_{\mathrm{ref}}$ of in-distribution prompt activations held out from evaluation. Both reference and query activations are extracted from the last prompt token at the steering layer. For $n=|\mathcal{D}_{\mathrm{ref}}|$, we define the normalized rank $r(\boldsymbol{x})$ as the fraction of reference activations whose scores are lower than $u(\boldsymbol{x})$:}
+\[
+\textcolor{teal}{\displaystyle
 r(\boldsymbol{x})
-=\frac{|\{\boldsymbol{z}\in\mathcal{D}_{\mathrm{ref}}:u(\boldsymbol{z})<u(\boldsymbol{x})\}|}{n},
-\qquad
+=\frac{|\{\boldsymbol{z}\in\mathcal{D}_{\mathrm{ref}}:u(\boldsymbol{z})<u(\boldsymbol{x})\}|}{n}.
+}
+\]
+\textcolor{teal}{A rank close to one indicates that $\boldsymbol{x}$ has lower contrastive support than most reference activations. We use a coverage parameter $p\in(0,1)$ to set the rank above which steering is attenuated. We define the support gate as}
+\begin{equation}
+\textcolor{teal}{\displaystyle
 g(\boldsymbol{x})=\min\!\left\{1,\frac{1-r(\boldsymbol{x})}{1-p}\right\}.
+}
 \label{eq:gate}
 \end{equation}
-With coverage parameter $p\in(0,1)$, the gate leaves the steering strength unchanged up to the reference $p$-quantile and then decreases linearly with rank, reaching zero for scores above all reference scores. Appendix~\ref{apx:ood-gate} explains how $p$ controls in-distribution steering strength and evaluates how well the support scores separate OOD prompts.
+\textcolor{teal}{The gate leaves steering strength unchanged when $r(\boldsymbol{x})\le p$ and decreases linearly with rank above $p$, disabling steering when $u(\boldsymbol{x})$ exceeds every reference score. Appendix~\ref{apx:ood-gate} examines this calibration and evaluates how well the scores distinguish in-distribution and OOD prompt activations.}
 
 \begin{remark}
 Building upon  proposed  framework, we demonstrate that a simplified version of our algorithm yields a universal kNN distance gate that can be seamlessly integrated as an external module into existing methods. This lightweight gate relies solely on the query and contrastive activations to dynamically scale  baseline method's intervention. Appendix~\ref{apx:knn} formulates the gate, its  connection to the support score, and comprehensive  evaluations across steering methods.
