@@ -33,7 +33,7 @@ The steering field derived below is a weighted sum of logarithm maps toward the 
 In this section, we cast steering as a distribution transportation problem and then derive our method. We first derive the continuous bridge identities that motivate our construction (Section~\ref{subsec:sb}), then derive the direction, strength controls, and inference procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction} establishes the connection to density-ratio steering, which prior work implicitly optimizes. \textcolor{blue}{Figure~\ref{fig:overview} provides the overview of the method.}
 
 
-\textcolor{teal}{In this section, we develop \Cobras, starting from a Schr\"{o}dinger Bridge formulation of activation steering. In Section~\ref{subsec:sb}, we formulate transport between the undesired and desired activation populations as a constrained optimization problem and characterize its solution through two Schr\"{o}dinger potentials. The gradient of their log-ratio defines a continuous steering direction, while their product determines the bridge's activation density at each transport time, motivating a criterion for assessing support for an intervention. Building on this formulation, Section~\ref{subsec:estimation} constructs a steering direction for a given activation using an endpoint transport plan estimated from contrastive data. Section~\ref{subsec:strength} introduces adaptive strength controls, and Section~\ref{subsec:procedure} combines these components into the inference procedure. Finally, Section~\ref{subsec:reduction} establishes the connection to log-density-ratio steering used to interpret prior methods. Figure~\ref{fig:overview} provides the overview of the method.}
+\textcolor{teal}{In this section, we develop \Cobras, starting from a Schr\"{o}dinger Bridge formulation of activation steering. In Section~\ref{subsec:sb}, we formulate transport between the undesired and desired activation populations as a constrained optimization problem and characterize its solution through two Schr\"{o}dinger potentials. The gradient of log-ratio of potentials defines a continuous steering direction, while their product determines the bridge's activation density at each transport time, motivating a criterion for assessing support for an intervention. Building on this formulation, Section~\ref{subsec:estimation} constructs a steering direction for a given activation using an endpoint transport plan estimated from contrastive data. Section~\ref{subsec:strength} introduces adaptive strength controls, and Section~\ref{subsec:procedure} combines these components into the inference procedure. Finally, Section~\ref{subsec:reduction} establishes the connection to log-density-ratio steering used to interpret prior methods. Figure~\ref{fig:overview} provides the overview of the method.}
 
 \begin{figure}[t]
     \centering
@@ -212,8 +212,7 @@ activation during inference.}
 
 \subsection{\textcolor{teal}{Constructing the steering direction}}
 \label{subsec:estimation}
-\textcolor{teal}{The fitted endpoint potentials $\widehat{\varphi}_{0,j}$ and
-$\widehat{\psi}_{1,i}$ are associated with the contrastive
+\textcolor{teal}{The fitted endpoint potentials $\widehat{\varphi}_{0,j}$ and $\widehat{\psi}_{1,i}$ are associated with the contrastive
 samples. We use these potentials to construct a steering
 direction at the current activation $\boldsymbol{x}\in\Sph$
 by combining attraction toward desired samples with repulsion
