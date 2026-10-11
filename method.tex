@@ -249,7 +249,7 @@ K_b(\boldsymbol{x},\boldsymbol{h}_i^+).}
 \label{eq:cobras-field}
 \end{equation}
 
-\textcolor{teal}{Expanding Eq.~\eqref{eq:cobras-field} gives a weighted average of tangent vectors toward desired samples minus a weighted average toward undesired samples, yielding attraction and repulsion, respectively (Figure~\ref{fig:overview}b). Having defined the steering direction, we next determine how strongly to apply it to each activation in Section~\ref{subsec:strength}.}
+\textcolor{teal}{Expanding Eq.~\eqref{eq:cobras-field} gives a weighted average of tangent vectors toward desired samples minus a weighted average toward undesired samples, yielding attraction and repulsion, respectively (Figure~\ref{fig:overview}b). In practice, we compute these tangent vectors averages using a kernel bandwidth selected separately for each population at the current activation and Appendix~\ref{apx:bandwidth} specifies this construction. Having defined the steering direction, we next determine how strongly to apply it to each activation in Section~\ref{subsec:strength}.}
 
 \subsection{Adaptive steering strength}
 \label{subsec:strength}
@@ -318,7 +318,7 @@ Building upon  proposed  framework, we demonstrate that a simplified version of 
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
 
-\textcolor{red}{We combine the steering field $\boldsymbol{v}$ with the attenuation coefficient $s$ and support gate $g$} to update activations during generation. We compute the support gate \textcolor{red}{$g_q$} once from the last prompt token's activation and reuse it throughout generation. For each incoming token activation $\hquery$ at layer $\ell$, we project it onto $\Sph$ as $\boldsymbol{x}_0=R\hquery/\|\hquery\|$ and evaluate the attenuation coefficient $s(\boldsymbol{x}_0)$. We then apply $K$ geodesic Euler steps with steering strength $T\ge0$,
+\textcolor{teal}{We combine the steering direction $\boldsymbol{v}$ with the alignment coefficient $s$ and support gate $g$ to steer activations during generation. For each token, let $\boldsymbol{x}_0\in\Sph$ denote its activation before steering. When processing the last prompt token, we compute $g_{\mathrm{prompt}}:=g(\boldsymbol{x}_0)$ and use this value for steering that activation and all subsequent token activations.} We then apply $K$ geodesic Euler steps with steering strength $T\ge0$,
 \begin{equation}
 \Delta=T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0\frac{R}{K},
 \qquad
