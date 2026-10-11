@@ -272,12 +272,15 @@ s(\boldsymbol{x})
 \]
 \textcolor{teal}{When the desired score dominates, $s$ is smaller and the intervention weakens. The concentration $\kappa$ controls how sharply the strength changes with alignment.}
 
-\paragraph{\textcolor{blue}{Support scoring and gate calibration.}}
-Alignment with $\boldsymbol{\mu}$ alone does not establish proximity to the contrastive data. To limit steering on out-of-distribution (OOD) prompts, we therefore assess the proximity of a prompt activation $\boldsymbol{x}$ to each contrastive population using the \textcolor{blue}{weighted kernel estimates}
+\noindent\textbf{\textcolor{teal}{Support gate.}}~\textcolor{teal}{Alignment with $\boldsymbol{\mu}$ alone does not establish proximity to the contrastive data. In particular, a prompt activation can align with the undesired direction and receive a large coefficient $s$ even when it has little support from the contrastive data. We therefore use the gate $g$ to attenuate steering on prompts for which contrastive samples provide little support.}
+
+\textcolor{teal}{To assess support at the prompt activation $\boldsymbol{x}$, we use the fitted endpoint potentials directly as weights in a kernel sum over each contrastive population. Using the kernel in Eq.~\eqref{eq:kernel} with support bandwidth $b_g>0$, we define}
 \begin{equation}
-\widehat{\varphi}_b(\boldsymbol{x})=\sum\nolimits_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-),
+\textcolor{teal}{\displaystyle
+\widehat{\varphi}_{b_g}(\boldsymbol{x})=\sum\nolimits_j \widehat{\varphi}_{0,j}K_{b_g}(\boldsymbol{x},\boldsymbol{h}_j^-),
 \qquad
-\widehat{\psi}_b(\boldsymbol{x})=\sum\nolimits_i a_i^+K_b(\boldsymbol{x},\boldsymbol{h}_i^+).
+\widehat{\psi}_{b_g}(\boldsymbol{x})=\sum\nolimits_i \widehat{\psi}_{1,i}K_{b_g}(\boldsymbol{x},\boldsymbol{h}_i^+).
+}
 \label{eq:frozen-factors}
 \end{equation}
 \textcolor{blue}{The ratio $\widehat{\psi}_b(\boldsymbol{x})/\widehat{\varphi}_b(\boldsymbol{x})$ can be large even when both fitted factors are small, so relative preference alone does not establish proximity to the contrastive data. Multiplying the factors retains information about their joint magnitude.} Following the product form of the bridge density in Eq.~\eqref{eq:product}, \textcolor{blue}{we use the fitted factors to define} an unnormalized support score at bandwidth $b_g$,
