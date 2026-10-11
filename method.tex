@@ -64,7 +64,7 @@ Q(\mathrm{d}\boldsymbol{x}_{[0,1]}),
 }
 \label{eq:sb-factorization}
 \end{equation}
-\textcolor{teal}{where $\boldsymbol{x}_{[0,1]}=(\boldsymbol{x}_t)_{t\in[0,1]}$ denotes a continuous activation trajectory. The positive functions $\varphi,\psi:\Sph\times[0,1]\to(0,\infty)$ are called \emph{Schr\"{o}dinger potentials}. Their endpoint factors $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{x},1)$ are determined jointly to satisfy $P^\star_0=\pminus$ and $P^\star_1=\pplus$. The reference Brownian dynamics propagate the former forward and the latter backward in time, determining $\varphi(\boldsymbol{x},t)$ and $\psi(\boldsymbol{x},t)$ at intermediate time $t$.}
+\textcolor{teal}{where $\boldsymbol{x}_{[0,1]}=(\boldsymbol{x}_t)_{t\in[0,1]}$ denotes a continuous activation trajectory. The positive functions $\varphi,\psi:\Sph\times[0,1]\to(0,\infty)$ are called \emph{Schr\"{o}dinger potentials}. Their endpoint potentials $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{x},1)$ are determined jointly to satisfy $P^\star_0=\pminus$ and $P^\star_1=\pplus$. The reference Brownian dynamics propagate the former forward and the latter backward in time, determining $\varphi(\boldsymbol{x},t)$ and $\psi(\boldsymbol{x},t)$ at intermediate time $t$.}
 
 \textcolor{teal}{For $P=P^\star$, we write $P_t(\boldsymbol{x})$ for the density of the marginal $P_t$ with respect to spherical volume. Since the reference has uniform time marginals, this density is proportional to the product of the potentials:}
 \begin{equation}
@@ -95,7 +95,7 @@ reference $Q$, this ODE takes the form}
 \textcolor{teal}{The probability-flow identity motivates constructing a
 steering direction from the gradient of the potentials' log-ratio.
 To develop a sample-based construction, we first estimate discrete
-counterparts of the endpoint factors $\varphi(\boldsymbol{x},0)$ and
+counterparts of the endpoint potentials $\varphi(\boldsymbol{x},0)$ and
 $\psi(\boldsymbol{x},1)$. To this end, we express the trajectory
 optimization in Eq.~\eqref{eq:sb} as a static problem over the joint
 distribution of starting and ending activations and solve its
@@ -123,12 +123,12 @@ Q_{01}(\mathrm{d}\boldsymbol{x},\mathrm{d}\boldsymbol{y}).
 \textcolor{teal}{Here $\boldsymbol{x}$ and $\boldsymbol{y}$ denote the starting
 and ending activations, and the two constraints prescribe
 their marginal distributions. Enforcing these constraints
-yields coupled equations for the endpoint factors
+yields coupled equations for the endpoint potentials
 $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{y},1)$.
 In practice, however, the endpoint distributions $\pminus$ and
 $\pplus$ are observed only through the finite contrastive sample
 sets $\mathcal{D}^-$ and $\mathcal{D}^+$. To estimate the endpoint
-factors from these data, we therefore discretize the static
+potentials from these data, we therefore discretize the static
 problem on the contrastive samples.}
 
 \textcolor{teal}{We use the contrastive sets
@@ -159,6 +159,7 @@ c_{ji}
 \frac{d_{\Sph}(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)^2}
 {2\varepsilon},
 }
+\label{eq:discrete-reference}
 \end{equation}
 \textcolor{teal}{where $\varepsilon>0$ controls the spread of the reference
 weights across sample pairs. The discrete
@@ -181,7 +182,7 @@ Schr\"{o}dinger Bridge therefore solves}
 
 \textcolor{teal}{As in Eq.~\eqref{eq:static-sb}, the optimal joint endpoint
 distribution factorizes into the reference distribution
-and two endpoint factors:}
+and two endpoint potentials:}
 \begin{equation}
 \textcolor{teal}{\displaystyle
 \widehat{P}_{01,ji}^{\star}
@@ -196,7 +197,7 @@ and two endpoint factors:}
 are discrete counterparts of
 $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{y},1)$,
 associated with undesired sample $j$ and desired sample $i$,
-respectively. We compute these factors using the
+respectively. We compute these potentials using the
 Sinkhorn algorithm~\citep{cuturi2013sinkhorn}, which
 alternately updates $\widehat{\varphi}_{0,j}$ to enforce
 the undesired marginal and $\widehat{\psi}_{1,i}$ to enforce
@@ -209,7 +210,7 @@ potentials to construct a steering direction for a given
 activation during inference.}
 
 
-\subsection{Computing the direction from contrastive samples}
+\subsection{\textcolor{teal}{Constructing the steering direction}}
 \label{subsec:estimation}
 Motivated by the bridge formulation, we construct a steering direction from contrastive activations.
 
