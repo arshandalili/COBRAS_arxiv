@@ -212,46 +212,36 @@ activation during inference.}
 
 \subsection{\textcolor{teal}{Constructing the steering direction}}
 \label{subsec:estimation}
-Motivated by the bridge formulation, we construct a steering direction from contrastive activations.
+\textcolor{teal}{We now use the fitted endpoint potentials
+$\widehat{\varphi}_{0,j}$ and $\widehat{\psi}_{1,i}$ to construct a steering direction at the current activation $\boldsymbol{x}\in\Sph$. 
 
-\textcolor{red}{Here you start by defining $K_b$, and then $K_{\epsilon}$ and then no mentioning in this paragraph, why do not you just define where you need it???????. what are we doing here? What kind of language is this, "Project ...", "Solve ....". This is just not acceptable. I am stopping here}
-
-
-\noindent\textbf{Transport plan estimation.}~Project $\mathcal{D}^\pm$ onto $\Sph$ and define the kernel
+\textcolor{teal}{To measure the proximity of a sample
+to $\boldsymbol{x}$, we use the kernel}
 \begin{equation}
+\textcolor{teal}{\displaystyle
 K_b(\boldsymbol{x},\boldsymbol{y})
 =\exp\!\left[-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{y})^2}{2b}\right],
 \qquad b>0.
+}
 \label{eq:kernel}
 \end{equation}
-The bandwidth $b$ sets the scale of this kernel, whose form is motivated by the leading short-time exponential behavior of the heat kernel~\citep{chen2023logarithmic}. \textcolor{blue}{With entropy regularization strength $\varepsilon>0$, we use $K_\varepsilon$ as a surrogate for the spherical Brownian transition density and solve the discrete entropic transport problem}
-\begin{equation}
-\textcolor{blue}{\displaystyle
-\pi^\star=\operatorname*{arg\,min}_{\pi\in\mathcal{U}}
-\sum\nolimits_{j,i}\pi_{ji}c_{ji}+\sum\nolimits_{j,i}\pi_{ji}\log\pi_{ji},
-\qquad
-c_{ji}={d_{\Sph}(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)^2}/{2\varepsilon}.
-}
-\label{eq:e-ot}
-\end{equation}
-\textcolor{blue}{Here $\mathcal{U}$ is the set of nonnegative couplings with uniform marginals, $\sum_i\pi_{ji}=1/N_-$ and $\sum_j\pi_{ji}=1/N_+$. The cost term favors transport between nearby activations, while the entropy term encourages spreading mass across sample pairs. The optimal plan factorizes as}
-\begin{equation}
-\pi^\star_{ji}=a_j^-a_i^+e^{-c_{ji}}.
-\label{eq:plan}
-\end{equation}
-The entry $\pi^\star_{ji}$ assigns mass from undesired sample $j$ to desired sample $i$, with $\varepsilon$ controlling the cost--entropy tradeoff. The positive scalings $a_j^-,a_i^+$ enforce the row and column marginals and are fitted using Sinkhorn updates~\citep{cuturi2013sinkhorn}, as detailed in Appendix~\ref{apx:static}.
+\textcolor{teal}{The bandwidth $b$ controls proximity to the query,
+while $\varepsilon$ in Eq.~\eqref{eq:discrete-reference} controls
+the reference connections between contrastive samples. We first
+describe the construction using a shared fixed bandwidth $b$.}
 
-\textcolor{blue}{We fit the transport plan once and keep the costs $c_{ji}$ and scalings $a_j^-,a_i^+$ fixed during generation. Steering a new token activation then requires combining the fitted connections with the activation's proximity to the contrastive samples.}
-%For the current token activation $\boldsymbol{x}$ being steered
-% Target activations $\boldsymbol{h}_i^+$ coupled via transport mappings to negative instances near $\boldsymbol{x}$ provide optimal contrastive resolution. Weighting $\boldsymbol{h}_i^+$ proportionally to these couplings accelerates boundary traversal and prevents steering vectors from drifting toward adjacent unintended regions
-
-\noindent\textbf{\textcolor{blue}{Steering direction from the transport plan.}}~To steer the current token activation $\boldsymbol{x}$, we weight each desired contrastive activation $\boldsymbol{h}_i^+$ by both its proximity to $\boldsymbol{x}$ and its transport connections to undesired contrastive activations $\boldsymbol{h}_j^-$ near $\boldsymbol{x}$. We encode these connections by
+\textcolor{teal}{We weight each desired sample by its proximity to
+$\boldsymbol{x}$ and its connections to undesired samples near
+$\boldsymbol{x}$. To collect the contributions from the opposite
+population, we define}
 \begin{align}
-m^+_{i,b}(\boldsymbol{x})
-&=\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)\,e^{-c_{ji}},
+\textcolor{teal}{m^+_{i,b}(\boldsymbol{x})}
+&\textcolor{teal}{=\sum_j \widehat{\varphi}_{0,j}\,
+\widehat{Q}_{01,ji}\,K_b(\boldsymbol{x},\boldsymbol{h}_j^-),}
 \label{eq:ext-psi}\\
-m^-_{j,b}(\boldsymbol{x})
-&=\sum_i a_i^+K_b(\boldsymbol{x},\boldsymbol{h}_i^+)\,e^{-c_{ji}}.
+\textcolor{teal}{m^-_{j,b}(\boldsymbol{x})}
+&\textcolor{teal}{=\sum_i \widehat{\psi}_{1,i}\,
+\widehat{Q}_{01,ji}\,K_b(\boldsymbol{x},\boldsymbol{h}_i^+).}
 \label{eq:ext-phi}
 \end{align}
 The coefficient $m^+_{i,b}(\boldsymbol{x})$ combines the proximity of undesired activations $\boldsymbol{h}_j^-$ to $\boldsymbol{x}$ with their transport costs to the desired activation $\boldsymbol{h}_i^+$, weighted by the fitted scalings $a_j^-$. Multiplying by $K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$ accounts for the desired activation's proximity, and normalization gives
