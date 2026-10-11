@@ -374,11 +374,18 @@ integration horizon $T$, coverage $p$, steps $K$, concentration $\kappa$
 \textcolor{teal}{We now relate the steering field in Eq.~\eqref{eq:cobras-field} to log-density-ratio steering to clarify the contribution of the transport connections. Log-density-ratio steering seeks to increase $\pplus(\boldsymbol{x})/\pminus(\boldsymbol{x})$ by following the gradient of its logarithm. For example, the Euclidean log-ratio gradient for two Gaussian populations with identity covariance is their mean difference, giving the direction used by CAA~\citep{rimsky2024steering}. Appendix~\ref{apx:ldr-formalize} develops this interpretation further with more details for other steering methods. To establish the connection with our construction, we examine the unnormalized field $\boldsymbol{v}$ at a fixed evaluation bandwidth $b>0$ as the transport reference weights $\widehat{Q}_{01,ji}$ become uniform.}
 
 \textcolor{teal}{Consider the limit $\varepsilon\to\infty$ with the contrastive activations and bandwidth $b$ held fixed. By Eq.~\eqref{eq:discrete-reference}, the costs $c_{ji}$ vanish and $\widehat{Q}_{01,ji}\to 1/(N_-N_+)$, so the reference no longer favors particular sample pairs, while the proximity kernels $K_b$ remain unchanged. In this limit, the bracketed coefficients in Eqs.~\eqref{eq:local-psi} and~\eqref{eq:local-phi} become common to all desired and all undesired samples, respectively, and hence factor out of the corresponding sums. Because these coefficients are held fixed during differentiation in Eq.~\eqref{eq:cobras-field}, they drop out of the logarithmic gradients, leaving a field proportional to the gradient of the log-ratio of the two unweighted kernel sums.}
-The corresponding kernel density-ratio field is \mbox{$\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})=b\nablaS\log[\hat{p}_b^+(\boldsymbol{x})/\hat{p}_b^-(\boldsymbol{x})]$}, where \mbox{$\hat{p}_b^\pm(\boldsymbol{x})=N_\pm^{-1}\sum_k K_b(\boldsymbol{x},\boldsymbol{h}_k^\pm)$} estimates each population.
+\textcolor{teal}{We write the two unweighted kernel estimates as $\hat{p}_b^-(\boldsymbol{x})=N_-^{-1}\sum_{j=1}^{N_-}K_b(\boldsymbol{x},\boldsymbol{h}_j^-)$ and $\hat{p}_b^+(\boldsymbol{x})=N_+^{-1}\sum_{i=1}^{N_+}K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$. We omit their common kernel normalizing constant, which cancels in the ratio. The limiting field is therefore}
+\[
+\textcolor{teal}{\displaystyle
+\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})
+=
+b\nablaS\log\frac{\hat{p}_b^+(\boldsymbol{x})}{\hat{p}_b^-(\boldsymbol{x})}.
+}
+\]
 
 \begin{proposition}[Reduction to the kernel density-ratio field]
 \label{prop:ldr-limit}
-Fix the contrastive activations on $\Sph$ and a shared bandwidth $b>0$. As $\varepsilon\to\infty$, the unnormalized field $\boldsymbol{v}$ converges to $\boldsymbol{v}_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$, uniformly away from the contrastive activations' antipodes.
+\textcolor{teal}{Fix the contrastive sets $\mathcal{D}^-$ and $\mathcal{D}^+$ on $\Sph$ and the bandwidth $b>0$. On the domain where both fields are defined, the unnormalized field $\boldsymbol{v}$ defined in Eq.~\eqref{eq:cobras-field} converges uniformly to $\boldsymbol{v}_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$ as $\varepsilon\to\infty$.}
 \end{proposition}
 
 \textcolor{blue}{Proposition~\ref{prop:ldr-limit} establishes a limiting relationship at a shared fixed bandwidth. Appendix~\ref{apx:proof-ldr-limit} gives the proof and discusses the separate sampling limit needed to recover the population log-density-ratio gradient. The reduction identifies what transport contributes beyond density-ratio steering. At finite $\varepsilon$, each sample's influence depends on both its proximity to the query and its transport connections to the opposite population.}
