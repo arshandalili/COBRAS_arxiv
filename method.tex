@@ -283,12 +283,14 @@ s(\boldsymbol{x})
 }
 \label{eq:frozen-factors}
 \end{equation}
-\textcolor{blue}{The ratio $\widehat{\psi}_b(\boldsymbol{x})/\widehat{\varphi}_b(\boldsymbol{x})$ can be large even when both fitted factors are small, so relative preference alone does not establish proximity to the contrastive data. Multiplying the factors retains information about their joint magnitude.} Following the product form of the bridge density in Eq.~\eqref{eq:product}, \textcolor{blue}{we use the fitted factors to define} an unnormalized support score at bandwidth $b_g$,
+\textcolor{teal}{Motivated by the product form of the bridge density in Eq.~\eqref{eq:product}, we define an unnormalized support score by multiplying the two kernel sums. For calibration, we use its negative logarithm:}
 \begin{equation}
+\textcolor{teal}{\displaystyle
 \hat{p}_{b_g}(\boldsymbol{x})
 =\widehat{\varphi}_{b_g}(\boldsymbol{x})\widehat{\psi}_{b_g}(\boldsymbol{x}),
 \qquad
 u(\boldsymbol{x})=-\log\hat{p}_{b_g}(\boldsymbol{x}).
+}
 \label{eq:support-score}
 \end{equation}
 \textcolor{blue}{The support score uses the same fitted transport scalings $a_j^-,a_i^+$ as the steering weights.} Larger values of $u$ indicate lower support. We calibrate $u$ using a reference set $\mathcal{D}_{\mathrm{ref}}$ of in-distribution prompt activations held out from evaluation. Both reference and query activations are extracted from the last prompt token at the steering layer and projected onto $\Sph$. For $n=|\mathcal{D}_{\mathrm{ref}}|$, we rank a query prompt's score against the reference scores and convert its rank into the gate \textcolor{red}{MM}
