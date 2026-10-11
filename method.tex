@@ -30,10 +30,9 @@ The steering field derived below is a weighted sum of logarithm maps toward the 
 \section{Activation Steering as a Schr\"{o}dinger Bridge}
 \label{sec:method}
 
-In this section, we cast steering as a distribution transportation problem and then derive our method. We first derive the continuous bridge identities that motivate our construction (Section~\ref{subsec:sb}), then derive the direction, strength controls, and inference procedure (Sections~\ref{subsec:estimation}--\ref{subsec:procedure}). Section~\ref{subsec:reduction} establishes the connection to density-ratio steering, which prior work implicitly optimizes. \textcolor{blue}{Figure~\ref{fig:overview} provides the overview of the method.}
 
 
-\textcolor{teal}{In this section, we develop \Cobras, starting from a Schr\"{o}dinger Bridge formulation of activation steering. In Section~\ref{subsec:sb}, we formulate transport between the undesired and desired activation populations as a constrained optimization problem and characterize its solution through two Schr\"{o}dinger potentials. The gradient of log-ratio of potentials defines a continuous steering direction, while their product determines the bridge's activation density at each transport time, motivating a criterion for assessing support for an intervention. Building on this formulation, Section~\ref{subsec:estimation} constructs a steering direction for a given activation using an endpoint transport plan estimated from contrastive data. Section~\ref{subsec:strength} introduces adaptive strength controls, and Section~\ref{subsec:procedure} combines these components into the inference procedure. Finally, Section~\ref{subsec:reduction} establishes the connection to log-density-ratio steering used to interpret prior methods. Figure~\ref{fig:overview} provides the overview of the method.}
+\textcolor{teal}{In this section, we develop \Cobras, starting from a Schr\"{o}dinger Bridge formulation of activation steering. In Section~\ref{subsec:sb}, we formulate transport between the undesired and desired activation populations as a constrained optimization problem and characterize its solution through two Schr\"{o}dinger potentials. The gradient of the log-ratio of the potentials motivates our steering field, while their product determines the bridge's activation density at each transport time, motivating a criterion for assessing support for an intervention. Building on this formulation, Section~\ref{subsec:estimation} constructs a steering field using an endpoint transport plan estimated from contrastive data. Section~\ref{subsec:strength} introduces adaptive strength controls, and Section~\ref{subsec:procedure} combines these components into the inference procedure. Finally, Section~\ref{subsec:reduction} establishes the connection to log-density-ratio steering used to interpret prior methods. Figure~\ref{fig:overview} provides the overview of the method.}
 
 \begin{figure}[t]
     \centering
@@ -75,13 +74,7 @@ P_t(\boldsymbol{x})
 \label{eq:product}
 \end{equation}
 
-\textcolor{teal}{The bridge $P^\star$ describes a distribution over
-stochastic activation trajectories. To motivate a deterministic
-steering direction, we consider its probability-flow ODE,
-whose solutions have distribution $P_t$ at every time $t$
-when initialized with $\boldsymbol{x}_0\sim\pminus$
-~\citep{song2020score, de2022riemannian}. For the Brownian
-reference $Q$, this ODE takes the form}
+\textcolor{teal}{The bridge $P^\star$ describes a distribution over stochastic activation trajectories. To motivate a deterministic steering field, we consider its probability-flow ODE, whose solutions have distribution $P_t$ at every time $t$ when initialized with $\boldsymbol{x}_0\sim\pminus$~\citep{song2020score, de2022riemannian}. For the Brownian reference $Q$, this ODE takes the form}
 \begin{equation}
 \textcolor{teal}{\displaystyle
 \frac{\mathrm{d}\boldsymbol{x}_t}{\mathrm{d}t}
@@ -92,15 +85,7 @@ reference $Q$, this ODE takes the form}
 }
 \label{eq:ldr}
 \end{equation}
-\textcolor{teal}{The probability-flow identity motivates constructing a
-steering direction from the gradient of the potentials' log-ratio.
-To develop a sample-based construction, we first estimate discrete
-counterparts of the endpoint potentials $\varphi(\boldsymbol{x},0)$ and
-$\psi(\boldsymbol{x},1)$. To this end, we express the trajectory
-optimization in Eq.~\eqref{eq:sb} as a static problem over the joint
-distribution of starting and ending activations and solve its
-discrete approximation using the celebrated Sinkhorn
-algorithm~\citep{cuturi2013sinkhorn}.}
+\textcolor{teal}{The drift of this ODE motivates constructing a steering field from the gradient of the log-ratio of the potentials. To develop a sample-based construction, we first estimate discrete counterparts of the endpoint potentials $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{x},1)$. To this end, we express the trajectory optimization in Eq.~\eqref{eq:sb} as a static problem over the joint distribution of starting and ending activations and solve its discrete approximation using the celebrated Sinkhorn algorithm~\citep{cuturi2013sinkhorn}.}
 
 \textcolor{teal}{Let $P_{01}$ and $Q_{01}$ denote the joint distributions of
 starting and ending activations under $P$ and $Q$, respectively.
@@ -203,16 +188,12 @@ alternately updates $\widehat{\varphi}_{0,j}$ to enforce
 the undesired marginal and $\widehat{\psi}_{1,i}$ to enforce
 the desired marginal.}
 
-\textcolor{teal}{The probability-flow identity motivates the log-ratio
-structure of our steering direction. In
-Section~\ref{subsec:estimation}, we use the fitted endpoint
-potentials to construct a steering direction for a given
-activation during inference.}
+\textcolor{teal}{The drift of the probability-flow ODE in Eq.~\eqref{eq:ldr} motivates constructing our steering field from the gradient of a log-ratio of potentials. In Section~\ref{subsec:estimation}, we use the fitted endpoint potentials to construct a steering field that can be evaluated at a given activation during inference.}
 
 
-\subsection{\textcolor{teal}{Constructing the steering direction}}
+\subsection{\textcolor{teal}{Constructing the steering field}}
 \label{subsec:estimation}
-\textcolor{teal}{The drift of the ODE in Eq.~\eqref{eq:ldr} motivates constructing a steering direction from the gradient of a log-ratio of potentials. However, the fitted endpoint potentials $\widehat{\varphi}_{0,j}$ and $\widehat{\psi}_{1,i}$ are associated with discrete contrastive samples. To obtain spatial gradients at the current activation $\boldsymbol{x}\in\Sph$, we construct two weighted kernel sums from these potentials and the reference distribution $\widehat{Q}_{01}$. These sums incorporate the samples' proximity to the activation through the kernel}
+\textcolor{teal}{The drift of the ODE in Eq.~\eqref{eq:ldr} motivates constructing a steering field from the gradient of a log-ratio of potentials. However, the fitted endpoint potentials $\widehat{\varphi}_{0,j}$ and $\widehat{\psi}_{1,i}$ are associated with discrete contrastive samples. To obtain spatial gradients at the current activation $\boldsymbol{x}\in\Sph$, we construct two weighted kernel sums from these potentials and the reference distribution $\widehat{Q}_{01}$. These sums incorporate the samples' proximity to the activation through the kernel}
 \begin{equation}
 \textcolor{teal}{\displaystyle
 K_b(\boldsymbol{x},\boldsymbol{h})
@@ -238,7 +219,7 @@ K_b(\boldsymbol{x},\boldsymbol{h}_i^+).}
 \end{align}
 \textcolor{teal}{In $\widetilde{\psi}_b$, the bracketed coefficient for each desired sample aggregates contributions from undesired samples, weighted by their fitted endpoint potentials, their proximity to $\boldsymbol{x}$, and their reference weights connecting them to that desired sample. The outer kernel additionally accounts for the desired sample's proximity to $\boldsymbol{x}$. The construction of $\widetilde{\varphi}_b$ exchanges the roles of the two populations.}
 
-\textcolor{teal}{We define the steering field from the spatial gradient of the log-ratio of these two sums, holding the bracketed coefficients fixed at their values computed at $\boldsymbol{x}$ during differentiation:}
+\textcolor{teal}{We define the steering field $\boldsymbol{v}$ from the spatial gradient of the log-ratio of these two sums, holding the bracketed coefficients fixed at their values computed at $\boldsymbol{x}$ during differentiation:}
 \begin{equation}
 \textcolor{teal}{\displaystyle
 \boldsymbol{v}(\boldsymbol{x})
@@ -249,7 +230,7 @@ K_b(\boldsymbol{x},\boldsymbol{h}_i^+).}
 \label{eq:cobras-field}
 \end{equation}
 
-\textcolor{teal}{Expanding Eq.~\eqref{eq:cobras-field} gives a weighted average of tangent vectors toward desired samples minus a weighted average toward undesired samples, yielding attraction and repulsion, respectively (Figure~\ref{fig:overview}b). In practice, we compute these tangent vectors averages using a kernel bandwidth selected separately for each population at the current activation and Appendix~\ref{apx:bandwidth} specifies this construction. Having defined the steering direction, we next determine how strongly to apply it to each activation in Section~\ref{subsec:strength}.}
+\textcolor{teal}{Expanding Eq.~\eqref{eq:cobras-field} gives a weighted average of tangent vectors toward desired samples minus a weighted average toward undesired samples, yielding attraction and repulsion, respectively (Figure~\ref{fig:overview}b). For $\boldsymbol{v}(\boldsymbol{x})\ne\boldsymbol{0}$, the normalized vector $\boldsymbol{v}(\boldsymbol{x})/\|\boldsymbol{v}(\boldsymbol{x})\|$ gives the steering direction. In practice, we compute these averages of tangent vectors using a kernel bandwidth selected separately for each population at the current activation. Appendix~\ref{apx:bandwidth} specifies this construction. Having defined the steering field, we next determine how strongly to apply it to each activation in Section~\ref{subsec:strength}.}
 
 \subsection{Adaptive steering strength}
 \label{subsec:strength}
@@ -318,7 +299,7 @@ Building upon  proposed  framework, we demonstrate that a simplified version of 
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
 
-\textcolor{teal}{We now describe the inference procedure for \Cobras. To do so, we combine the steering direction $\boldsymbol{v}$ with the alignment coefficient $s$ and support gate $g$ to steer activations during generation. For each token, let $\boldsymbol{x}_0\in\Sph$ denote its activation before steering. When processing the last prompt token, we compute $g_{\mathrm{prompt}}:=g(\boldsymbol{x}_0)$ and use this value for steering that activation and all subsequent token activations. For each token activation, we evaluate $s(\boldsymbol{x}_0)$ once and keep it fixed during steering. We use the initial angular separation $\theta_0=\arccos\!\bigl(\cos(\boldsymbol{x}_0,\boldsymbol{\mu})\bigr)$ between $\boldsymbol{x}_0$ and the contrastive axis $\boldsymbol{\mu}$ to scale the steering speed, with $s(\boldsymbol{x}_0)$ and $g_{\mathrm{prompt}}$ providing attenuation. Because the steering direction depends on the current activation, we take $K$ successive steps, recomputing $\boldsymbol{v}(\boldsymbol{x}_k)$ at each step $k=0,\ldots,K-1$. For an integration horizon $T\ge0$, the geodesic Euler updates are}
+\textcolor{teal}{We now describe the inference procedure for \Cobras. To do so, we combine the steering field $\boldsymbol{v}$ with the alignment coefficient $s$ and support gate $g$ to steer activations during generation. For each token, let $\boldsymbol{x}_0\in\Sph$ denote its activation before steering. When processing the last prompt token, we compute $g_{\mathrm{prompt}}:=g(\boldsymbol{x}_0)$ and use this value for steering that activation and all subsequent token activations. For each token activation, we evaluate $s(\boldsymbol{x}_0)$ once and keep it fixed during steering. We use the initial angular separation $\theta_0=\arccos\!\bigl(\cos(\boldsymbol{x}_0,\boldsymbol{\mu})\bigr)$ between $\boldsymbol{x}_0$ and the contrastive axis $\boldsymbol{\mu}$ to scale the steering speed, with $s(\boldsymbol{x}_0)$ and $g_{\mathrm{prompt}}$ providing attenuation. Because the steering field depends on the current activation, we take $K$ successive steps, recomputing $\boldsymbol{v}(\boldsymbol{x}_k)$ at each step $k=0,\ldots,K-1$. For an integration horizon $T\ge0$, the geodesic Euler updates are}
 \begin{equation}
 \textcolor{teal}{\displaystyle
 \Delta=T\,s(\boldsymbol{x}_0)\,g_{\mathrm{prompt}}\,\theta_0\frac{R}{K},
