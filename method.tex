@@ -212,28 +212,16 @@ activation during inference.}
 
 \subsection{\textcolor{teal}{Constructing the steering direction}}
 \label{subsec:estimation}
-\textcolor{teal}{The fitted endpoint potentials $\widehat{\varphi}_{0,j}$ and $\widehat{\psi}_{1,i}$ are associated with the contrastive
-samples. We use these potentials to construct a steering
-direction at the current activation $\boldsymbol{x}\in\Sph$
-by combining attraction toward desired samples with repulsion
-from undesired samples. Each sample's contribution depends
-on its proximity to $\boldsymbol{x}$ and its connections to
-nearby samples in the opposite population.}
-
-\textcolor{teal}{To measure the proximity of a sample
-to $\boldsymbol{x}$, we use the kernel}
+\textcolor{teal}{The drift of the ODE in Eq.~\eqref{eq:ldr} motivates constructing a steering direction from the gradient of a log-ratio of potentials. However, the fitted endpoint potentials $\widehat{\varphi}_{0,j}$ and $\widehat{\psi}_{1,i}$ are associated with discrete contrastive samples. To obtain spatial gradients at the current activation $\boldsymbol{x}\in\Sph$, we construct two weighted kernel sums from these potentials and the reference distribution $\widehat{Q}_{01}$. These sums incorporate the samples' proximity to the activation through the kernel}
 \begin{equation}
 \textcolor{teal}{\displaystyle
-K_b(\boldsymbol{x},\boldsymbol{y})
-=\exp\!\left[-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{y})^2}{2b}\right],
-\qquad b>0.
+K_b(\boldsymbol{x},\boldsymbol{h})
+=\exp\!\left[-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2}{2b}\right],
+\qquad b>0,
 }
 \label{eq:kernel}
 \end{equation}
-\textcolor{teal}{The bandwidth $b$ controls proximity to the query,
-while $\varepsilon$ in Eq.~\eqref{eq:discrete-reference} controls
-the reference connections between contrastive samples. We first
-describe the construction using a shared fixed bandwidth $b$.}
+\textcolor{teal}{where $\boldsymbol{h}\in\mathcal{D}^-\cup\mathcal{D}^+$ and $b$ controls how rapidly the proximity weight decreases with geodesic distance.}
 
 \textcolor{teal}{We weight each desired sample by its proximity to
 $\boldsymbol{x}$ and its connections to undesired samples near
