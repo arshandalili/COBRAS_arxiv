@@ -318,19 +318,19 @@ Building upon  proposed  framework, we demonstrate that a simplified version of 
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
 
-\textcolor{teal}{We combine the steering direction $\boldsymbol{v}$ with the alignment coefficient $s$ and support gate $g$ to steer activations during generation. For each token, let $\boldsymbol{x}_0\in\Sph$ denote its activation before steering. When processing the last prompt token, we compute $g_{\mathrm{prompt}}:=g(\boldsymbol{x}_0)$ and use this value for steering that activation and all subsequent token activations.} We then apply $K$ geodesic Euler steps with steering strength $T\ge0$,
+\textcolor{teal}{We combine the steering direction $\boldsymbol{v}$ with the alignment coefficient $s$ and support gate $g$ to steer activations during generation. For each token, let $\boldsymbol{x}_0\in\Sph$ denote its activation before steering. When processing the last prompt token, we compute $g_{\mathrm{prompt}}:=g(\boldsymbol{x}_0)$ and use this value for steering that activation and all subsequent token activations. For each token activation, we evaluate $s(\boldsymbol{x}_0)$ once and keep it fixed during steering. We use the initial angular separation $\theta_0=\arccos\!\bigl(\cos(\boldsymbol{x}_0,\boldsymbol{\mu})\bigr)$ between $\boldsymbol{x}_0$ and the contrastive axis $\boldsymbol{\mu}$ to scale the steering speed, with $s(\boldsymbol{x}_0)$ and $g_{\mathrm{prompt}}$ providing attenuation. Because the steering direction depends on the current activation, we take $K$ successive steps, recomputing $\boldsymbol{v}(\boldsymbol{x}_k)$ at each step $k=0,\ldots,K-1$. For an integration horizon $T\ge0$, the geodesic Euler updates are}
 \begin{equation}
-\Delta=T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0\frac{R}{K},
-\qquad
-\theta_0=\arccos\langle\boldsymbol{x}_0/R,\boldsymbol{\mu}\rangle,
+\textcolor{teal}{\displaystyle
+\Delta=T\,s(\boldsymbol{x}_0)\,g_{\mathrm{prompt}}\,\theta_0\frac{R}{K},
 \qquad
 \boldsymbol{x}_{k+1}
 =\exp_{\boldsymbol{x}_k}\!\left(
 \Delta\frac{\boldsymbol{v}(\boldsymbol{x}_k)}{\|\boldsymbol{v}(\boldsymbol{x}_k)\|}
 \right).
+}
 \label{eq:step}
 \end{equation}
-At each step, we recompute the direction $\boldsymbol{v}(\boldsymbol{x}_k)$ while keeping $s(\boldsymbol{x}_0)$ and $g_q$ fixed. After the $K$ steps, we return $\|\hquery\|\boldsymbol{x}_K/R$ to restore the activation's original norm. \textcolor{blue}{Here $\theta_0R$ is the geodesic distance from $\boldsymbol{x}_0$ to the point $R\boldsymbol{\mu}$ on the sphere, so the total path length on $\Sph$ is at most $T\,s(\boldsymbol{x}_0)\,g_q\,\theta_0R\le T\theta_0R$: the strength $T$ sets the largest fraction of that distance the activation can transport.} Algorithm~\ref{alg:cobras} summarizes the procedure, \textcolor{red}{with experimental settings given in Appendix~\ref{appendix:implementation_details}. just a random sentence, why would you mention "experimental settings" here?????}
+\textcolor{teal}{Each update follows a geodesic arc of length $\Delta$ in the current steering direction through the exponential map, keeping the activation on $\Sph$. Algorithm~\ref{alg:cobras} summarizes the procedure.}
 
 \begin{algorithm}[t]
 \caption{\Cobras}
@@ -339,29 +339,27 @@ At each step, we recompute the direction $\boldsymbol{v}(\boldsymbol{x}_k)$ whil
 \begin{algorithmic}[1]
 \Require Contrastive activations $\mathcal{D}^\pm$, reference prompt activations $\mathcal{D}_{\mathrm{ref}}$,
 regularization strength $\varepsilon$, support bandwidth $b_g$,
-strength $T$, coverage $p$, steps $K$, concentration $\kappa$
+integration horizon $T$, coverage $p$, steps $K$, concentration $\kappa$
 \Statex \textbf{Offline fitting and calibration}
 \State Set $R$ to the mean norm over $\mathcal{D}^+\cup\mathcal{D}^-$ and project all contrastive and reference activations onto $\Sph$
-\State Form costs $c_{ji}$ by Eq.~\eqref{eq:e-ot} and fit the scalings $a_j^-,a_i^+$ using Eq.~\eqref{eq:sinkhorn}
+\State Form the reference weights $\widehat{Q}_{01,ji}$ by Eq.~\eqref{eq:discrete-reference}
+\State Fit the endpoint potentials $\widehat{\varphi}_{0,j}$ and $\widehat{\psi}_{1,i}$ using Sinkhorn as described in Section~\ref{subsec:sb}
 \State Compute the contrastive axis $\boldsymbol{\mu}$ as defined in Section~\ref{subsec:strength}
 \State Store the sorted reference scores $u(\boldsymbol{z})$ for $\boldsymbol{z}\in\mathcal{D}_{\mathrm{ref}}$ using Eq.~\eqref{eq:support-score}
 \Statex \textbf{Online steering of $\hquery$ at layer $\ell$, starting with the last prompt token}
 \State $\boldsymbol{x}_0\gets R\hquery/\|\hquery\|$
 \label{alg:cobras:norm_equation}
 \If{$\hquery$ is the last prompt token's activation}
-    \State Compute $g_q\gets g(\boldsymbol{x}_0)$ by Eq.~\eqref{eq:gate} and cache it for the continuation
+    \State Compute $g_{\mathrm{prompt}}\gets g(\boldsymbol{x}_0)$ by Eq.~\eqref{eq:gate} and cache it for the continuation
 \Else
-    \State Reuse the cached $g_q$ for the current prompt
+    \State Reuse the cached $g_{\mathrm{prompt}}$ for the current prompt
 \EndIf
 \State Evaluate $s(\boldsymbol{x}_0)$ and compute the fixed step size $\Delta$ using Eq.~\eqref{eq:step}
 \If{$\Delta=0$}
     \State \Return $\hquery$
 \EndIf
 \For{$k=0,\ldots,K-1$}
-    \State Select the bandwidths $b_\pm(\boldsymbol{x}_k)$ by Eq.~\eqref{eq:adaptive-bandwidth}
-    \State Compute the conditional coefficients and normalized weights in Eqs.~\eqref{eq:ext-psi}--\eqref{eq:weights-pos},
-    using $b_+$ for kernels centered on $\mathcal{D}^+$ and $b_-$ for kernels centered on $\mathcal{D}^-$
-    \State $\boldsymbol{v}_k\gets\boldsymbol{v}(\boldsymbol{x}_k)$ using Eq.~\eqref{eq:cobras-field}
+    \State Compute $\boldsymbol{v}_k\gets\boldsymbol{v}(\boldsymbol{x}_k)$ using the steering construction in Section~\ref{subsec:estimation}
     \If{$\|\boldsymbol{v}_k\|>0$}
         \State $\boldsymbol{x}_{k+1}\gets
         \exp_{\boldsymbol{x}_k}(\Delta\,\boldsymbol{v}_k/\|\boldsymbol{v}_k\|)$
