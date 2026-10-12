@@ -70,12 +70,12 @@ When evaluating the global flow framework under these spherical constraints, the
 
 \textcolor{blue}{This appendix derives the continuous bridge field, the discrete transport fit, and the local gradient interpretation of the steering field. It then separates the transport limit from the sampling limit needed to recover the population log-density-ratio gradient.}
 
-\subsection{Continuous bridge derivation}
+\subsection{\textcolor{teal}{Probability-flow ODE of the continuous bridge}}
 \label{apx:static}
-In this section, we derive the drift term as stated in Eq.~\eqref{eq:ldr}. We begin by reviewing the probability-flow ODE of the SDE  solution to the SB problem, and subsequently apply it to the Riemannian manifold induced by our geometric assumptions on the activations.
-%We start by recalling the probability-flow ODE of the resulting SDE solution of the SB problem and then apply it to Riemannian induced by our geometrical assumptions over activations 
 
-\paragraph{Probability-flow identity.}For every diffusion process, there is a corresponding deterministic process whose trajectories have the same marginal probability densities $\{p_t(\boldsymbol{x})\}_{t=0}^{T}$ as the SDE~\citep{song2020score}. Specifically, for the Euclidean SDE $\mathrm{d}\boldsymbol{x}=f(\boldsymbol{x},t)\,\mathrm{d}t+g(t)\,\mathrm{d}\boldsymbol{w}$, their probability-flow ODE is
+\textcolor{teal}{We derive the probability-flow ODE in Eq.~\eqref{eq:ldr} from the optimal Schr\"{o}dinger Bridge. Assume that $\pminus$ and $\pplus$ are smooth, strictly positive probability densities with respect to spherical volume, and that the Brownian reference $Q$ has diffusion scale $\sigma^2>0$ and a uniform initial distribution. These sufficient conditions ensure that the bridge admits the factorized representation in Eq.~\eqref{eq:sb-factorization}~\citep{leonard2013survey}.}
+
+\textcolor{teal}{The endpoint potentials determine the time-dependent potentials through the reference dynamics:}
 \[
 \textcolor{teal}{\displaystyle
 \mathrm{d}\boldsymbol{x}
@@ -120,144 +120,115 @@ Choose discrete reference weights proportional to $e^{-c_{ji}}$ and normalize th
 \end{align}
 At convergence, the plan satisfies both marginals. The geodesic kernel and subsequent stationary field do not preserve the exact Brownian bridge construction.
 
-\subsection{Kernel gradients and conditional weights}
+\subsection{Derivation of the steering field}
 \label{app:grad-psi}
 
-The weighted logarithm maps in Eq.~\eqref{eq:cobras-field} arise from the log-gradients of weighted kernel estimates at a fixed bandwidth $b$. For $\theta=d_{\Sph}(\boldsymbol{x},\boldsymbol{h})/R<\pi$, differentiating $R^2\arccos^2(R^{-2}\boldsymbol{x}^\top\boldsymbol{h})$ and projecting onto the tangent space gives
-\[
-\nablaS d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2
-=-\frac{2\theta}{\sin\theta}\Pi_{\boldsymbol{x}}\boldsymbol{h}
-=-2\log_{\boldsymbol{x}}(\boldsymbol{h}).
-\]
-At $\boldsymbol{x}=\boldsymbol{h}$, use the continuous limit, which is zero. For fixed positive $m_i$, the chain rule therefore yields
-\begin{equation}
-b\nablaS\log\sum_i m_iK_b(\boldsymbol{x},\boldsymbol{h}_i)
-=\sum_i w_i(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_i),
-\quad
-w_i(\boldsymbol{x})=
-\frac{m_iK_b(\boldsymbol{x},\boldsymbol{h}_i)}
-{\sum_{i'}m_{i'}K_b(\boldsymbol{x},\boldsymbol{h}_{i'})}.
-\label{eq:grad-psi}
-\end{equation}
-Taking $m_i=a_i^+$ or $m_j=a_j^-$ gives the log-gradients of the fitted kernel factors. Uniform $m_i$ gives the corresponding kernel density-estimate gradient.
+We derive the weighted tangent-vector expression for the steering field in Eq.~\eqref{eq:cobras-field} at a fixed bandwidth $b>0$.
 
-\paragraph{Gradient interpretation of the steering field.}
-\label{apx:omitted-term}
-The fitted scalings $a_j^-,a_i^+$ remain fixed during generation, while the conditional coefficients $m^+_{i,b}(\boldsymbol{x})$ and $m^-_{j,b}(\boldsymbol{x})$ are recomputed at each iterate. At a shared fixed bandwidth $b$, applying Eq.~\eqref{eq:grad-psi} with the current coefficient values held fixed gives $\boldsymbol{v}(\boldsymbol{x})$ as $b$ times the local log-ratio gradient.
-
-Including the derivatives of the conditional coefficients gives
+Using $\nablaS d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2=-2\log_{\boldsymbol{x}}(\boldsymbol{h})$, differentiating the kernel in Eq.~\eqref{eq:kernel} gives
 \begin{equation}
 \begin{aligned}
-b\nablaS\log
-\frac{\sum_i m^+_{i,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_i^+)}
-{\sum_j m^-_{j,b}(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_j^-)}
+b\nablaS K_b(\boldsymbol{x},\boldsymbol{h})
+&=-\frac{1}{2}K_b(\boldsymbol{x},\boldsymbol{h})\nablaS d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2\\
+&=K_b(\boldsymbol{x},\boldsymbol{h})\log_{\boldsymbol{x}}(\boldsymbol{h}).
+\end{aligned}
+\label{eq:grad-psi}
+\end{equation}
+
+Holding the bracketed coefficients in Eqs.~\eqref{eq:local-psi} and~\eqref{eq:local-phi} fixed, we apply Eq.~\eqref{eq:grad-psi} to the outer kernels in $\widetilde{\psi}_b$ and $\widetilde{\varphi}_b$. Taking the logarithmic gradients divides each differentiated sum by the original sum, giving the normalized sample weights
+\begin{align}
+w_i^+(\boldsymbol{x})
+&=\frac{\left[\sum_j\widehat{\varphi}_{0,j}\widehat{Q}_{01,ji}K_b(\boldsymbol{x},\boldsymbol{h}_j^-)\right]K_b(\boldsymbol{x},\boldsymbol{h}_i^+)}
+{\widetilde{\psi}_b(\boldsymbol{x})},
+\label{eq:weights-pos}\\
+w_j^-(\boldsymbol{x})
+&=\frac{\left[\sum_i\widehat{\psi}_{1,i}\widehat{Q}_{01,ji}K_b(\boldsymbol{x},\boldsymbol{h}_i^+)\right]K_b(\boldsymbol{x},\boldsymbol{h}_j^-)}
+{\widetilde{\varphi}_b(\boldsymbol{x})}.
+\label{eq:weights-neg}
+\end{align}
+These weights are positive and sum to one within each population. Substituting them into Eq.~\eqref{eq:cobras-field} yields
+\begin{equation}
+\boldsymbol{v}(\boldsymbol{x})
+=\underbrace{\sum_i w_i^+(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)}_{\text{attraction}}
+-\underbrace{\sum_j w_j^-(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_j^-)}_{\text{repulsion}}.
+\label{eq:weighted-cobras-field}
+\end{equation}
+
+\noindent\textbf{Full gradient of the log-ratio.}~The bracketed coefficients depend on the current activation. Differentiating them in addition to the outer kernels would give
+\label{apx:omitted-term}
+\begin{equation}
+\begin{aligned}
+b\nablaS\log\frac{\widetilde{\psi}_b(\boldsymbol{x})}{\widetilde{\varphi}_b(\boldsymbol{x})}
 ={}&\boldsymbol{v}(\boldsymbol{x})\\
-&+b\sum_i\bar{w}_i^+\nablaS\log m^+_{i,b}
--b\sum_j\bar{w}_j^-\nablaS\log m^-_{j,b},
+&+b\sum_i w_i^+(\boldsymbol{x})\nablaS\log\!\left[\sum_j\widehat{\varphi}_{0,j}\widehat{Q}_{01,ji}K_b(\boldsymbol{x},\boldsymbol{h}_j^-)\right]\\
+&-b\sum_j w_j^-(\boldsymbol{x})\nablaS\log\!\left[\sum_i\widehat{\psi}_{1,i}\widehat{Q}_{01,ji}K_b(\boldsymbol{x},\boldsymbol{h}_i^+)\right].
 \end{aligned}
 \label{eq:apx-omitted}
 \end{equation}
-where all terms are evaluated at $\boldsymbol{x}$. The coefficient derivatives also have a weighted log-map form. In particular, Eq.~\eqref{eq:ext-psi} gives
-\[
-b\nablaS\log m^+_{i,b}(\boldsymbol{x})
-=\sum_j
-\frac{a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)e^{-c_{ji}}}
-{m^+_{i,b}(\boldsymbol{x})}
-\log_{\boldsymbol{x}}(\boldsymbol{h}_j^-).
-\]
-The weights in this sum are positive and sum to one. The corresponding expression for $m^-_{j,b}$ averages logarithm maps toward desired samples. The two additional terms in Eq.~\eqref{eq:apx-omitted} therefore reweight the same sample directions through a difference of convex combinations. For the shared fixed bandwidth considered here, holding the coefficients fixed makes $\boldsymbol{v}$ an ascent direction for the current local log-ratio. Recomputing the coefficients after each step updates which contrastive samples guide the next direction.
+The steering field defined in Section~\ref{subsec:estimation} holds the bracketed coefficients fixed during differentiation, so these two additional terms are absent. The coefficients and sample weights are recomputed at each activation using the fixed endpoint potentials.
 
 \subsection{Proof of Proposition~\ref{prop:ldr-limit}}
 \label{apx:proof-ldr-limit}
 
 \begin{proof}
-Fix the contrastive activations, a bandwidth $b>0$, and a query $\boldsymbol{x}\in\Sph$ distinct from the contrastive activations' antipodes. Let $c_{\max}=\max_{j,i}c_{ji}$ and define the normalized kernel weights
-\[
-u_k^\pm
-=\frac{K_b(\boldsymbol{x},\boldsymbol{h}_k^\pm)}
-{\sum_\ell K_b(\boldsymbol{x},\boldsymbol{h}_\ell^\pm)},
-\qquad \sum_k u_k^\pm=1.
-\]
-All weights and coefficients below are evaluated at $\boldsymbol{x}$. Since $e^{-c_{\max}}{\le}e^{-c_{ji}}{\le}1$ and $a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)>0$, summing over $j$ gives
+Fix the contrastive sets $\mathcal{D}^-$ and $\mathcal{D}^+$ and the bandwidth $b>0$. On the domain of Proposition~\ref{prop:ldr-limit}, the fields $\boldsymbol{v}$ and $\boldsymbol{v}_b^{\mathrm{kde}}$ combine the same tangent vectors with different weights. We therefore bound their difference by comparing these weights. For the kernel log-density-ratio field, define
 \[
 \begin{aligned}
-e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})
-&=e^{-c_{\max}}\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)\\
-&\le\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)e^{-c_{ji}}
-=m^+_{i,b}\\
-&\le\sum_j a_j^-K_b(\boldsymbol{x},\boldsymbol{h}_j^-)
-=\widehat{\varphi}_b(\boldsymbol{x}).
+w_i^{+,\mathrm{kde}}(\boldsymbol{x})
+&=\frac{K_b(\boldsymbol{x},\boldsymbol{h}_i^+)}
+{\sum_{i'=1}^{N_+}K_b(\boldsymbol{x},\boldsymbol{h}_{i'}^+)},\\
+w_j^{-,\mathrm{kde}}(\boldsymbol{x})
+&=\frac{K_b(\boldsymbol{x},\boldsymbol{h}_j^-)}
+{\sum_{j'=1}^{N_-}K_b(\boldsymbol{x},\boldsymbol{h}_{j'}^-)}.
 \end{aligned}
 \]
-Multiplying the coefficient bounds by $u_k^+>0$, summing over $k$, and using $\sum_k u_k^+=1$ yields
-\[
-\begin{aligned}
-e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})
-&=\sum_k u_k^+e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})\\
-&\le\sum_k u_k^+m^+_{k,b}\\
-&\le\sum_k u_k^+\widehat{\varphi}_b(\boldsymbol{x})
-=\widehat{\varphi}_b(\boldsymbol{x}).
-\end{aligned}
-\]
-Using Eq.~\eqref{eq:weights-pos} and the definition of $u_i^+$, we obtain
-\[
-\begin{aligned}
-\frac{\bar{w}_i^+}{u_i^+}
-&=\frac{m^+_{i,b}K_b(\boldsymbol{x},\boldsymbol{h}_i^+)}
-{\sum_k m^+_{k,b}K_b(\boldsymbol{x},\boldsymbol{h}_k^+)}
-\frac{\sum_k K_b(\boldsymbol{x},\boldsymbol{h}_k^+)}
-{K_b(\boldsymbol{x},\boldsymbol{h}_i^+)}\\
-&=\frac{m^+_{i,b}\sum_k K_b(\boldsymbol{x},\boldsymbol{h}_k^+)}
-{\sum_k m^+_{k,b}K_b(\boldsymbol{x},\boldsymbol{h}_k^+)}\\
-&=\frac{m^+_{i,b}}{\sum_k u_k^+m^+_{k,b}}.
-\end{aligned}
-\]
-Both $m^+_{i,b}$ and $\sum_k u_k^+m^+_{k,b}$ lie between $e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})>0$ and $\widehat{\varphi}_b(\boldsymbol{x})$. Using the lower bound for the numerator and the upper bound for the denominator gives the first inequality below. Reversing these choices gives the second,
-\[
-\begin{aligned}
-\frac{\bar{w}_i^+}{u_i^+}
-&\ge\frac{e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})}
-{\widehat{\varphi}_b(\boldsymbol{x})}
-=e^{-c_{\max}},\\
-\frac{\bar{w}_i^+}{u_i^+}
-&\le\frac{\widehat{\varphi}_b(\boldsymbol{x})}
-{e^{-c_{\max}}\widehat{\varphi}_b(\boldsymbol{x})}
-=e^{c_{\max}}.
-\end{aligned}
-\]
-Consequently,
-\[
-\begin{aligned}
-\sum_i|\bar{w}_i^+-u_i^+|
-&=\sum_i u_i^+\left|\frac{\bar{w}_i^+}{u_i^+}-1\right|\\
-&\le(e^{c_{\max}}-1)\sum_i u_i^+
-=e^{c_{\max}}-1.
-\end{aligned}
-\]
-Applying the same argument to Eq.~\eqref{eq:ext-phi} yields $\sum_j|\bar{w}_j^--u_j^-|\le e^{c_{\max}}-1$.
+These weights are positive and sum to one within each population. Applying Eq.~\eqref{eq:grad-psi} to the kernel estimates in Section~\ref{subsec:reduction} gives
+\begin{equation}
+\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})
+=\sum_i w_i^{+,\mathrm{kde}}(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)
+-\sum_j w_j^{-,\mathrm{kde}}(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_j^-).
+\label{eq:weighted-kde-field}
+\end{equation}
 
-Furthermore, Eq.~\eqref{eq:grad-psi} gives
+To bound the COBRAS weights in Eqs.~\eqref{eq:weights-pos} and~\eqref{eq:weights-neg}, we use the kernel sums weighted by the endpoint potentials:
+\begin{equation}
+\widehat{\varphi}_b(\boldsymbol{x})=\sum_j\widehat{\varphi}_{0,j}K_b(\boldsymbol{x},\boldsymbol{h}_j^-),
+\qquad
+\widehat{\psi}_b(\boldsymbol{x})=\sum_i\widehat{\psi}_{1,i}K_b(\boldsymbol{x},\boldsymbol{h}_i^+).
+\label{eq:kernel-sums-general}
+\end{equation}
+
+Let $c_{\max}=\max_{j,i}c_{ji}$ and $Z=\sum_{j,i}e^{-c_{ji}}$, so $\widehat{Q}_{01,ji}=Z^{-1}e^{-c_{ji}}$. We first bound the bracketed sum in the desired-sample weight in Eq.~\eqref{eq:weights-pos}. Since $e^{-c_{\max}}\le e^{-c_{ji}}\le1$, positivity of the endpoint potentials and kernels gives, for every $i$,
 \[
-b\nablaS\log\hat{p}_b^\pm(\boldsymbol{x})
-=\sum_k u_k^\pm\log_{\boldsymbol{x}}(\boldsymbol{h}_k^\pm).
+e^{-c_{\max}}Z^{-1}\widehat{\varphi}_b(\boldsymbol{x})
+\le\sum_j\widehat{\varphi}_{0,j}\widehat{Q}_{01,ji}K_b(\boldsymbol{x},\boldsymbol{h}_j^-)
+\le Z^{-1}\widehat{\varphi}_b(\boldsymbol{x}).
 \]
-Combining this identity with Eq.~\eqref{eq:cobras-field}, the triangle inequality, and $\|\log_{\boldsymbol{x}}(\boldsymbol{h}_k^\pm)\|\le\pi R$ gives
+Multiplying these bounds by $K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$ and summing over $i$ gives corresponding bounds on the normalizing denominator $\widetilde{\psi}_b(\boldsymbol{x})$. The common factors cancel when comparing the normalized COBRAS and KDE weights, yielding
+\[
+e^{-c_{\max}}
+\le\frac{w_i^+(\boldsymbol{x})}{w_i^{+,\mathrm{kde}}(\boldsymbol{x})}
+\le e^{c_{\max}}.
+\]
+With all weights below evaluated at $\boldsymbol{x}$, the normalization of the KDE weights gives
+\[
+\sum_i|w_i^+-w_i^{+,\mathrm{kde}}|
+=\sum_i w_i^{+,\mathrm{kde}}\left|\frac{w_i^+}{w_i^{+,\mathrm{kde}}}-1\right|
+\le e^{c_{\max}}-1.
+\]
+Applying the same argument to Eq.~\eqref{eq:weights-neg} yields $\sum_j|w_j^--w_j^{-,\mathrm{kde}}|\le e^{c_{\max}}-1$.
+
+Combining Eqs.~\eqref{eq:weighted-kde-field} and~\eqref{eq:weighted-cobras-field} with the triangle inequality and $\|\log_{\boldsymbol{x}}(\boldsymbol{h}_k^\pm)\|\le\pi R$ gives
 \begin{equation}
 \begin{aligned}
 \|\boldsymbol{v}(\boldsymbol{x})-\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})\|
-&\le\pi R\left(\sum_i|\bar{w}_i^+-u_i^+|
-+\sum_j|\bar{w}_j^--u_j^-|\right)\\
+&\le\pi R\left(\sum_i|w_i^+-w_i^{+,\mathrm{kde}}|
++\sum_j|w_j^--w_j^{-,\mathrm{kde}}|\right)\\
 &\le2\pi R(e^{c_{\max}}-1).
 \end{aligned}
 \label{eq:prop1-bound}
 \end{equation}
-Finally, $d_{\Sph}(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)\le\pi R$ implies $c_{\max}\le\pi^2R^2/(2\varepsilon)$, so
-\[
-\|\boldsymbol{v}(\boldsymbol{x})-\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})\|
-\le2\pi R\left(e^{\pi^2R^2/(2\varepsilon)}-1\right)
-=O(1/\varepsilon).
-\]
-The bound is independent of $\boldsymbol{x}$, establishing the claimed uniform convergence.
+Finally, $d_{\Sph}(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)\le\pi R$ implies $c_{\max}\le\pi^2R^2/(2\varepsilon)$, making the bound in Eq.~\eqref{eq:prop1-bound} $O(1/\varepsilon)$. Since it is independent of $\boldsymbol{x}$, the convergence is uniform.
 \end{proof}
 
 \textcolor{blue}{The bound shows that the effect of transport reweighting vanishes as $\varepsilon$ increases, while the proximity weighting at bandwidth $b$ remains intact}
