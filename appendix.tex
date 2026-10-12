@@ -97,7 +97,14 @@ where $f$ is the drift, $g(t)$ is the diffusion amplitude, and $\boldsymbol{w}$ 
 }
 \]
 \subsection{Static reduction and Sinkhorn updates}
-The reduction from the trajectory optimization in Eq.~\eqref{eq:sb} to the static problem in Eq.~\eqref{eq:static-sb} follows from the decomposition of KL divergence~\citep{leonard2013survey}. For a fixed joint endpoint distribution $P_{01}$, $\KL(P\,\Vert\,Q)$ is minimized when the conditional distribution of trajectories given their starting and ending activations is the same under $P$ and $Q$. The objective then equals $\KL(P_{01}\,\Vert\,Q_{01})$, giving the static problem with the same endpoint constraints.
+The reduction from the trajectory optimization in Eq.~\eqref{eq:sb} to the static problem in Eq.~\eqref{eq:static-sb} follows from the decomposition of KL divergence. Let $P_{\mid01}$ and $Q_{\mid01}$ denote the conditional distributions of trajectories given their starting and ending activations under $P$ and $Q$, respectively. Then~\citep{leonard2013survey}
+\begin{equation}
+\KL(P\,\Vert\,Q)
+=\KL(P_{01}\,\Vert\,Q_{01})
++\mathbb{E}_{P_{01}}\!\left[\KL(P_{\mid01}\,\Vert\,Q_{\mid01})\right].
+\label{eq:apx-disint}
+\end{equation}
+The expectation is over starting and ending activations drawn from $P_{01}$. For a fixed joint endpoint distribution $P_{01}$, the second term is nonnegative and becomes zero when $P_{\mid01}=Q_{\mid01}$. Minimizing over trajectory distributions therefore leaves only $\KL(P_{01}\,\Vert\,Q_{01})$ to minimize under the endpoint constraints, giving the static problem.
 
 For the discrete problem, we fit the endpoint potentials using the Sinkhorn algorithm~\citep{cuturi2013sinkhorn}. Substituting the factorization in Eq.~\eqref{eq:discrete-factors} into the empirical marginal constraints gives
 \[
