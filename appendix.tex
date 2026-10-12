@@ -233,9 +233,8 @@ Finally, $d_{\Sph}(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)\le\pi R$ implies $c_{\
 
 Proposition~\ref{prop:ldr-limit} establishes kernel log-density-ratio steering as a limiting case of the steering field in \Cobras. At finite $\varepsilon$, the sample weights also incorporate the fitted Schr\"{o}dinger Bridge, allowing the steering field to reflect transport between the two populations beyond their separate kernel density estimates.
 
-\paragraph{Discussion of the two limits.}
 \label{apx:sampling-limit}
-Proposition~\ref{prop:ldr-limit} recovers a kernel density-ratio field at fixed samples and bandwidth. Recovering the population log-density-ratio gradient requires a separate sampling limit, with more contrastive samples and a shrinking bandwidth. For i.i.d.\ samples from strictly positive $C^3$ densities $\pplus$ and $\pminus$ on the fixed sphere $\Sph$, let $N=\min\{N_+,N_-\}$ and choose $b_N\to0$ with $N b_N^{(d+1)/2}\to\infty$. The condition makes the bandwidth shrink slowly enough for the normalized density estimates and their gradients to converge. Consequently, $\boldsymbol{v}_{b_N}^{\mathrm{kde}}(\boldsymbol{x})/b_N$ converges in probability to $\nablaS\log[\pplus(\boldsymbol{x})/\pminus(\boldsymbol{x})]$ at each fixed query. The limits are sequential, first increasing $\varepsilon$ at fixed samples and bandwidth, then increasing the sample size while shrinking $b_N$. Separating the two parameters therefore recovers density-ratio steering without requiring the evaluation kernels to flatten.
+\noindent\textbf{Sampling limit.}~The reduction above holds for fixed contrastive samples and bandwidth $b$. Relating the resulting field to the population log-density-ratio gradient would additionally require consistency of the density estimates and their Riemannian gradients as the sample sizes grow and the bandwidth shrinks. Establishing this sampling limit for the geodesic kernel used here is outside the scope of our analysis.
 
 \FloatBarrier
 \section{Calibration and Properties of the Support Gate}
