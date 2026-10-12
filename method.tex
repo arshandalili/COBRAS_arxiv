@@ -25,7 +25,7 @@ We write $\Pi_{\boldsymbol{x}}=\boldsymbol{I}-R^{-2}\boldsymbol{x}\boldsymbol{x}
 \quad \theta = \frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{y})}{R}.
 \label{eq:expmap}
 \end{equation}
-\textcolor{teal}{At zero tangent length or zero angular separation, the formulas use their continuous limits. These operations specify how to move activations on $\Sph$. The next section discusses how to construct a steering field from the desired and undesired activation populations.}
+\textcolor{teal}{When the tangent length or angular separation is zero, we evaluate the $\log$ and $\exp$ maps at their continuous limits. These operations specify how to move activations on $\Sph$. The next section discusses how to construct a steering field from the desired and undesired activation populations.}
 
 \section{Activation Steering as a Schr\"{o}dinger Bridge}
 \label{sec:method}
@@ -288,13 +288,10 @@ g(\boldsymbol{x})=\min\!\left\{1,\frac{1-r(\boldsymbol{x})}{1-p}\right\}.
 }
 \label{eq:gate}
 \end{equation}
-\textcolor{teal}{The gate leaves steering strength unchanged when $r(\boldsymbol{x})\le p$ and decreases linearly with rank above $p$, disabling steering when $u(\boldsymbol{x})$ exceeds every reference score. Appendix~\ref{apx:ood-gate} examines this calibration and evaluates how well the scores distinguish in-distribution and OOD prompt activations.} \textcolor{red}{The support construction also motivates a simplified, universal kNN gate that can be seamlessly integrated as an external module into existing steering methods. Using nearest-neighbor distances to the undesired contrastive samples, this gate scales each method's intervention without changing how that intervention is computed. Appendix~\ref{apx:knn} presents the gate, explains its connection to the support score, and evaluates it across steering methods.}
+\textcolor{teal}{The gate leaves steering strength unchanged when $r(\boldsymbol{x})\le p$ and decreases linearly with rank above $p$, disabling steering when $u(\boldsymbol{x})$ exceeds every reference score. Appendix~\ref{apx:ood-gate} examines this calibration and evaluates how well the scores distinguish in-distribution and OOD prompt activations.} 
 
-\begingroup\color{red}
 \begin{remark}
-Building upon  proposed  framework, we demonstrate that a simplified version of our algorithm yields a universal kNN distance gate that can be seamlessly integrated as an external module into existing methods. This lightweight gate relies solely on the query and contrastive activations to dynamically scale  baseline method's intervention. Appendix~\ref{apx:knn} formulates the gate, its  connection to the support score, and comprehensive  evaluations across steering methods.
-\end{remark}
-\endgroup
+The support construction also motivates a simplified, universal kNN gate that can be seamlessly integrated as an external module into existing steering methods. Using nearest-neighbor distances to the undesired contrastive samples, this gate scales each method's intervention without changing how that intervention is computed. Appendix~\ref{apx:knn} presents the gate, explains its connection to the support score, and evaluates it across steering methods.\end{remark}
 
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
