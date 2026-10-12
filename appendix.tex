@@ -182,15 +182,19 @@ w_j^{-,\mathrm{kde}}(\boldsymbol{x})
 {\sum_{j'=1}^{N_-}K_b(\boldsymbol{x},\boldsymbol{h}_{j'}^-)}.
 \end{aligned}
 \]
-These weights are positive and sum to one within each population. Applying Eq.~\eqref{eq:grad-psi} to the kernel estimates in Section~\ref{subsec:reduction} gives
+Using $b\nablaS K_b(\boldsymbol{x},\boldsymbol{h})=K_b(\boldsymbol{x},\boldsymbol{h})\log_{\boldsymbol{x}}(\boldsymbol{h})$ from Eq.~\eqref{eq:grad-psi}, differentiating the kernel log-density-ratio gives
 \begin{equation}
+\begin{aligned}
 \boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})
-=\sum_i w_i^{+,\mathrm{kde}}(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)
+&=b\frac{\sum_i\nablaS K_b(\boldsymbol{x},\boldsymbol{h}_i^+)}{\sum_i K_b(\boldsymbol{x},\boldsymbol{h}_i^+)}
+-b\frac{\sum_j\nablaS K_b(\boldsymbol{x},\boldsymbol{h}_j^-)}{\sum_j K_b(\boldsymbol{x},\boldsymbol{h}_j^-)}\\
+&=\sum_i w_i^{+,\mathrm{kde}}(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)
 -\sum_j w_j^{-,\mathrm{kde}}(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_j^-).
+\end{aligned}
 \label{eq:weighted-kde-field}
 \end{equation}
 
-To bound the \Cobras weights in Eqs.~\eqref{eq:weights-pos} and~\eqref{eq:weights-neg}, we use the kernel sums weighted by the endpoint potentials:
+The steering field in Eq.~\eqref{eq:weighted-cobras-field} uses the same tangent vectors with weights $w_i^+$ and $w_j^-$. We bound the differences between these weights and the KDE weights. Let $c_{\max}=\max_{j,i}c_{ji}$ and $Z=\sum_{j,i}e^{-c_{ji}}$, and write
 \begin{equation}
 \widehat{\varphi}_b(\boldsymbol{x})=\sum_j\widehat{\varphi}_{0,j}K_b(\boldsymbol{x},\boldsymbol{h}_j^-),
 \qquad
@@ -198,37 +202,54 @@ To bound the \Cobras weights in Eqs.~\eqref{eq:weights-pos} and~\eqref{eq:weight
 \label{eq:kernel-sums-general}
 \end{equation}
 
-Let $c_{\max}=\max_{j,i}c_{ji}$ and $Z=\sum_{j,i}e^{-c_{ji}}$, so $\widehat{Q}_{01,ji}=Z^{-1}e^{-c_{ji}}$. We first bound the bracketed sum in the desired-sample weight in Eq.~\eqref{eq:weights-pos}. Since $e^{-c_{\max}}\le e^{-c_{ji}}\le1$, positivity of the endpoint potentials and kernels gives, for every $i$,
+Since $\widehat{Q}_{01,ji}=Z^{-1}e^{-c_{ji}}$ and $0\le c_{ji}\le c_{\max}$,
 \[
 e^{-c_{\max}}Z^{-1}\widehat{\varphi}_b(\boldsymbol{x})
 \le\sum_j\widehat{\varphi}_{0,j}\widehat{Q}_{01,ji}K_b(\boldsymbol{x},\boldsymbol{h}_j^-)
 \le Z^{-1}\widehat{\varphi}_b(\boldsymbol{x}).
 \]
-Multiplying these bounds by $K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$ and summing over $i$ gives corresponding bounds on the normalizing denominator $\widetilde{\psi}_b(\boldsymbol{x})$. The common factors cancel when comparing the normalized \Cobras and KDE weights, yielding
+Multiplying by $K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$ and summing over $i$ bounds the normalizing denominator,
+\[
+\begin{aligned}
+e^{-c_{\max}}Z^{-1}\widehat{\varphi}_b(\boldsymbol{x})\sum_iK_b(\boldsymbol{x},\boldsymbol{h}_i^+)
+&\le\widetilde{\psi}_b(\boldsymbol{x})\\
+&\le Z^{-1}\widehat{\varphi}_b(\boldsymbol{x})\sum_iK_b(\boldsymbol{x},\boldsymbol{h}_i^+).
+\end{aligned}
+\]
+Substituting the weight definitions and applying these numerator and denominator bounds gives
 \[
 e^{-c_{\max}}
 \le\frac{w_i^+(\boldsymbol{x})}{w_i^{+,\mathrm{kde}}(\boldsymbol{x})}
+=\frac{\left[\sum_j\widehat{\varphi}_{0,j}\widehat{Q}_{01,ji}K_b(\boldsymbol{x},\boldsymbol{h}_j^-)\right]\sum_{i'}K_b(\boldsymbol{x},\boldsymbol{h}_{i'}^+)}{\widetilde{\psi}_b(\boldsymbol{x})}
 \le e^{c_{\max}}.
 \]
-With all weights below evaluated at $\boldsymbol{x}$, the normalization of the KDE weights gives
+With all weights below evaluated at $\boldsymbol{x}$, the ratio bound gives $|w_i^+/w_i^{+,\mathrm{kde}}-1|\le e^{c_{\max}}-1$. Since the KDE weights sum to one,
 \[
 \sum_i|w_i^+-w_i^{+,\mathrm{kde}}|
 =\sum_i w_i^{+,\mathrm{kde}}\left|\frac{w_i^+}{w_i^{+,\mathrm{kde}}}-1\right|
 \le e^{c_{\max}}-1.
 \]
-Applying the same argument to Eq.~\eqref{eq:weights-neg} yields $\sum_j|w_j^--w_j^{-,\mathrm{kde}}|\le e^{c_{\max}}-1$.
+Exchanging the two populations gives $e^{-c_{\max}}\le w_j^-/w_j^{-,\mathrm{kde}}\le e^{c_{\max}}$ and hence $\sum_j|w_j^--w_j^{-,\mathrm{kde}}|\le e^{c_{\max}}-1$.
 
-Combining Eqs.~\eqref{eq:weighted-kde-field} and~\eqref{eq:weighted-cobras-field} with the triangle inequality and $\|\log_{\boldsymbol{x}}(\boldsymbol{h}_k^\pm)\|\le\pi R$ gives
+Subtracting the two weighted tangent-vector expressions gives
+\[
+\boldsymbol{v}(\boldsymbol{x})-\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})
+=\sum_i(w_i^+-w_i^{+,\mathrm{kde}})\log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)
+-\sum_j(w_j^--w_j^{-,\mathrm{kde}})\log_{\boldsymbol{x}}(\boldsymbol{h}_j^-).
+\]
+Each tangent vector has norm at most $\pi R$. Also, $d_{\Sph}(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)\le\pi R$ gives $c_{\max}\le\pi^2R^2/(2\varepsilon)$. The triangle inequality and the weight bounds therefore yield
 \begin{equation}
 \begin{aligned}
 \|\boldsymbol{v}(\boldsymbol{x})-\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})\|
 &\le\pi R\left(\sum_i|w_i^+-w_i^{+,\mathrm{kde}}|
 +\sum_j|w_j^--w_j^{-,\mathrm{kde}}|\right)\\
-&\le2\pi R(e^{c_{\max}}-1).
+&\le2\pi R(e^{c_{\max}}-1)\\
+&\le2\pi R\left(e^{\pi^2R^2/(2\varepsilon)}-1\right)
+=O(1/\varepsilon).
 \end{aligned}
 \label{eq:prop1-bound}
 \end{equation}
-Finally, $d_{\Sph}(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)\le\pi R$ implies $c_{\max}\le\pi^2R^2/(2\varepsilon)$, making the bound in Eq.~\eqref{eq:prop1-bound} $O(1/\varepsilon)$. Since it is independent of $\boldsymbol{x}$, the convergence is uniform.
+The bound is independent of $\boldsymbol{x}$, so the convergence is uniform as $\varepsilon\to\infty$.
 \end{proof}
 
 Proposition~\ref{prop:ldr-limit} establishes kernel log-density-ratio steering as a limiting case of the steering field in \Cobras. At finite $\varepsilon$, the sample weights also incorporate the fitted Schr\"{o}dinger Bridge, allowing the steering field to reflect transport between the two populations beyond their separate kernel density estimates.
