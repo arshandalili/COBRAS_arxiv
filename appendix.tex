@@ -216,11 +216,32 @@ e^{-c_{\max}}Z^{-1}\widehat{\varphi}_b(\boldsymbol{x})\sum_iK_b(\boldsymbol{x},\
 &\le Z^{-1}\widehat{\varphi}_b(\boldsymbol{x})\sum_iK_b(\boldsymbol{x},\boldsymbol{h}_i^+).
 \end{aligned}
 \]
-Substituting the weight definitions and applying these numerator and denominator bounds gives
+Using the lower bound on the numerator and the upper bound on the denominator gives
+\[
+w_i^+(\boldsymbol{x})
+\ge
+\frac{
+e^{-c_{\max}}Z^{-1}\widehat{\varphi}_b(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_i^+)
+}{
+Z^{-1}\widehat{\varphi}_b(\boldsymbol{x})\sum_{i'}K_b(\boldsymbol{x},\boldsymbol{h}_{i'}^+)
+}
+=e^{-c_{\max}}w_i^{+,\mathrm{kde}}(\boldsymbol{x}).
+\]
+Conversely, using the upper bound on the numerator and the lower bound on the denominator gives
+\[
+w_i^+(\boldsymbol{x})
+\le
+\frac{
+Z^{-1}\widehat{\varphi}_b(\boldsymbol{x})K_b(\boldsymbol{x},\boldsymbol{h}_i^+)
+}{
+e^{-c_{\max}}Z^{-1}\widehat{\varphi}_b(\boldsymbol{x})\sum_{i'}K_b(\boldsymbol{x},\boldsymbol{h}_{i'}^+)
+}
+=e^{c_{\max}}w_i^{+,\mathrm{kde}}(\boldsymbol{x}).
+\]
+Since the KDE weight is positive, dividing these inequalities by it yields
 \[
 e^{-c_{\max}}
 \le\frac{w_i^+(\boldsymbol{x})}{w_i^{+,\mathrm{kde}}(\boldsymbol{x})}
-=\frac{\left[\sum_j\widehat{\varphi}_{0,j}\widehat{Q}_{01,ji}K_b(\boldsymbol{x},\boldsymbol{h}_j^-)\right]\sum_{i'}K_b(\boldsymbol{x},\boldsymbol{h}_{i'}^+)}{\widetilde{\psi}_b(\boldsymbol{x})}
 \le e^{c_{\max}}.
 \]
 With all weights below evaluated at $\boldsymbol{x}$, the ratio bound gives $|w_i^+/w_i^{+,\mathrm{kde}}-1|\le e^{c_{\max}}-1$. Since the KDE weights sum to one,
