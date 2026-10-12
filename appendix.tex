@@ -96,29 +96,24 @@ where $f$ is the drift, $g(t)$ is the diffusion amplitude, and $\boldsymbol{w}$ 
 \end{aligned}
 }
 \]
-\textcolor{blue}{Initialized from $\pminus$, the deterministic flow has the same activation distributions $P_t$ as the bridge. This leads to the drift in Eq.~\eqref{eq:ldr}.}
+\subsection{Static reduction and Sinkhorn updates}
+The reduction from the trajectory optimization in Eq.~\eqref{eq:sb} to the static problem in Eq.~\eqref{eq:static-sb} follows from the decomposition of KL divergence~\citep{leonard2013survey}. For a fixed joint endpoint distribution $P_{01}$, $\KL(P\,\Vert\,Q)$ is minimized when the conditional distribution of trajectories given their starting and ending activations is the same under $P$ and $Q$. The objective then equals $\KL(P_{01}\,\Vert\,Q_{01})$, giving the static problem with the same endpoint constraints.
 
-\subsection{Discrete transport}
-In this section, we provide the decomposition of Schr\"{o}dinger bridge problem and the Sinkhorn update to 
-\paragraph{Static formulation.}
-Conditioning trajectories on their starting and ending activations separates a path law $P$ into its endpoint coupling $P_{01}$ and conditional path laws $P_{\mid01}$. The corresponding relative-entropy decomposition is~\citep{leonard2013survey}
-\begin{equation}
-\KL(P\,\Vert\,Q)
-=\KL(P_{01}\,\Vert\,Q_{01})
-+\mathbb{E}_{P_{01}}\!\left[\KL(P_{\mid01}\,\Vert\,Q_{\mid01})\right].
-\label{eq:apx-disint}
-\end{equation}
-For any endpoint coupling, the second term is minimized by retaining the reference bridges. Thus the continuous problem reduces to entropy minimization over endpoint couplings. Atomic empirical endpoints have infinite relative entropy against Brownian endpoints. We therefore discretize the static problem rather than impose empirical measures directly in Eq.~\eqref{eq:sb}.
-
-Choose discrete reference weights proportional to $e^{-c_{ji}}$ and normalize them to sum to one. \textcolor{blue}{Minimizing relative entropy to these weights under the uniform marginal constraints gives the transport problem in Eq.~\eqref{eq:e-ot}.} The strictly positive kernel gives a unique optimal coupling with the factorization in Eq.~\eqref{eq:plan}. Sinkhorn fitting alternates the log-space updates
+For the discrete problem, we fit the endpoint potentials using the Sinkhorn algorithm~\citep{cuturi2013sinkhorn}. Substituting the factorization in Eq.~\eqref{eq:discrete-factors} into the empirical marginal constraints gives
+\[
+\widehat{\varphi}_{0,j}\sum_i\widehat{\psi}_{1,i}\widehat{Q}_{01,ji}=\frac{1}{N_-},
+\qquad
+\widehat{\psi}_{1,i}\sum_j\widehat{\varphi}_{0,j}\widehat{Q}_{01,ji}=\frac{1}{N_+}.
+\]
+Solving each constraint for its endpoint potential while holding the other potential fixed gives the alternating updates, written in log space as
 \begin{align}
-\log a_j^-&=-\log N_- -
-\operatorname{logsumexp}_i[\log a_i^+-c_{ji}],\nonumber\\
-\log a_i^+&=-\log N_+ -
-\operatorname{logsumexp}_j[\log a_j^--c_{ji}].
+\log\widehat{\varphi}_{0,j}
+&\leftarrow-\log N_- -\log\!\left(\sum_i\exp\!\left[\log\widehat{\psi}_{1,i}+\log\widehat{Q}_{01,ji}\right]\right),\nonumber\\
+\log\widehat{\psi}_{1,i}
+&\leftarrow-\log N_+ -\log\!\left(\sum_j\exp\!\left[\log\widehat{\varphi}_{0,j}+\log\widehat{Q}_{01,ji}\right]\right).
 \label{eq:sinkhorn}
 \end{align}
-At convergence, the plan satisfies both marginals. The geodesic kernel and subsequent stationary field do not preserve the exact Brownian bridge construction.
+Each sweep updates $\widehat{\varphi}_{0,j}$ first, then uses these updated values to compute $\widehat{\psi}_{1,i}$. At convergence, the reconstructed joint endpoint distribution satisfies both empirical marginal constraints.
 
 \subsection{Derivation of the steering field}
 \label{app:grad-psi}
