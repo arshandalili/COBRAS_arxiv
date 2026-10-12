@@ -190,7 +190,7 @@ These weights are positive and sum to one within each population. Applying Eq.~\
 \label{eq:weighted-kde-field}
 \end{equation}
 
-To bound the COBRAS weights in Eqs.~\eqref{eq:weights-pos} and~\eqref{eq:weights-neg}, we use the kernel sums weighted by the endpoint potentials:
+To bound the \Cobras weights in Eqs.~\eqref{eq:weights-pos} and~\eqref{eq:weights-neg}, we use the kernel sums weighted by the endpoint potentials:
 \begin{equation}
 \widehat{\varphi}_b(\boldsymbol{x})=\sum_j\widehat{\varphi}_{0,j}K_b(\boldsymbol{x},\boldsymbol{h}_j^-),
 \qquad
@@ -204,7 +204,7 @@ e^{-c_{\max}}Z^{-1}\widehat{\varphi}_b(\boldsymbol{x})
 \le\sum_j\widehat{\varphi}_{0,j}\widehat{Q}_{01,ji}K_b(\boldsymbol{x},\boldsymbol{h}_j^-)
 \le Z^{-1}\widehat{\varphi}_b(\boldsymbol{x}).
 \]
-Multiplying these bounds by $K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$ and summing over $i$ gives corresponding bounds on the normalizing denominator $\widetilde{\psi}_b(\boldsymbol{x})$. The common factors cancel when comparing the normalized COBRAS and KDE weights, yielding
+Multiplying these bounds by $K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$ and summing over $i$ gives corresponding bounds on the normalizing denominator $\widetilde{\psi}_b(\boldsymbol{x})$. The common factors cancel when comparing the normalized \Cobras and KDE weights, yielding
 \[
 e^{-c_{\max}}
 \le\frac{w_i^+(\boldsymbol{x})}{w_i^{+,\mathrm{kde}}(\boldsymbol{x})}
