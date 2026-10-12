@@ -70,14 +70,13 @@ When evaluating the global flow framework under these spherical constraints, the
 
 This appendix derives the probability-flow ODE, the Sinkhorn updates for the discrete endpoint potentials, and the weighted tangent-vector expression for the steering field. It then proves the reduction to kernel log-density-ratio steering for fixed contrastive samples and bandwidth, and discusses the separate sampling limit needed to recover the population log-density-ratio gradient.
 
-\subsection{\textcolor{teal}{Probability-flow ODE of the continuous bridge}}
+\subsection{Probability-flow ODE of the continuous bridge}
 \label{apx:static}
 
 We derive the probability-flow ODE in Eq.~\eqref{eq:ldr} from the optimal Schr\"{o}dinger Bridge. Assume that $\pminus$ and $\pplus$ are smooth, strictly positive probability densities with respect to spherical volume, and that the reference trajectory distribution $Q$ is Brownian motion on $\Sph$ with diffusion scale $\sigma^2>0$ and a uniform initial distribution. These sufficient conditions ensure that the bridge admits the factorized representation in Eq.~\eqref{eq:sb-factorization}~\citep{leonard2013survey}.
 
 The forward propagation of $\varphi(\cdot,0)$ and backward propagation of $\psi(\cdot,1)$ under the reference Brownian dynamics, described in Section~\ref{subsec:sb}, are expressed by the conditional expectations
 \[
-\textcolor{teal}{\displaystyle
 \begin{aligned}
 \varphi(\boldsymbol{x},t)
 &=\mathbb{E}_{Q}\!\left[
@@ -92,13 +91,11 @@ The forward propagation of $\varphi(\cdot,0)$ and backward propagation of $\psi(
 \boldsymbol{x}_t=\boldsymbol{x}
 \right].
 \end{aligned}
-}
 \]
 With uniform reference marginals, the bridge's activation density satisfies $P_t(\boldsymbol{x})\propto\varphi(\boldsymbol{x},t)\psi(\boldsymbol{x},t)$, as stated in Eq.~\eqref{eq:product}~\citep{leonard2013survey}.
 
 To obtain deterministic trajectories with these activation densities, we next construct the probability-flow ODE. The bridge has forward stochastic drift $\sigma^2\nablaS\log\psi(\boldsymbol{x},t)$ and diffusion scale $\sigma^2$~\citep{leonard2013survey}. The drift of the probability-flow ODE is obtained by subtracting $\frac{\sigma^2}{2}\nablaS\log P_t$ from this stochastic drift, preserving the evolution of the activation densities~\citep{song2020score, de2022riemannian}. Substituting the stochastic drift and the product representation of $P_t$ yields
 \[
-\textcolor{teal}{\displaystyle
 \begin{aligned}
 \frac{\mathrm{d}\boldsymbol{x}_t}{\mathrm{d}t}
 &=\sigma^2\nablaS\log\psi(\boldsymbol{x}_t,t)
@@ -112,7 +109,6 @@ To obtain deterministic trajectories with these activation densities, we next co
 \log\frac{\psi(\boldsymbol{x}_t,t)}
 {\varphi(\boldsymbol{x}_t,t)}.
 \end{aligned}
-}
 \]
 
 Initialized with $\boldsymbol{x}_0\sim\pminus$, the ODE solutions have activation distribution $P_t$ at each $t\in[0,1]$, with $P_1=\pplus$, establishing Eq.~\eqref{eq:ldr}. The next subsection justifies the reduction from the trajectory optimization to the static problem in Eq.~\eqref{eq:static-sb} and gives the updates used to fit the discrete endpoint potentials.
