@@ -1,11 +1,9 @@
 \section{Background}
 \label{sec:bg}
 
-\paragraph{Setup and notation.}
-We fix a decoder-only transformer of residual width $d$ and a layer index $\ell$, and write $\boldsymbol{h}\in\mathbb{R}^{d}$ for the layer-$\ell$ residual-stream activation at the last token position. Two populations of inputs are given, one exhibiting a desired behavior and one an undesired behavior, with activation distributions $\pplus$ and $\pminus$ observed through i.i.d.\ samples $\mathcal{D}^{+}=\{\boldsymbol{h}^{+}_{i}\}_{i=1}^{N_{+}}\sim\pplus$ and $\mathcal{D}^{-}=\{\boldsymbol{h}^{-}_{j}\}_{j=1}^{N_{-}}\sim\pminus$, whose empirical measures we denote $\pplushat$ and $\pminushat$. At inference, a steering map is applied to the layer-$\ell$ activation of each decoded token, beginning with the last prompt token, and $\hquery$ denotes the activation currently being steered. The map should move $\hquery$ toward regions of high density under $\pplus$ and low density under $\pminus$, and it modifies no other activation. Vectors and vector fields are set in bold.
+\noindent\textbf{Setup and notation.}~We fix a decoder-only transformer of residual width $d$ and a layer index $\ell$, and write $\boldsymbol{h}\in\mathbb{R}^{d}$ for the layer-$\ell$ residual-stream activation at the last token position. Two populations of inputs are given, one exhibiting a desired behavior and one an undesired behavior, with activation distributions $\pplus$ and $\pminus$ observed through i.i.d.\ samples $\mathcal{D}^{+}=\{\boldsymbol{h}^{+}_{i}\}_{i=1}^{N_{+}}\sim\pplus$ and $\mathcal{D}^{-}=\{\boldsymbol{h}^{-}_{j}\}_{j=1}^{N_{-}}\sim\pminus$, whose empirical measures we denote $\pplushat$ and $\pminushat$. At inference, a steering map is applied to the layer-$\ell$ activation of each decoded token, beginning with the last prompt token, and $\hquery$ denotes the activation currently being steered. The map should move $\hquery$ toward regions of high density under $\pplus$ and low density under $\pminus$, and it modifies no other activation. Vectors and vector fields are set in bold.
 
-\paragraph{Spherical geometry of activations.}
-Residual-stream norms concentrate tightly across inputs at a fixed layer, both empirically~\citep{pham2024householder, you2026spherical} and as a consequence of the residual architecture~\citep{yang2023spectral, xie2026controlled}. Figure~\ref{fig:norm-concentration} shows this for the four models we study, for which the coefficient of variation of the layer-normalized last-token norm lies between $2.5\%$ and $7.3\%$, and Appendix~\ref{appendix:norm_concentration} reports the same measurement layer by layer and for four further architectures. We therefore model the state space as the sphere $\Sph=\{\boldsymbol{x}\in\mathbb{R}^{d}:\lVert\boldsymbol{x}\rVert=R\}$ of radius $R$, the mean norm over $\mathcal{D}^{+}\cup\mathcal{D}^{-}$, and restore the original norm of $\hquery$ after steering, so that the intervention changes only the direction of the activation.
+\noindent\textbf{Spherical geometry of activations.}~Residual-stream norms concentrate tightly across inputs at a fixed layer, both empirically~\citep{pham2024householder, you2026spherical} and as a consequence of the residual architecture~\citep{yang2023spectral, xie2026controlled}. Figure~\ref{fig:norm-concentration} shows this for the four models we study, for which the coefficient of variation of the layer-normalized last-token norm lies between $2.5\%$ and $7.3\%$, and Appendix~\ref{appendix:norm_concentration} reports the same measurement layer by layer and for four further architectures. We therefore model the state space as the sphere $\Sph=\{\boldsymbol{x}\in\mathbb{R}^{d}:\lVert\boldsymbol{x}\rVert=R\}$ of radius $R$, the mean norm over $\mathcal{D}^{+}\cup\mathcal{D}^{-}$, and restore the original norm of $\hquery$ after steering, so that the intervention changes only the direction of the activation.
 
 \begin{figure}[t]
 \centering
@@ -14,8 +12,7 @@ Residual-stream norms concentrate tightly across inputs at a fixed layer, both e
 \label{fig:norm-concentration}
 \end{figure}
 
-\paragraph{Operations on $\Sph$.}
-We write $\Pi_{\boldsymbol{x}}=\boldsymbol{I}-R^{-2}\boldsymbol{x}\boldsymbol{x}^{\top}$ for the projector onto the tangent space at $\boldsymbol{x}$, $\nablaS f=\Pi_{\boldsymbol{x}}\nabla f$ for the Riemannian gradient, and $d_{\Sph}(\boldsymbol{x},\boldsymbol{y})=R\arccos(R^{-2}\boldsymbol{x}^{\top}\boldsymbol{y})$ for the geodesic distance. The exponential map $\exp_{\boldsymbol{x}}(\boldsymbol{v})$ moves from $\boldsymbol{x}$ along the tangent vector $\boldsymbol{v}$ for a geodesic arc of length $\lVert\boldsymbol{v}\rVert$, and its inverse $\log_{\boldsymbol{x}}(\boldsymbol{y})$, defined for $\boldsymbol{y}\neq-\boldsymbol{x}$, is the tangent vector at $\boldsymbol{x}$ that points toward $\boldsymbol{y}$ with norm $d_{\Sph}(\boldsymbol{x},\boldsymbol{y})$:
+\noindent\textbf{Operations on $\Sph$.}~We write $\Pi_{\boldsymbol{x}}=\boldsymbol{I}-R^{-2}\boldsymbol{x}\boldsymbol{x}^{\top}$ for the projector onto the tangent space at $\boldsymbol{x}$, $\nablaS f=\Pi_{\boldsymbol{x}}\nabla f$ for the Riemannian gradient, and $d_{\Sph}(\boldsymbol{x},\boldsymbol{y})=R\arccos(R^{-2}\boldsymbol{x}^{\top}\boldsymbol{y})$ for the geodesic distance. The exponential map $\exp_{\boldsymbol{x}}(\boldsymbol{v})$ moves from $\boldsymbol{x}$ along the tangent vector $\boldsymbol{v}$ for a geodesic arc of length $\lVert\boldsymbol{v}\rVert$, and its inverse $\log_{\boldsymbol{x}}(\boldsymbol{y})$, defined for $\boldsymbol{y}\neq-\boldsymbol{x}$, is the tangent vector at $\boldsymbol{x}$ that points toward $\boldsymbol{y}$ with norm $d_{\Sph}(\boldsymbol{x},\boldsymbol{y})$:
 \begin{equation}
 \exp_{\boldsymbol{x}}(\boldsymbol{v})
 = \cos\!\left(\frac{\lVert\boldsymbol{v}\rVert}{R}\right)\boldsymbol{x}
@@ -25,14 +22,12 @@ We write $\Pi_{\boldsymbol{x}}=\boldsymbol{I}-R^{-2}\boldsymbol{x}\boldsymbol{x}
 \quad \theta = \frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{y})}{R}.
 \label{eq:expmap}
 \end{equation}
-\textcolor{teal}{When the tangent length or angular separation is zero, we evaluate the $\log$ and $\exp$ maps at their continuous limits. These operations specify how to move activations on $\Sph$. The next section discusses how to construct a steering field from the desired and undesired activation populations.}
+When the tangent length or angular separation is zero, we evaluate the $\log$ and $\exp$ maps at their continuous limits. These operations specify how to move activations on $\Sph$. %The next section discusses how to construct a steering field from the desired and undesired activation populations.}
 
 \section{Activation Steering as a Schr\"{o}dinger Bridge}
 \label{sec:method}
+In this section, we develop \Cobras, starting from a Schr\"{o}dinger Bridge formulation of activation steering. In Section~\ref{subsec:sb}, we formulate transport between the undesired and desired activation populations as a constrained optimization problem and characterize its solution through two Schr\"{o}dinger potentials. The gradient of the log-ratio of the potentials motivates our steering field, while their product determines the bridge's activation density at each transport time, motivating a criterion for assessing support for an intervention. Building on this formulation, Section~\ref{subsec:estimation} constructs a steering field using an endpoint transport plan estimated from contrastive data. Section~\ref{subsec:strength} introduces adaptive strength controls, and Section~\ref{subsec:procedure} combines these components into the inference procedure. Finally, Section~\ref{subsec:reduction} establishes the connection to log-density-ratio steering used to interpret prior methods. Figure~\ref{fig:overview} provides the overview of the method. \textcolor{red}{MM: a sentence about log ratio}
 
-
-
-\textcolor{teal}{In this section, we develop \Cobras, starting from a Schr\"{o}dinger Bridge formulation of activation steering. In Section~\ref{subsec:sb}, we formulate transport between the undesired and desired activation populations as a constrained optimization problem and characterize its solution through two Schr\"{o}dinger potentials. The gradient of the log-ratio of the potentials motivates our steering field, while their product determines the bridge's activation density at each transport time, motivating a criterion for assessing support for an intervention. Building on this formulation, Section~\ref{subsec:estimation} constructs a steering field using an endpoint transport plan estimated from contrastive data. Section~\ref{subsec:strength} introduces adaptive strength controls, and Section~\ref{subsec:procedure} combines these components into the inference procedure. Finally, Section~\ref{subsec:reduction} establishes the connection to log-density-ratio steering used to interpret prior methods. Figure~\ref{fig:overview} provides the overview of the method.}
 
 \begin{figure}[t]
     \centering
@@ -43,29 +38,24 @@ We write $\Pi_{\boldsymbol{x}}=\boldsymbol{I}-R^{-2}\boldsymbol{x}\boldsymbol{x}
 
 \subsection{Schr\"{o}dinger Bridge and transport objective}
 \label{subsec:sb}
+We first study steering at the population level. Recall that we seek a transport from the undesired activation distribution $\pminus$ to the desired distribution $\pplus$ on $\Sph$. This characterization will provide us with a direction of motion that can be evaluated at a given activation during inference. A trajectory describes how one activation moves during steering, with $t\in[0,1]$ indexing steering progress over time. Let $P$ denote a probability distribution over these continuous trajectories, and let $P_t$ denote the resulting activation distribution at time $t$, so that we require $P_0=\pminus$ and $P_1=\pplus$.
 
-\textcolor{teal}{We first study steering at the population level. Recall that we seek a transport from the undesired activation distribution $\pminus$ to the desired distribution $\pplus$ on $\Sph$. This characterization will provide us with a direction of motion that can be evaluated at a given activation during inference. A trajectory describes how one activation moves during steering, with $t\in[0,1]$ indexing steering progress over time. Let $P$ denote a probability distribution over these continuous trajectories, and let $P_t$ denote the resulting activation distribution at time $t$, so that we require $P_0=\pminus$ and $P_1=\pplus$.}
-
-\textcolor{teal}{The endpoint distributions alone do not specify how activations should move between them. To select a trajectory distribution, we introduce a reference trajectory distribution $Q$ and minimize deviation from it, measured by Kullback--Leibler (KL) divergence. We choose $Q$ to be Brownian motion on $\Sph$, with diffusion scale $\sigma^2$ and a uniform initial distribution, providing a geometric reference with no preferred starting location or direction. The Schr\"{o}dinger Bridge (SB) is the trajectory distribution closest to this reference subject to the prescribed endpoints~\citep{schrodinger1932theorie, de2021diffusion}:}
+The endpoint distributions alone do not specify how activations should move between them. To select a trajectory distribution, we introduce a reference trajectory distribution $Q$ and minimize deviation from it, measured by Kullback--Leibler (KL) divergence. We choose $Q$ to be Brownian motion on $\Sph$, with diffusion scale $\sigma^2$ and a uniform initial distribution, providing a geometric reference with no preferred starting location or direction. The Schr\"{o}dinger Bridge (SB) is the trajectory distribution closest to this reference subject to the prescribed endpoints~\citep{schrodinger1932theorie, de2021diffusion}:
 \begin{equation}
 P^\star=\operatorname*{arg\,min}\nolimits_{P}\KL(P\,\Vert\,Q)
 \qquad\text{s.t.}\qquad P_0=\pminus,\quad P_1=\pplus.
 \label{eq:sb}
 \end{equation}
-\textcolor{teal}{We next characterize the solution to this problem and leverage it for steering individual activations. Under mild regularity assumptions stated in Appendix~\ref{apx:static}, the optimal solution to Eq.~\eqref{eq:sb} admits the factorized representation~\citep{leonard2013survey}}
+We next characterize the solution to this problem and leverage it for steering individual activations. Under mild regularity assumptions stated in Appendix~\ref{apx:static}, the optimal solution to Eq.~\eqref{eq:sb} admits the factorized representation~\citep{leonard2013survey} stated as follows:
 \begin{equation}
-\textcolor{teal}{
 P^\star(\mathrm{d}\boldsymbol{x}_{[0,1]})
 =
 \varphi(\boldsymbol{x}_0,0)\,
 \psi(\boldsymbol{x}_1,1)\,
 Q(\mathrm{d}\boldsymbol{x}_{[0,1]}),
-}
 \label{eq:sb-factorization}
 \end{equation}
-\textcolor{teal}{where $\boldsymbol{x}_{[0,1]}=(\boldsymbol{x}_t)_{t\in[0,1]}$ denotes a continuous activation trajectory. The positive functions $\varphi,\psi:\Sph\times[0,1]\to(0,\infty)$ are called \emph{Schr\"{o}dinger potentials}. Their endpoint potentials $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{x},1)$ are determined jointly to satisfy $P^\star_0=\pminus$ and $P^\star_1=\pplus$. The reference Brownian dynamics propagate the former forward and the latter backward in time, determining $\varphi(\boldsymbol{x},t)$ and $\psi(\boldsymbol{x},t)$ at intermediate time $t$.}
-
-\textcolor{teal}{For $P=P^\star$, we write $P_t(\boldsymbol{x})$ for the density of the marginal $P_t$ with respect to spherical volume. Since the reference has uniform time marginals, this density is proportional to the product of the potentials:}
+where $\boldsymbol{x}_{[0,1]}=(\boldsymbol{x}_t)_{t\in[0,1]}$ denotes a continuous activation trajectory. The positive functions $\varphi,\psi:\Sph\times[0,1]\to(0,\infty)$ are called \emph{Schr\"{o}dinger potentials}. Their endpoint potentials $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{x},1)$ are determined jointly to satisfy $P^\star_0=\pminus$ and $P^\star_1=\pplus$. The reference Brownian dynamics propagate the former forward and the latter backward in time, determining $\varphi(\boldsymbol{x},t)$ and $\psi(\boldsymbol{x},t)$ at intermediate time $t$. For $P=P^\star$, we write $P_t(\boldsymbol{x})$ for the density of the marginal $P_t$ with respect to spherical volume. Since the reference has uniform time marginals, this density is proportional to the product of the potentials:
 \begin{equation}
 \textcolor{teal}{
 P_t(\boldsymbol{x})
@@ -346,24 +336,3 @@ integration horizon $T$, coverage $p$, steps $K$, concentration $\kappa$
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Connection to log-density-ratio steering}
-\label{subsec:reduction}
-
-\textcolor{teal}{We now relate the steering field in Eq.~\eqref{eq:cobras-field} to log-density-ratio steering to clarify the contribution of the transport connections. Log-density-ratio steering seeks to increase $\pplus(\boldsymbol{x})/\pminus(\boldsymbol{x})$ by following the gradient of its logarithm. For example, the Euclidean log-density-ratio gradient for two Gaussian populations with identity covariance is their mean difference, giving the direction used by CAA~\citep{rimsky2024steering}. Appendix~\ref{apx:ldr-formalize} develops this interpretation further with more details for other steering methods. To establish the connection with our construction, we examine the unnormalized field $\boldsymbol{v}$ at a fixed evaluation bandwidth $b>0$ as the transport reference weights $\widehat{Q}_{01,ji}$ become uniform.}
-
-\textcolor{teal}{Consider the limit $\varepsilon\to\infty$ with the contrastive activations and bandwidth $b$ held fixed. By Eq.~\eqref{eq:discrete-reference}, the costs $c_{ji}$ vanish and $\widehat{Q}_{01,ji}\to 1/(N_-N_+)$, so the reference no longer favors particular sample pairs, while the proximity kernels $K_b$ remain unchanged. In this limit, the bracketed coefficients in Eqs.~\eqref{eq:local-psi} and~\eqref{eq:local-phi} become common to all desired and all undesired samples, respectively, and hence factor out of the corresponding sums. Because these coefficients are held fixed during differentiation in Eq.~\eqref{eq:cobras-field}, they drop out of the logarithmic gradients, leaving a field proportional to the gradient of the log-ratio of the two unweighted kernel sums.}
-\textcolor{teal}{We write the two unweighted kernel estimates as $\hat{p}_b^-(\boldsymbol{x})=N_-^{-1}\sum_{j=1}^{N_-}K_b(\boldsymbol{x},\boldsymbol{h}_j^-)$ and $\hat{p}_b^+(\boldsymbol{x})=N_+^{-1}\sum_{i=1}^{N_+}K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$. We omit their common kernel normalizing constant, which cancels in the ratio. The limiting field is therefore}
-\[
-\textcolor{teal}{\displaystyle
-\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})
-=
-b\nablaS\log\frac{\hat{p}_b^+(\boldsymbol{x})}{\hat{p}_b^-(\boldsymbol{x})}.
-}
-\]
-
-\begin{proposition}[Reduction to the kernel log-density-ratio field]
-\label{prop:ldr-limit}
-\textcolor{teal}{Fix the contrastive sets $\mathcal{D}^-$ and $\mathcal{D}^+$ on $\Sph$ and the bandwidth $b>0$. On the domain where both fields are defined, the unnormalized field $\boldsymbol{v}$ defined in Eq.~\eqref{eq:cobras-field} converges uniformly to $\boldsymbol{v}_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$ as $\varepsilon\to\infty$.}
-\end{proposition}
-
-\textcolor{teal}{Proposition~\ref{prop:ldr-limit} establishes the connection to kernel log-density-ratio steering at fixed contrastive samples and bandwidth. Recovering the population log-density-ratio gradient from these kernel estimates requires a separate sampling limit. Appendix~\ref{apx:proof-ldr-limit} provides the proof for Proposition~\ref{prop:ldr-limit} and discusses the sampling limit. At finite $\varepsilon$, the steering field combines each sample's proximity to the current activation with weights constructed from the endpoint potentials and reference distribution of the discrete Schr\"{o}dinger Bridge. It therefore incorporates the transport between the two activation populations, while the limiting field depends only on their separate kernel density estimates.}
