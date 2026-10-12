@@ -274,7 +274,6 @@ The support score separates GSM8K and MMLU most strongly, with weaker separation
 
 The gate values show the practical effect of the score separation. At $p=0.7$, the gate retains $7.3\%$ of the ungated step size on average on GSM8K and disables steering on every MMLU prompt in this evaluation. NQ and TriviaQA retain larger gate values and are attenuated less strongly. Because the prompt gate is reused throughout generation, the attenuation limits interventions over the entire continuation using calibration on TruthfulQA alone.
 
-\FloatBarrier
 \section{\textcolor{blue}{Nearest-neighbor support gating}}
 \label{apx:knn}
 
