@@ -25,9 +25,36 @@ In this section, we show that diverse activation steering methodologies can be u
 
 for $K$ steps over a specified time horizon $[0, T]$. Here, $\boldsymbol{x}_{t}$ denotes the steered activation along the flow, initialized as $\boldsymbol{x}_{0} = \hquery$. By systematically varying the manifold geometry $\mathcal{M}$, the step horizon $K$, and the parameterization of the density functions, we can recover prominent steering paradigms from this single formulation~\footnote{\citet{zhaoodesteer} presents a related unification of several of these methods, but their analysis is confined to Euclidean space; by treating the manifold $\mathcal{M}$ as an explicit design choice, however, our framework additionally captures geometry-aware methods such as SS and HPR.}.
 
+
+
+\subsection{Connection to log-density-ratio steering}
+\label{subsec:reduction}
+
+\textcolor{teal}{We now relate the steering field in Eq.~\eqref{eq:cobras-field} to log-density-ratio steering to clarify the contribution of the transport connections. Log-density-ratio steering seeks to increase $\pplus(\boldsymbol{x})/\pminus(\boldsymbol{x})$ by following the gradient of its logarithm. For example, the Euclidean log-density-ratio gradient for two Gaussian populations with identity covariance is their mean difference, giving the direction used by CAA~\citep{rimsky2024steering}. Appendix~\ref{apx:ldr-formalize} develops this interpretation further with more details for other steering methods. To establish the connection with our construction, we examine the unnormalized field $\boldsymbol{v}$ at a fixed evaluation bandwidth $b>0$ as the transport reference weights $\widehat{Q}_{01,ji}$ become uniform.}
+
+\textcolor{teal}{Consider the limit $\varepsilon\to\infty$ with the contrastive activations and bandwidth $b$ held fixed. By Eq.~\eqref{eq:discrete-reference}, the costs $c_{ji}$ vanish and $\widehat{Q}_{01,ji}\to 1/(N_-N_+)$, so the reference no longer favors particular sample pairs, while the proximity kernels $K_b$ remain unchanged. In this limit, the bracketed coefficients in Eqs.~\eqref{eq:local-psi} and~\eqref{eq:local-phi} become common to all desired and all undesired samples, respectively, and hence factor out of the corresponding sums. Because these coefficients are held fixed during differentiation in Eq.~\eqref{eq:cobras-field}, they drop out of the logarithmic gradients, leaving a field proportional to the gradient of the log-ratio of the two unweighted kernel sums.}
+\textcolor{teal}{We write the two unweighted kernel estimates as $\hat{p}_b^-(\boldsymbol{x})=N_-^{-1}\sum_{j=1}^{N_-}K_b(\boldsymbol{x},\boldsymbol{h}_j^-)$ and $\hat{p}_b^+(\boldsymbol{x})=N_+^{-1}\sum_{i=1}^{N_+}K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$. We omit their common kernel normalizing constant, which cancels in the ratio. The limiting field is therefore}
+\[
+\textcolor{teal}{\displaystyle
+\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})
+=
+b\nablaS\log\frac{\hat{p}_b^+(\boldsymbol{x})}{\hat{p}_b^-(\boldsymbol{x})}.
+}
+\]
+
+\begin{proposition}[Reduction to the kernel log-density-ratio field]
+\label{prop:ldr-limit}
+\textcolor{teal}{Fix the contrastive sets $\mathcal{D}^-$ and $\mathcal{D}^+$ on $\Sph$ and the bandwidth $b>0$. On the domain where both fields are defined, the unnormalized field $\boldsymbol{v}$ defined in Eq.~\eqref{eq:cobras-field} converges uniformly to $\boldsymbol{v}_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$ as $\varepsilon\to\infty$.}
+\end{proposition}
+
+\textcolor{teal}{Proposition~\ref{prop:ldr-limit} establishes the connection to kernel log-density-ratio steering at fixed contrastive samples and bandwidth. Recovering the population log-density-ratio gradient from these kernel estimates requires a separate sampling limit. Appendix~\ref{apx:proof-ldr-limit} provides the proof for Proposition~\ref{prop:ldr-limit} and discusses the sampling limit. At finite $\varepsilon$, the steering field combines each sample's proximity to the current activation with weights constructed from the endpoint potentials and reference distribution of the discrete Schr\"{o}dinger Bridge. It therefore incorporates the transport between the two activation populations, while the limiting field depends only on their separate kernel density estimates.}
+
+
+
+
+
+\subsection{B}
 For example, the following methods can be recalled from this perspective as summarized in Table~\ref{tab:steering_framework}.
-
-
 
 
 \paragraph{Contrastive Activation Addition (CAA)~\citep{rimsky2024steering}} The  CAA algorithm can be framed as a specific, single-step optimization instantiation of a continuous global flow over the hidden state manifold. Specifically,  CAA simplifies this trajectory by optimizing over a flat Euclidean space $\mathcal{M}=\mathbb{R}^d$ via a single discrete step ($K=1$). By modeling the factual (positive) and counterfactual (negative) activation distributions as isotropic Gaussians sharing an identity covariance $p_{+}=\mathcal{N}(\boldsymbol{\mu}_{+}, \boldsymbol{I}_d)$ and $p_{-}=\mathcal{N}(\boldsymbol{\mu}_{-}, \boldsymbol{I}_d)$, the complex continuous gradient field collapses into a constant shift vector defined by the difference of their respective means  $\nabla_{\mathcal{M}}\log\frac{p_{+}}{p_{-}}=\boldsymbol{\mu}_+ - \boldsymbol{\mu}_-$. Consequently, the empirical practice of injecting a static difference vector during the forward pass is mathematically grounded as an exact, first-order approximation toward maximizing the target likelihood ratio.
@@ -65,7 +92,7 @@ When evaluating the global flow framework under these spherical constraints, the
 
 \paragraph{ODESteer~\citep{zhaoodesteer}} Departing from single-step first-order approximations ($K=1$), ODESteer fully embraces the continuous-time formulation of the global flow framework by integrating across multiple steps ($K > 1$) over a flat Euclidean vector space $\mathcal{M} = \mathbb{R}^d$. Rather than adopting simple parametric distributions or linear probes, this approach models complex, non-linear activation dynamics by parameterizing the log-density ratio with a polynomial count-sketch feature map $\phi$ and setting $\log \frac{p_+(\boldsymbol{x})}{p_-(\boldsymbol{x})} = \boldsymbol{w}^\top \phi(\boldsymbol{x}) + b$, where the parameter pair $(\boldsymbol{w}, b)$ is fit empirically over the contrastive dataset. Under this non-linear projection, the steering direction is dictated by a dynamic, normalized vector field:$$\boldsymbol{V}(\boldsymbol{x}) = \frac{\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w}}{\|\boldsymbol{J}_{\phi}(\boldsymbol{x})^\top \boldsymbol{w}\|}$$where $\boldsymbol{J}_{\phi}(\boldsymbol{x})$ denotes the Jacobian matrix of the feature map $\phi$ evaluated at the current state $\boldsymbol{x}$. By evaluating and integrating this state-dependent vector field using discrete Euler steps over the time horizon $[0, T]$, ODESteer traces a curved, non-linear path through the representation space. This multi-step integration allows the model to continuously adapt to the changing manifold geometry during the steering process, providing precise control while tracking complex latent boundaries.
 
-\section{Derivations}
+\section{Derivations and Technical Proofs}
 \label{apx:theory}
 
 This appendix derives the probability-flow ODE, the Sinkhorn updates for the discrete endpoint potentials, and the weighted tangent-vector expression for the steering field. It then proves the reduction to kernel log-density-ratio steering for fixed contrastive samples and bandwidth, and discusses the separate sampling limit needed to recover the population log-density-ratio gradient.
