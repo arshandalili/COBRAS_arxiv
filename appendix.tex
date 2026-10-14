@@ -1,12 +1,11 @@
 \section*{Appendix}
 
-\textcolor{red}{Arshan, please add references below and make sure summary perfectly reflects what covered in each section}
 The appendix is organized as follows:
 
 \begin{itemize}
     \item Appendix~\ref{apx:ldr-formalize} establishes the kernel log-density-ratio limit of \Cobras and interprets existing steering methods under stated models and fitted estimates.
     \item Appendix~\ref{apx:theory} formally derives the spherical bridge ODE, Sinkhorn discrete transport, kernel gradient fields, and key mathematical proofs.
-    \item Appendix~\ref{} details how prompt activations are calibrated to identify out-of-distribution steering targets.
+    \item Appendix~\ref{apx:ood-gate} describes support-gate calibration and evaluates score separation and steering attenuation on out-of-distribution prompts.
     \item Appendix~\ref{} analyzes the construction, baseline integration, and parameter sensitivity of the kNN support gate.
     \item Appendix~\ref{} outlines the base models, evaluation benchmarks, metrics, and hyperparameter configurations used.
     \item Appendix~\ref{} evaluates the memory requirements, computational complexity, and runtime overhead of \textsc{Cobras}.
@@ -23,22 +22,21 @@ This appendix relates \Cobras and existing activation steering methods to log-de
 
 To isolate the contribution of the fitted transport, we examine the unnormalized steering field $\boldsymbol{v}$ in Eq.~\eqref{eq:cobras-field} as the reference weights $\widehat{Q}_{01,ji}$ become uniform, keeping the contrastive samples and evaluation bandwidth $b>0$ fixed.
 
-\textcolor{teal}{Consider the limit $\varepsilon\to\infty$ with the contrastive activations and bandwidth $b$ held fixed. By Eq.~\eqref{eq:discrete-reference}, the costs $c_{ji}$ vanish and $\widehat{Q}_{01,ji}\to 1/(N_-N_+)$, so the reference no longer favors particular sample pairs, while the proximity kernels $K_b$ remain unchanged. In this limit, the bracketed coefficients in Eqs.~\eqref{eq:local-psi} and~\eqref{eq:local-phi} become common to all desired and all undesired samples, respectively, and hence factor out of the corresponding sums. Because these coefficients are held fixed during differentiation in Eq.~\eqref{eq:cobras-field}, they drop out of the logarithmic gradients, leaving a field proportional to the gradient of the log-ratio of the two unweighted kernel sums.}
-\textcolor{teal}{We write the two unweighted kernel estimates as $\hat{p}_b^-(\boldsymbol{x})=N_-^{-1}\sum_{j=1}^{N_-}K_b(\boldsymbol{x},\boldsymbol{h}_j^-)$ and $\hat{p}_b^+(\boldsymbol{x})=N_+^{-1}\sum_{i=1}^{N_+}K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$. We omit their common kernel normalizing constant, which cancels in the ratio. The limiting field is therefore}
+Consider the limit $\varepsilon\to\infty$ with the contrastive activations and bandwidth $b$ held fixed. By Eq.~\eqref{eq:discrete-reference}, the costs $c_{ji}$ vanish and $\widehat{Q}_{01,ji}\to 1/(N_-N_+)$, so the reference no longer favors particular sample pairs, while the proximity kernels $K_b$ remain unchanged. In this limit, the bracketed coefficients in Eqs.~\eqref{eq:local-psi} and~\eqref{eq:local-phi} become common to all desired and all undesired samples, respectively, and hence factor out of the corresponding sums. Because these coefficients are held fixed during differentiation in Eq.~\eqref{eq:cobras-field}, they drop out of the logarithmic gradients, leaving a field proportional to the gradient of the log-ratio of the two unweighted kernel sums.
+We write the two unweighted kernel estimates as $\hat{p}_b^-(\boldsymbol{x})=N_-^{-1}\sum_{j=1}^{N_-}K_b(\boldsymbol{x},\boldsymbol{h}_j^-)$ and $\hat{p}_b^+(\boldsymbol{x})=N_+^{-1}\sum_{i=1}^{N_+}K_b(\boldsymbol{x},\boldsymbol{h}_i^+)$. We omit their common kernel normalizing constant, which cancels in the ratio. The limiting field is therefore
 \[
-\textcolor{teal}{\displaystyle
+\displaystyle
 \boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})
 =
 b\nablaS\log\frac{\hat{p}_b^+(\boldsymbol{x})}{\hat{p}_b^-(\boldsymbol{x})}.
-}
 \]
 
 \begin{proposition}[Reduction to the kernel log-density-ratio field]
 \label{prop:ldr-limit}
-\textcolor{teal}{Fix the contrastive sets $\mathcal{D}^-$ and $\mathcal{D}^+$ on $\Sph$ and the bandwidth $b>0$. On the domain where both fields are defined, the unnormalized field $\boldsymbol{v}$ defined in Eq.~\eqref{eq:cobras-field} converges uniformly to $\boldsymbol{v}_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$ as $\varepsilon\to\infty$.}
+Fix the contrastive sets $\mathcal{D}^-$ and $\mathcal{D}^+$ on $\Sph$ and the bandwidth $b>0$. On the domain where both fields are defined, the unnormalized field $\boldsymbol{v}$ defined in Eq.~\eqref{eq:cobras-field} converges uniformly to $\boldsymbol{v}_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$ as $\varepsilon\to\infty$.
 \end{proposition}
 
-\textcolor{teal}{Proposition~\ref{prop:ldr-limit} establishes convergence to the kernel log-density-ratio field at fixed contrastive samples and bandwidth. Appendix~\ref{apx:proof-ldr-limit} provides the proof for Proposition~\ref{prop:ldr-limit}. At finite $\varepsilon$, the steering field combines each sample's proximity to the current activation with weights constructed from the endpoint potentials and reference distribution of the discrete Schr\"{o}dinger Bridge. It therefore incorporates the transport between the two activation populations, while the limiting field depends only on their separate kernel density estimates.}
+Proposition~\ref{prop:ldr-limit} establishes convergence to the kernel log-density-ratio field at fixed contrastive samples and bandwidth. Appendix~\ref{apx:proof-ldr-limit} provides the proof for Proposition~\ref{prop:ldr-limit}. At finite $\varepsilon$, the steering field combines each sample's proximity to the current activation with weights constructed from the endpoint potentials and reference distribution of the discrete Schr\"{o}dinger Bridge. It therefore incorporates the transport between the two activation populations, while the limiting field depends only on their separate kernel density estimates.
 
 \label{apx:sampling-limit}
 \noindent\textbf{Sampling limit.}~The reduction above holds for fixed contrastive samples and bandwidth $b$. Relating the resulting field to the population log-density-ratio gradient would additionally require consistency of the density estimates and their Riemannian gradients as the sample sizes grow and the bandwidth shrinks. Establishing this sampling limit for the geodesic kernel used here is outside the scope of our analysis.
@@ -347,42 +345,37 @@ The bound is independent of $\boldsymbol{x}$, so the convergence is uniform as $
 Proposition~\ref{prop:ldr-limit} establishes the kernel log-density-ratio field as a limiting case of the steering field in \Cobras. At finite $\varepsilon$, the sample weights also incorporate the fitted Schr\"{o}dinger Bridge, allowing the steering field to reflect transport between the two populations beyond their separate kernel density estimates.
 
 \FloatBarrier
-\section{Calibration and Properties of the Support Gate}
+\section{Calibration and Evaluation of the Support Gate}
 \label{apx:ood-gate}
 
-In this appendix, we examine how the support gate controls intervention strength. We explain the choice of reference prompts and the role of the coverage parameter $p$, then evaluate whether the calibrated gate suppresses steering on OOD prompts.
+In this appendix, we specify the reference prompts used to calibrate the support gate in Section~\ref{subsec:strength} and explain the role of the coverage parameter $p$. We then evaluate whether OOD activations receive larger scores $u$ and smaller gate values $g$.
 
-\paragraph{Calibrating on prompt activations.}
-We calibrate the support score in Eq.~\eqref{eq:support-score} on prompt activations to match the inputs seen by the gate during generation. The contrastive question--answer activations used to fit transport need not have the same score distribution. Reference and query activations are therefore extracted at the last prompt token and steering layer, projected onto $\Sph$, and scored with the same fixed bandwidth $b_g$.
+\noindent\textbf{Reference prompts.}~For each reference or query prompt, we extract the activation of the last token at the steering layer and compute $u$ using Eq.~\eqref{eq:support-score} with the same fixed bandwidth $b_g$. For gated TruthfulQA evaluation, $\mathcal{D}_{\mathrm{ref}}$ contains the training-fold prompt activations and the gate is applied to the held-out fold. For OOD evaluation, the reference set contains the activations of all $817$ TruthfulQA prompts. Note that no OOD prompts are used for calibration. The coverage parameter $p$ sets the reference percentile up to which the gate leaves steering unattenuated, with smaller values extending attenuation to a larger fraction of reference activations.
 
-For TruthfulQA evaluation, $\mathcal{D}_{\mathrm{ref}}$ contains the training-fold prompts and the gate is applied to the held-out fold. For OOD evaluation, the reference set contains all $817$ TruthfulQA prompts. No GSM8K, MMLU, NQ, or TriviaQA prompt is used for calibration.
-
-\paragraph{Interpreting the coverage parameter.}
-The parameter $p$ sets the reference rank above which the gate attenuates steering. With $p=0.7$, Eq.~\eqref{eq:gate} gives $g=1$ for prompts with $r\le0.7$ and decreases $g$ linearly above that rank. For example, a prompt at $r=0.85$ receives $g=0.5$, halving the steering step size, while $r=1$ gives $g=0$. Increasing $p$ therefore permits stronger steering over a larger range of reference ranks, while decreasing $p$ begins attenuation at a lower rank.
-
-\paragraph{OOD separation and steering attenuation.}
-We next examine how the support score and calibrated gate behave on OOD prompts. Table~\ref{tab:gate-separation} reports AUROC to measure how well $u$ separates TruthfulQA from each OOD set, and mean $g$ to measure the average multiplier applied to the steering step size in Eq.~\eqref{eq:step}.
+\noindent\textbf{OOD separation and steering attenuation.}~Table~\ref{tab:gate-separation} reports AUROC for identifying OOD activations using $u$, together with mean $g$, which measures the retained fraction of the steering step size in Eq.~\eqref{eq:step}, averaged over prompts.
 \begin{table}[ht]
 \centering
 \small
-\caption{Support gate on Llama3.1-8B layer $13$, with $p=0.7$. Transport fitting and gate calibration use TruthfulQA. AUROC measures separation using $u$. The TruthfulQA mean gate is computed on the $817$ reference prompts themselves.}
+\caption{Score separation and steering attenuation on LLaMA3.1-8B at layer $13$ and Mistral-7B at layer $15$, with $p=0.7$ and $b_g=\sigma^2/256$. Transport fitting and gate calibration use TruthfulQA. The TruthfulQA mean gate is computed on the $817$ calibration prompts themselves; each OOD set contains $1{,}000$ prompts.}
 \label{tab:gate-separation}
-\begin{tabular}{llcc}
+\begin{tabular}{llrrrr}
 \toprule
-Prompt set & Role & Mean $g$ & AUROC \\
+\multirow{2}{*}{Prompt set} & \multirow{2}{*}{Role} & \multicolumn{2}{c}{LLaMA3.1-8B} & \multicolumn{2}{c}{Mistral-7B} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+ & & AUROC (\%) & Mean $g$ (\%) & AUROC (\%) & Mean $g$ (\%) \\
 \midrule
-TruthfulQA & calibration & $0.851$ & --- \\
-NQ         & out-of-distribution & $0.499$ & $0.838$ \\
-TriviaQA   & out-of-distribution & $0.305$ & $0.899$ \\
-GSM8K      & out-of-distribution & $0.073$ & $0.978$ \\
-MMLU       & out-of-distribution & $0.000$ & $1.000$ \\
+TruthfulQA & calibration & --- & $85.1$ & --- & $85.1$ \\
+NQ         & out-of-distribution & $83.8$ & $49.9$ & $94.9$ & $15.9$ \\
+TriviaQA   & out-of-distribution & $89.9$ & $30.5$ & $91.7$ & $25.1$ \\
+GSM8K      & out-of-distribution & $97.8$ & $7.3$ & $100.0$ & $0.0$ \\
+MMLU       & out-of-distribution & $100.0$ & $0.0$ & $100.0$ & $0.1$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The support score separates GSM8K and MMLU most strongly, with weaker separation for NQ and TriviaQA. The mean AUROC across the four OOD sets is $0.93$ on Llama3.1-8B and $0.97$ on Mistral-7B. GSM8K and MMLU use different few-shot formats, whereas NQ and TriviaQA reuse the TruthfulQA instruction, so the measurements reflect a combination of task and prompt-format shifts.
+On both models, the score $u$ separates GSM8K and MMLU from TruthfulQA more strongly than NQ and TriviaQA. The mean AUROC across the four OOD sets is $93\%$ on LLaMA3.1-8B and $97\%$ for Mistral-7B. GSM8K and MMLU use different few-shot formats, whereas NQ and TriviaQA reuse the TruthfulQA instruction, so this separation reflects both task and prompt-format shifts.
 
-The gate values show the practical effect of the score separation. At $p=0.7$, the gate retains $7.3\%$ of the ungated step size on average on GSM8K and disables steering on every MMLU prompt in this evaluation. NQ and TriviaQA retain larger gate values and are attenuated less strongly. Because the prompt gate is reused throughout generation, the attenuation limits interventions over the entire continuation using calibration on TruthfulQA alone.
+At $p=0.7$, mean $g$ on GSM8K is $7.3\%$ for LLaMA3.1-8B and $0.0\%$ for Mistral-7B, and is below $0.1\%$ on MMLU for both models. NQ and TriviaQA retain larger mean gate values on both models and therefore receive less attenuation. Since the gate computed at the last prompt token is reused during generation, these differences in attenuation persist throughout the generation.
 
 \section{\textcolor{blue}{Nearest-neighbor support gating}}
 \label{apx:knn}
