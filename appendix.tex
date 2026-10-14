@@ -107,7 +107,7 @@ Table~\ref{tab:steering_framework} summarizes these steering directions and the 
 \textbf{ITI (probe)}~\citep{li2023inference} & $\mathbb{R}^d$ & $1$ & $\boldsymbol{\theta}$ \\ \cmidrule[0.25pt](lr){1-4}
 \textbf{HPR}~\citep{pham2024householder} & $\Sph$ & $1$ & $\Pi_{\boldsymbol{x}}\boldsymbol{\theta}$ for $\boldsymbol{\theta}^{\top}\boldsymbol{x}<0$ \\ \cmidrule[0.25pt](lr){1-4}
 \textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & $>1$ & $\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}$ \\ \midrule[0.6pt]
-\textbf{\Cobras~(ours)} & $\Sph$ & $>1$ & $\displaystyle\nablaS\log\frac{\widetilde{\psi}_b(\boldsymbol{x})}{\widetilde{\varphi}_b(\boldsymbol{x})}$, with differentiation as in Eq.~\eqref{eq:cobras-field} \\
+\textbf{\Cobras~(ours)} & $\Sph$ & $>1$ & $\displaystyle\nablaS\log\frac{\widetilde{\psi}_b(\boldsymbol{x})}{\widetilde{\varphi}_b(\boldsymbol{x})}$ \\
 \bottomrule[0.8pt]
 \end{tabular}
 }
