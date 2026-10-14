@@ -26,7 +26,7 @@ When the tangent length or angular separation is zero, we evaluate the $\log$ an
 
 \section{Activation Steering as a Schr\"{o}dinger Bridge}
 \label{sec:method}
-In this section, we develop \Cobras, starting from a Schr\"{o}dinger Bridge formulation of activation steering. In Section~\ref{subsec:sb}, we formulate transport between the undesired and desired activation populations as a constrained optimization problem and characterize its solution through two Schr\"{o}dinger potentials. The gradient of the log-ratio of the potentials motivates our steering field, while their product determines the bridge's activation density at each transport time, motivating a criterion for assessing support for an intervention. Building on this formulation, Section~\ref{subsec:estimation} constructs a steering field using an endpoint transport plan estimated from contrastive data. Section~\ref{subsec:strength} introduces adaptive strength controls, and Section~\ref{subsec:procedure} combines these components into the inference procedure. Finally, Section~\ref{subsec:reduction} establishes the connection to log-density-ratio steering used to interpret prior methods. Figure~\ref{fig:overview} provides the overview of the method. \textcolor{red}{MM: a sentence about log ratio}
+In this section, we develop \Cobras, starting from a Schr\"{o}dinger Bridge formulation of activation steering. In Section~\ref{subsec:sb}, we formulate transport between the undesired and desired activation populations as a constrained optimization problem and characterize its solution through two Schr\"{o}dinger potentials. The gradient of the log-ratio of the potentials motivates our steering field, while their product determines the bridge's activation density at each transport time, motivating a criterion for assessing support for an intervention. Building on this formulation, Section~\ref{subsec:estimation} constructs a steering field using an endpoint transport plan estimated from contrastive data. Section~\ref{subsec:strength} introduces adaptive strength controls, and Section~\ref{subsec:procedure} combines these components into the inference procedure. Finally, Section~\ref{subsec:reduction} establishes the connection to log-density-ratio steering used to interpret prior methods. Figure~\ref{fig:overview} provides the overview of the method.
 
 
 \begin{figure}[t]
@@ -106,9 +106,9 @@ sets $\mathcal{D}^-$ and $\mathcal{D}^+$. To estimate the endpoint
 potentials from these data, we therefore discretize the static
 problem on the contrastive samples.}
 
-\textcolor{teal}{We use the contrastive sets
+\textcolor{teal}{\textcolor{red}{We use the contrastive sets
 $\mathcal{D}^-=\{\boldsymbol{h}_j^-\}_{j=1}^{N_-}$ and
-$\mathcal{D}^+=\{\boldsymbol{h}_i^+\}_{i=1}^{N_+}$. The discrete counterpart
+$\mathcal{D}^+=\{\boldsymbol{h}_i^+\}_{i=1}^{N_+}$ for what??}. The discrete counterpart
 of $P_{01}$ is a joint endpoint distribution
 $\widehat{P}_{01}$, represented by a nonnegative matrix
 whose entry $\widehat{P}_{01,ji}$ assigns probability mass
