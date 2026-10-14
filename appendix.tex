@@ -89,23 +89,24 @@ On the undesired side of the probe boundary, $\boldsymbol{u}^{\top}\boldsymbol{x
 \]
 ODESteer integrates the corresponding ODE using $K$ Euler steps over an integration horizon $T$, evaluating the direction at each current activation.
 
-Table~\ref{tab:steering_framework} summarizes these interpretations and the limiting case established for \Cobras.
+Table~\ref{tab:steering_framework} summarizes these interpretations, the limiting field of \Cobras, and the number of intervention steps.
 \begin{table}[t!]
 \centering
-\caption{Log-density-ratio interpretations of steering directions under the stated models or fitted estimates. The \Cobras row describes the limit at fixed contrastive samples and bandwidth.}
+\caption{Steering fields or directions under the stated models or fitted estimates, with $K$ denoting the number of intervention steps per activation. The \Cobras row shows the $\varepsilon\to\infty$ limit of its unnormalized field at fixed contrastive samples and bandwidth (Proposition~\ref{prop:ldr-limit}).}
 \label{tab:steering_framework}
 \small
+\setlength{\tabcolsep}{3pt}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{l p{1.5cm} p{4.3cm} p{6.2cm}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.1cm} >{\raggedright\arraybackslash}p{1.4cm} >{\raggedright\arraybackslash}p{1.2cm} >{\raggedright\arraybackslash}p{4.3cm} >{\raggedright\arraybackslash}p{4.4cm}}
 \toprule
-\textbf{Method} & \textbf{Geometry} & \textbf{Model or fitted estimate} & \textbf{Directional correspondence} \\
+\textbf{Method} & \textbf{Geometry} & \textbf{Steps ($K$)} & \textbf{Model or fitted estimate} & \textbf{Steering field or direction} \\
 \midrule
-\textbf{CAA}~\citep{rimsky2024steering} & $\mathbb{R}^d$ & Gaussians with identity covariance & Constant gradient $\boldsymbol{\mu}_+-\boldsymbol{\mu}_-$ \\ \addlinespace
-\textbf{SS}~\citep{you2026spherical} & $\Sph$ & vMF desired density and uniform undesired density & Gradient proportional to $\Pi_{\boldsymbol{x}}\boldsymbol{\mu}$; rotation angle chosen separately \\ \addlinespace
-\textbf{ITI (probe)}~\citep{li2023inference} & $\mathbb{R}^d$ & Prior-corrected linear probe log-odds & Constant gradient $\boldsymbol{\theta}$ for the probe-weight variant \\ \addlinespace
-\textbf{HPR}~\citep{pham2024householder} & $\Sph$ & Linear probe log-odds & Projected reflection displacement aligns with the tangent probe gradient on the undesired side \\ \addlinespace
-\textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & Nonlinear log-density-ratio estimate $\boldsymbol{w}^{\top}\boldsymbol{\Phi}(\boldsymbol{x})+\beta$ & Gradient $\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}$, normalized and recomputed during integration \\ \addlinespace
-\textbf{\Cobras~($\varepsilon\to\infty$)} & $\Sph$ & Kernel estimates $\hat{p}_b^+$ and $\hat{p}_b^-$ & Limiting field $b\nablaS\log(\hat{p}_b^+/\hat{p}_b^-)$ \\
+\textbf{CAA}~\citep{rimsky2024steering} & $\mathbb{R}^d$ & $K=1$ & $\begin{aligned}[t]\pplus&=\mathcal{N}(\boldsymbol{\mu}_+,\boldsymbol{I}_d),\\\pminus&=\mathcal{N}(\boldsymbol{\mu}_-,\boldsymbol{I}_d)\end{aligned}$ & $\boldsymbol{\mu}_+-\boldsymbol{\mu}_-$ \\ \addlinespace
+\textbf{SS}~\citep{you2026spherical} & $\Sph$ & $K=1$ & $\begin{aligned}[t]\pplus(\boldsymbol{x})&\propto e^{\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})},\\\pminus&=\operatorname{Unif}(\Sph)\end{aligned}$ & $\kappa\nablaS\cos(\boldsymbol{x},\boldsymbol{\mu})\propto\Pi_{\boldsymbol{x}}\boldsymbol{\mu}$ \\ \addlinespace
+\textbf{ITI (probe)}~\citep{li2023inference} & $\mathbb{R}^d$ & $K=1$ & Prior-corrected probe log-odds:\newline $\boldsymbol{\theta}^{\top}\boldsymbol{x}+\log(N_-/N_+)$ & $\boldsymbol{\theta}$ \\ \addlinespace
+\textbf{HPR}~\citep{pham2024householder} & $\Sph$ & $K=1$ & Linear probe log-odds:\newline $\boldsymbol{\theta}^{\top}\boldsymbol{x}$ & $\Pi_{\boldsymbol{x}}(\boldsymbol{H}\boldsymbol{x}-\boldsymbol{x})\propto\Pi_{\boldsymbol{x}}\boldsymbol{\theta}$\newline for $\boldsymbol{\theta}^{\top}\boldsymbol{x}<0$ \\ \addlinespace
+\textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & $K>1$ & $\boldsymbol{w}^{\top}\boldsymbol{\Phi}(\boldsymbol{x})+\beta$ & $\displaystyle\frac{\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}}{\|\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}\|}$ \\ \addlinespace
+\textbf{\Cobras}\newline($\varepsilon\to\infty$) & $\Sph$ & $K>1$ & $\displaystyle\log\frac{\hat{p}_b^+(\boldsymbol{x})}{\hat{p}_b^-(\boldsymbol{x})}$ & $\displaystyle b\nablaS\log\frac{\hat{p}_b^+(\boldsymbol{x})}{\hat{p}_b^-(\boldsymbol{x})}$ \\
 \bottomrule
 \end{tabular}
 }
