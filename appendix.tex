@@ -547,9 +547,9 @@ The support gate in Eq.~\eqref{eq:gate} addresses this calibration mismatch by u
 \section{Experimental Details}
 \label{appendix:experimental_details}
 
-\subsection{Base LLM Models}
+\subsection{Models and generation settings}
 
-Our base LLMs follow the experimental setup of Zhao~\etal~\cite{zhaoodesteer}. We describe them here for completeness. We evaluate all methods on four open-source models: (i) Falcon-7B, \texttt{tiiuae/falcon-7b}\footnote{\url{https://huggingface.co/tiiuae/falcon-7b}}; (ii) Mistral-7B-v0.3, \texttt{mistralai/Mistral-7B-v0.3}\footnote{\url{https://huggingface.co/mistralai/Mistral-7B-v0.3}}; (iii) LLaMA3.1-8B, \texttt{meta-llama/Llama-3.1-8B}\footnote{\url{https://huggingface.co/meta-llama/Llama-3.1-8B}}; and (iv) Qwen2.5-7B, \texttt{Qwen/Qwen2.5-7B}\footnote{\url{https://huggingface.co/Qwen/Qwen2.5-7B}}. We use the same generation configuration for all models and experiments: temperature $=0.7$, top-$p=0.9$, and repetition penalty $=1.1$.
+Following Zhao~\etal~\cite{zhaoodesteer}, we evaluate all methods on four open-source models: (i) Falcon-7B, \texttt{tiiuae/falcon-7b}\footnote{\url{https://huggingface.co/tiiuae/falcon-7b}}, (ii) Mistral-7B-v0.3, \texttt{mistralai/Mistral-7B-v0.3}\footnote{\url{https://huggingface.co/mistralai/Mistral-7B-v0.3}}, (iii) LLaMA3.1-8B, \texttt{meta-llama/Llama-3.1-8B}\footnote{\url{https://huggingface.co/meta-llama/Llama-3.1-8B}}, and (iv) Qwen2.5-7B, \texttt{Qwen/Qwen2.5-7B}\footnote{\url{https://huggingface.co/Qwen/Qwen2.5-7B}}. Unless otherwise specified, generation uses temperature $=0.7$, top-$p=0.9$, and repetition penalty $=1.1$.
 
 
 \subsection{Datasets}
@@ -566,9 +566,9 @@ Our base LLMs follow the experimental setup of Zhao~\etal~\cite{zhaoodesteer}. W
 
     \item \textbf{Natural Questions (NQ)}~\citep{kwiatkowski2019natural} contains questions drawn from anonymized Google search queries. We use the modified NQ-Open validation release prepared for ITI transfer evaluation, \href{https://huggingface.co/datasets/OamPatel/iti_nq_open_val}{\texttt{OamPatel/iti\_nq\_open\_val}}. For both NQ and TriviaQA, steering is fitted only on TruthfulQA, and evaluation uses sampled questions with the same prompt format as TruthfulQA. We score the supplied candidates without retrieving evidence documents, using the metric described below.
 
-    \item \textbf{GSM8K}~\citep{cobbe2021gsm8k} contains approximately 8.5K grade-school math word problems paired with natural-language solutions. The dataset contains roughly 7.5K training examples and 1K test examples. We use the original test split for out-of-distribution evaluation. All methods are trained on TruthfulQA as described above and then evaluated on the 1K GSM8K test examples in a 5-shot setting.
+    \item \textbf{GSM8K}~\citep{cobbe2021gsm8k} contains grade-school math word problems paired with natural-language solutions, with roughly 7.5K training examples and $1{,}319$ test examples. We use questions from the original test split for out-of-distribution evaluation. All methods are fitted on TruthfulQA and evaluated in a 5-shot setting.
 
-    \item \textbf{MMLU}~\citep{hendrycks2020measuring} is a large-scale multiple-choice benchmark covering a broad range of academic and professional subjects. It contains approximately 100K training examples and 14K test examples. We use the default test split for out-of-distribution evaluation and perform 5-shot generation.
+    \item \textbf{MMLU}~\citep{hendrycks2020measuring} is a large-scale multiple-choice benchmark covering a broad range of academic and professional subjects. It contains approximately 100K training examples and 14K test examples. We use questions from the default test split for out-of-distribution evaluation and perform 5-shot generation.
 \end{itemize}
 
 
@@ -607,10 +607,13 @@ Our base LLMs follow the experimental setup of Zhao~\etal~\cite{zhaoodesteer}. W
     Following prior work, we report the percentage of responses that are both truthful and informative. For each prompt, this metric is computed as the product of the binary truthfulness and informativeness labels, and the final score is averaged over all prompts.
 
     \item \textbf{Answer-ranking accuracy (NQ and TriviaQA).}
-    Each candidate set contains all accepted reference answers and the supplied distractor. For NQ, the accepted answers come from the \texttt{answer} list; for TriviaQA, they are the full \texttt{answer.aliases} list. We score each answer by the sum of its token log-probabilities conditioned on the question prompt, without length normalization. A question is correct when the highest-scoring candidate belongs to the accepted set. The supplied distractor sometimes duplicates an accepted answer, and we retain these items under the same scoring rule for all methods. Such items are always counted correct, so the reported accuracy measures performance on this particular candidate set. Comparisons with the unsteered model assess capability retention under intervention.
+    Each candidate set contains all accepted reference answers and the supplied distractor. For NQ, the accepted answers come from the \texttt{answer} list, and for TriviaQA, they come from the full \texttt{answer.aliases} list. We score each answer by the sum of its token log-probabilities conditioned on the question prompt, without length normalization. A question is correct when the highest-scoring candidate belongs to the accepted set. Items whose distractor duplicates an accepted answer are retained for all methods and always count as correct.
+
+    \item \textbf{RM$_{\text{mean}}$ and RM$_{90}$.}
+    For UltraFeedback, we score helpfulness with \texttt{Skywork/Skywork-Reward-V2-Llama-3.1-8B}\footnote{\url{https://huggingface.co/Skywork/Skywork-Reward-V2-Llama-3.1-8B}}. We report RM$_{\text{mean}}$, the average reward score across examples and three random seeds, and RM$_{90}$, the 90th percentile reward score.
 
     \item \textbf{Win Rate (\%).}
-    We adopt the reward-model win-rate metric used in RewardBench~\citep{lambert2025rewardbench} and ODESteer~\citep{zhaoodesteer}. Given a set of prompts $\{x_i\}_{i=1}^{N}$ and two candidate systems $A$ and $B$, let $s_i^A$ and $s_i^B$ denote their reward-model scores under the same reward model. The win rate of $A$ over $B$ is defined as
+    We use these reward scores to compare steered generations with the unsteered model, following RewardBench~\citep{lambert2025rewardbench} and ODESteer~\citep{zhaoodesteer}. For $N$ prompts, let $s_i^A$ and $s_i^B$ denote the scores of responses from systems $A$ and $B$. The win rate of $A$ over $B$ is
     \[
     \mathrm{Win}(A,B)
     =
@@ -622,10 +625,7 @@ Our base LLMs follow the experimental setup of Zhao~\etal~\cite{zhaoodesteer}. W
     \frac{1}{2}\mathbbm{1}(s_i^A = s_i^B)
     \right],
     \]
-    where $\mathbbm{1}(\cdot)$ is the indicator function. A value of $0.5$ indicates parity with system $B$, values greater than $0.5$ indicate that $A$ outperforms $B$, and ties contribute $0.5$ by convention.
-
-    \item \textbf{RM$_{\text{mean}}$ and RM$_{90}$.}
-    For UltraFeedback, we use an LLM-as-a-judge reward model to score helpfulness. Specifically, we use \texttt{Skywork/Skywork-Reward-V2-Llama-3.1-8B}\footnote{\url{https://huggingface.co/Skywork/Skywork-Reward-V2-Llama-3.1-8B}}. We report RM$_{\text{mean}}$, the average reward score across examples and three random seeds, and RM$_{90}$, the 90th percentile reward score.
+    where $\mathbbm{1}(\cdot)$ is the indicator function and ties count as half a win. We report this quantity as a percentage with the unsteered model as $B$, so $50\%$ indicates parity.
 
     \item \textbf{Toxicity Score.}
     Toxicity is evaluated using the Perspective API\footnote{\url{https://perspectiveapi.com/}}. The toxicity score is a probability-like score indicating the likelihood that a reader would perceive the generated text as toxic. Lower values therefore indicate less toxic generations.
@@ -665,8 +665,7 @@ Our base LLMs follow the experimental setup of Zhao~\etal~\cite{zhaoodesteer}. W
 
 We extend the ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement the steering methods and baselines.
 
-\paragraph{\textcolor{blue}{Transport fitting and bandwidths.}}
-\textcolor{blue}{We set $\varepsilon=\sigma^2$ to the squared median $5$-NN geodesic distance in $\mathcal{D}^+\cup\mathcal{D}^-$, with a minimum of $(10^{-3}R)^2$. Sinkhorn fitting uses five sweeps of Eq.~\eqref{eq:sinkhorn}, initialized with zero log-scalings. During steering, the implementation selects a bandwidth separately for each population at every iterate:}
+\noindent\textbf{Steering at inference.}~At each integration step, we select a bandwidth separately for each population:
 \begin{equation}
 b_\pm(\boldsymbol{x})=
 \max\!\left\{\max_{\boldsymbol{h}\in\mathcal{D}^\pm}
