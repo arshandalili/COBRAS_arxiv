@@ -89,25 +89,26 @@ On the undesired side of the probe boundary, $\boldsymbol{u}^{\top}\boldsymbol{x
 \]
 ODESteer integrates the corresponding ODE using $K$ Euler steps over an integration horizon $T$, evaluating the direction at each current activation.
 
-Table~\ref{tab:steering_framework} summarizes these interpretations, the limiting field of \Cobras, and the number of intervention steps.
+Table~\ref{tab:steering_framework} summarizes these interpretations, the constructed field of \Cobras, and the number of intervention steps.
 \begin{table}[t!]
 \centering
-\caption{Steering fields or directions under the stated models or fitted estimates, with $K$ denoting the number of intervention steps per activation. The \Cobras row shows the $\varepsilon\to\infty$ limit of its unnormalized field at fixed contrastive samples and bandwidth (Proposition~\ref{prop:ldr-limit}).}
+\caption{Steering fields or directions under the stated models or fitted estimates, with $K$ denoting the number of intervention steps per activation. For \Cobras, the log-ratio is differentiated with the coefficients fixed as in Eq.~\eqref{eq:cobras-field}; the resulting field is normalized during inference.}
 \label{tab:steering_framework}
 \small
 \setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{>{\raggedright\arraybackslash}p{2.1cm} >{\raggedright\arraybackslash}p{1.4cm} >{\raggedright\arraybackslash}p{1.2cm} >{\raggedright\arraybackslash}p{4.3cm} >{\raggedright\arraybackslash}p{4.4cm}}
-\toprule
+\toprule[0.9pt]
 \textbf{Method} & \textbf{Geometry} & \textbf{Steps ($K$)} & \textbf{Model or fitted estimate} & \textbf{Steering field or direction} \\
-\midrule
-\textbf{CAA}~\citep{rimsky2024steering} & $\mathbb{R}^d$ & $K=1$ & $\begin{aligned}[t]\pplus&=\mathcal{N}(\boldsymbol{\mu}_+,\boldsymbol{I}_d),\\\pminus&=\mathcal{N}(\boldsymbol{\mu}_-,\boldsymbol{I}_d)\end{aligned}$ & $\boldsymbol{\mu}_+-\boldsymbol{\mu}_-$ \\ \addlinespace
-\textbf{SS}~\citep{you2026spherical} & $\Sph$ & $K=1$ & $\begin{aligned}[t]\pplus(\boldsymbol{x})&\propto e^{\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})},\\\pminus&=\operatorname{Unif}(\Sph)\end{aligned}$ & $\kappa\nablaS\cos(\boldsymbol{x},\boldsymbol{\mu})\propto\Pi_{\boldsymbol{x}}\boldsymbol{\mu}$ \\ \addlinespace
-\textbf{ITI (probe)}~\citep{li2023inference} & $\mathbb{R}^d$ & $K=1$ & Prior-corrected probe log-odds:\newline $\boldsymbol{\theta}^{\top}\boldsymbol{x}+\log(N_-/N_+)$ & $\boldsymbol{\theta}$ \\ \addlinespace
-\textbf{HPR}~\citep{pham2024householder} & $\Sph$ & $K=1$ & Linear probe log-odds:\newline $\boldsymbol{\theta}^{\top}\boldsymbol{x}$ & $\Pi_{\boldsymbol{x}}(\boldsymbol{H}\boldsymbol{x}-\boldsymbol{x})\propto\Pi_{\boldsymbol{x}}\boldsymbol{\theta}$\newline for $\boldsymbol{\theta}^{\top}\boldsymbol{x}<0$ \\ \addlinespace
-\textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & $K>1$ & $\boldsymbol{w}^{\top}\boldsymbol{\Phi}(\boldsymbol{x})+\beta$ & $\displaystyle\frac{\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}}{\|\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}\|}$ \\ \addlinespace
-\textbf{\Cobras}\newline($\varepsilon\to\infty$) & $\Sph$ & $K>1$ & $\displaystyle\log\frac{\hat{p}_b^+(\boldsymbol{x})}{\hat{p}_b^-(\boldsymbol{x})}$ & $\displaystyle b\nablaS\log\frac{\hat{p}_b^+(\boldsymbol{x})}{\hat{p}_b^-(\boldsymbol{x})}$ \\
-\bottomrule
+\midrule[0.6pt]
+\textbf{CAA}~\citep{rimsky2024steering} & $\mathbb{R}^d$ & $K=1$ & $\begin{aligned}[t]\pplus&=\mathcal{N}(\boldsymbol{\mu}_+,\boldsymbol{I}_d),\\\pminus&=\mathcal{N}(\boldsymbol{\mu}_-,\boldsymbol{I}_d)\end{aligned}$ & $\boldsymbol{\mu}_+-\boldsymbol{\mu}_-$ \\ \cmidrule(lr){1-5}
+\textbf{SS}~\citep{you2026spherical} & $\Sph$ & $K=1$ & $\begin{aligned}[t]\pplus(\boldsymbol{x})&\propto e^{\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})},\\\pminus&=\operatorname{Unif}(\Sph)\end{aligned}$ & $\kappa\nablaS\cos(\boldsymbol{x},\boldsymbol{\mu})\propto\Pi_{\boldsymbol{x}}\boldsymbol{\mu}$ \\ \cmidrule(lr){1-5}
+\textbf{ITI (probe)}~\citep{li2023inference} & $\mathbb{R}^d$ & $K=1$ & Prior-corrected probe log-odds:\newline $\boldsymbol{\theta}^{\top}\boldsymbol{x}+\log(N_-/N_+)$ & $\boldsymbol{\theta}$ \\ \cmidrule(lr){1-5}
+\textbf{HPR}~\citep{pham2024householder} & $\Sph$ & $K=1$ & Linear probe log-odds:\newline $\boldsymbol{\theta}^{\top}\boldsymbol{x}$ & $\Pi_{\boldsymbol{x}}(\boldsymbol{H}\boldsymbol{x}-\boldsymbol{x})\propto\Pi_{\boldsymbol{x}}\boldsymbol{\theta}$\newline for $\boldsymbol{\theta}^{\top}\boldsymbol{x}<0$ \\ \cmidrule(lr){1-5}
+\textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & $K>1$ & $\boldsymbol{w}^{\top}\boldsymbol{\Phi}(\boldsymbol{x})+\beta$ & $\displaystyle\frac{\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}}{\|\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}\|}$ \\ \midrule[0.6pt]
+\textbf{\Cobras~(ours)} & $\Sph$ & $K>1$ & $\displaystyle\log\frac{\widetilde{\psi}_b(\boldsymbol{x})}{\widetilde{\varphi}_b(\boldsymbol{x})}$ & $\displaystyle\begin{aligned}[t]&\sum_i w_i^+(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)\\[-1pt]&{}-\sum_j w_j^-(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_j^-)\end{aligned}$ \\
+\bottomrule[0.9pt]
 \end{tabular}
 }
 \end{table}
