@@ -328,14 +328,14 @@ Subtracting the two fields gives
 &\quad-\sum_j\bigl(w_j^-(\boldsymbol{x})-w_j^{-,\mathrm{kde}}(\boldsymbol{x})\bigr)\log_{\boldsymbol{x}}(\boldsymbol{h}_j^-).
 \end{aligned}
 \]
-Since geodesic distances are at most $\pi R$, each tangent vector has norm at most $\pi R$ and $c_{\max}\le\pi^2R^2/(2\varepsilon)$. The triangle inequality and the weight bounds therefore yield
+Since geodesic distances on the unit sphere are at most $\pi$, each tangent vector has norm at most $\pi$ and $c_{\max}\le\pi^2/(2\varepsilon)$. The triangle inequality and the weight bounds therefore yield
 \begin{equation}
 \begin{aligned}
 \|\boldsymbol{v}(\boldsymbol{x})-\boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})\|
-&\le\pi R\left(\sum_i|w_i^+(\boldsymbol{x})-w_i^{+,\mathrm{kde}}(\boldsymbol{x})|
+&\le\pi\left(\sum_i|w_i^+(\boldsymbol{x})-w_i^{+,\mathrm{kde}}(\boldsymbol{x})|
 +\sum_j|w_j^-(\boldsymbol{x})-w_j^{-,\mathrm{kde}}(\boldsymbol{x})|\right)\\
-&\le2\pi R(e^{c_{\max}}-1)\\
-&\le2\pi R\left(e^{\pi^2R^2/(2\varepsilon)}-1\right)
+&\le2\pi(e^{c_{\max}}-1)\\
+&\le2\pi\left(e^{\pi^2/(2\varepsilon)}-1\right)
 =O(1/\varepsilon).
 \end{aligned}
 \label{eq:prop1-bound}
@@ -711,14 +711,14 @@ Following Zhao~\etal~\cite{zhaoodesteer}, we evaluate all methods on four open-s
 \label{apx:bandwidth}
 \label{apx:pseudocode}
 
-We extend the ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement the steering methods and baselines. For \Cobras, we set $\varepsilon$ to the squared median $5$-NN geodesic distance in $\mathcal{D}^+\cup\mathcal{D}^-$, with a minimum of $(10^{-3}R)^2$. Sinkhorn fitting uses five sweeps of Eq.~\eqref{eq:sinkhorn}, initialized with zero log-potentials. The implementation uses unnormalized reference weights $e^{-c_{ji}}$, absorbing their common normalization into the fitted potentials. The normalized steering weights and calibrated support gate are invariant to this choice. The support gate uses the fixed bandwidth $b_g=\varepsilon/256$. At each integration step, we select a bandwidth separately for each population:
+We extend the ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement the steering methods and baselines. For \Cobras, we set $\varepsilon$ to the squared median $5$-NN geodesic distance in $\mathcal{D}^+\cup\mathcal{D}^-$, with a minimum of $10^{-6}$. Sinkhorn fitting uses five sweeps of Eq.~\eqref{eq:sinkhorn}, initialized with zero log-potentials. The implementation uses unnormalized reference weights $e^{-c_{ji}}$, absorbing their common normalization into the fitted potentials. The normalized steering weights and calibrated support gate are invariant to this choice. The support gate uses the fixed bandwidth $b_g=\varepsilon/256$. At each integration step, we select a bandwidth separately for each population:
 \begin{equation}
 b_\pm(\boldsymbol{x})=
 \max\!\left\{\max_{\boldsymbol{h}\in\mathcal{D}^\pm}
 d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2,\ b_{\min}\right\}.
 \label{eq:adaptive-bandwidth}
 \end{equation}
-where $b_{\min}=(10^{-3}R)^2$. Every kernel centered on a desired sample uses $b_+$, and every kernel centered on an undesired sample uses $b_-$. This applies to both the inner and outer kernels in Eqs.~\eqref{eq:local-psi} and~\eqref{eq:local-phi}. We evaluate the steering field using the weighted log-maps in Eq.~\eqref{eq:weighted-cobras-field}, without dividing either branch by its bandwidth. Weighted kernel estimates and normalized weights are evaluated in log space. We clamp cosines away from $\pm1$ and vector norms away from zero for numerical stability.
+where $b_{\min}=10^{-6}$. Every kernel centered on a desired sample uses $b_+$, and every kernel centered on an undesired sample uses $b_-$. This applies to both the inner and outer kernels in Eqs.~\eqref{eq:local-psi} and~\eqref{eq:local-phi}. We evaluate the steering field using the weighted log-maps in Eq.~\eqref{eq:weighted-cobras-field}, without dividing either branch by its bandwidth. Weighted kernel estimates and normalized weights are evaluated in log space. We clamp cosines away from $\pm1$ and vector norms away from zero for numerical stability.
 
 Unless varied in an ablation, we use $K=10$ integration steps and $\kappa=20$. The main in-distribution evaluation is ungated, with $g_{\mathrm{prompt}}=1$ and integration horizon $T=0.5$. Support-gated OOD evaluation uses $p=0.7$ and $T=0.65$. For baseline steering-strength selection, we sweep $T=20$--$23$ for Falcon-7B, $T=2$--$5$ for Mistral-7B, $T=3$--$6$ for LLaMA3.1-8B, and $T=13$--$16$ for Qwen2.5-7B. For baselines without a comparable steering-strength parameter, we use the settings reported in their papers.
 
@@ -822,43 +822,7 @@ Kernel log-ratio gradient & 96.0 & 13.7 & 10.5 & 0 \\
 \textcolor{blue}{Following the kernel log-ratio gradient without attenuation produces high truthfulness but low informativeness. Normalization and vMF attenuation improve the joint score to $61.3$. Adding the kNN gate recovers GSM8K accuracy at a modest cost on TruthfulQA. The full \Cobras field then increases True$\times$Info from $59.8$ to $63.6$ while preserving the same GSM8K accuracy, improving ID steering under the same support control.}
 
 \FloatBarrier
-
-
-\subsection{Empirical Validation of Spherical Geometry assumption}
-\label{appendix:norm_concentration}
-
-\Cobras models residual-stream activations at a fixed layer as lying approximately on a hypersphere. As shown in Algorithm~\ref{alg:cobras}, it projects each query onto the fitted sphere (Line~\ref{alg:cobras:norm_equation}), \[ \boldsymbol{x}_0 = R \frac{\boldsymbol{h}_q}{\|\boldsymbol{h}_q\|}, \] performs steering on the sphere, and restores the original norm afterward. Thus, steering depends on activation direction rather than magnitude. We test this assumption by measuring the coefficient of variation (CoV) of residual-stream norms across layers and model families. For the four models used in the main experiments, we use 5,918 TruthfulQA activations; for four additional architectures (Gemma-2-2B~\cite{team2024gemma}, GPT-OSS-20B~\cite{agarwal2025gpt}, LLama-3.2-1B, Qwen2.5-1.5B), we use approximately 110K tokens of web text.
-
-
-\begin{table}[t]
-\centering
-\caption{Range of the coefficient of variation (CoV) of residual-stream
-activation norms across layers. The top block contains models used in the
-main experiments; the bottom block contains additional architectures.}
-\small
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{@{}lccc@{}}
-\toprule
-\textbf{Model} & \textbf{\# Layers} & \textbf{Early (0--2)} & \textbf{Later ($\geq 3$)} \\
-\midrule
-LLaMA3.1-8B       & 32 & [0.072, 0.134] & [0.017, 0.080] \\
-Mistral-7B        & 32 & [0.084, 0.123] & [0.035, 0.081] \\
-Falcon-7B         & 32 & [0.108, 0.165] & [0.021, 0.085] \\
-Qwen2.5-7B        & 28 & [0.021, 0.043] & [0.018, 0.034] \\
-\midrule
-Gemma-2-2B        & 26 & [0.147, 0.207] & [0.098, 0.281] \\
-GPT-OSS-20B (MoE) & 24 & [0.102, 0.129] & [0.083, 0.191] \\
-LLaMA-3.2-1B      & 16 & [0.101, 0.152] & [0.044, 0.109] \\
-Qwen2.5-1.5B      & 28 & [0.120, 0.191] & [0.077, 0.192] \\
-\bottomrule
-\end{tabular}
-\label{tab:norm_concentration}
-\end{table}
-
-
-From Table~\ref{tab:norm_concentration}, we observe that norms are least concentrated in the first three layers and substantially more concentrated in later layers for all four models used in our experiments. The same qualitative pattern holds across the additional architectures, although the degree of concentration varies across model families. A notable exception is the initial attention-sink token (e.g., \texttt{<|begin\_of\_text|>} for LLaMA). Although these tokens account for only about 0.45\% of the web-text tokens, their norms can reach up to $418\times$ the median. For example, including them increases the overall CoV of Qwen2.5-1.5B from 0.19 to 9.20. This does not affect \Cobras, since steering is applied to the last prompt token and subsequent generation positions, not the initial token. Overall, these results support the hyperspherical approximation in the layers and positions where \Cobras is applied, while identifying the initial attention-sink token as a clear exception.
-
-\subsection{Effect of steering strength $T$ on \Cobras} 
+\subsection{Effect of the integration horizon $T$}
 \label{appendix:cobras_vs_t}
 
 We vary the integration horizon $T$ from $0.1$ to $1.0$ on TruthfulQA and UltraFeedback, using $K=10$ and ungated steering.

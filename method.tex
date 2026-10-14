@@ -3,7 +3,7 @@
 
 \noindent\textbf{Setup and notation.}~We fix a decoder-only transformer of residual width $d$ and a layer index $\ell$, and write $\boldsymbol{h}\in\mathbb{R}^{d}$ for the layer-$\ell$ residual-stream activation at the last token position. Two populations of inputs are given, one exhibiting a desired behavior and one an undesired behavior, with activation distributions $\pplus$ and $\pminus$ observed through i.i.d.\ samples $\mathcal{D}^{+}=\{\boldsymbol{h}^{+}_{i}\}_{i=1}^{N_{+}}\sim\pplus$ and $\mathcal{D}^{-}=\{\boldsymbol{h}^{-}_{j}\}_{j=1}^{N_{-}}\sim\pminus$, whose empirical measures we denote $\pplushat$ and $\pminushat$. At inference, a steering map is applied to the layer-$\ell$ activation of each decoded token, beginning with the last prompt token, and $\hquery$ denotes the activation currently being steered. The map should move $\hquery$ toward regions of high density under $\pplus$ and low density under $\pminus$, and it modifies no other activation. Vectors and vector fields are set in bold.
 
-\noindent\textbf{Spherical geometry of activations.}~Residual-stream norms concentrate tightly across inputs at a fixed layer, both empirically~\citep{pham2024householder, you2026spherical} and as a consequence of the residual architecture~\citep{yang2023spectral, xie2026controlled}. Figure~\ref{fig:norm-concentration} shows this for the four models we study, for which the coefficient of variation of the layer-normalized last-token norm lies between $2.5\%$ and $7.3\%$, and Appendix~\ref{appendix:norm_concentration} reports the same measurement layer by layer and for four further architectures. We therefore model the state space as the sphere $\Sph=\{\boldsymbol{x}\in\mathbb{R}^{d}:\lVert\boldsymbol{x}\rVert=R\}$ of radius $R$, the mean norm over $\mathcal{D}^{+}\cup\mathcal{D}^{-}$, and restore the original norm of $\hquery$ after steering, so that the intervention changes only the direction of the activation.
+\noindent\textbf{Spherical geometry of activations.}~Residual-stream norms concentrate tightly across inputs at a fixed layer, both empirically~\citep{pham2024householder, you2026spherical} and as a consequence of the residual architecture~\citep{yang2023spectral, xie2026controlled}. Figure~\ref{fig:norm-concentration} shows this for the four models we study, for which the coefficient of variation of the layer-normalized last-token norm lies between $2.5\%$ and $7.3\%$, and Appendix~\ref{appendix:norm_concentration} reports the same measurement layer by layer and for four further architectures. We therefore model the state space as a sphere $\Sph$ and restore the original norm of $\hquery$ after steering, so that the intervention changes only the direction of the activation.
 
 \begin{figure}[t]
 \centering
@@ -12,14 +12,14 @@
 \label{fig:norm-concentration}
 \end{figure}
 
-\noindent\textbf{Operations on $\Sph$.}~We write $\Pi_{\boldsymbol{x}}=\boldsymbol{I}-R^{-2}\boldsymbol{x}\boldsymbol{x}^{\top}$ for the projector onto the tangent space at $\boldsymbol{x}$, $\nablaS f=\Pi_{\boldsymbol{x}}\nabla f$ for the Riemannian gradient, and $d_{\Sph}(\boldsymbol{x},\boldsymbol{y})=R\arccos(R^{-2}\boldsymbol{x}^{\top}\boldsymbol{y})$ for the geodesic distance. The exponential map $\exp_{\boldsymbol{x}}(\boldsymbol{v})$ moves from $\boldsymbol{x}$ along the tangent vector $\boldsymbol{v}$ for a geodesic arc of length $\lVert\boldsymbol{v}\rVert$, and its inverse $\log_{\boldsymbol{x}}(\boldsymbol{y})$, defined for $\boldsymbol{y}\neq-\boldsymbol{x}$, is the tangent vector at $\boldsymbol{x}$ that points toward $\boldsymbol{y}$ with norm $d_{\Sph}(\boldsymbol{x},\boldsymbol{y})$:
+\noindent\textbf{Operations on $\Sph$.}~For simplicity, we work in unit-sphere coordinates, so $\Sph=\{\boldsymbol{x}\in\mathbb{R}^{d}:\lVert\boldsymbol{x}\rVert=1\}$. We write $\Pi_{\boldsymbol{x}}=\boldsymbol{I}-\boldsymbol{x}\boldsymbol{x}^{\top}$ for the projector onto the tangent space at $\boldsymbol{x}$, $\nablaS f=\Pi_{\boldsymbol{x}}\nabla f$ for the Riemannian gradient, and $d_{\Sph}(\boldsymbol{x},\boldsymbol{y})=\arccos(\boldsymbol{x}^{\top}\boldsymbol{y})$ for the geodesic distance. The exponential map $\exp_{\boldsymbol{x}}(\boldsymbol{v})$ moves from $\boldsymbol{x}$ along the tangent vector $\boldsymbol{v}$ for a geodesic arc of length $\lVert\boldsymbol{v}\rVert$, and its inverse $\log_{\boldsymbol{x}}(\boldsymbol{y})$, defined for $\boldsymbol{y}\neq-\boldsymbol{x}$, is the tangent vector at $\boldsymbol{x}$ that points toward $\boldsymbol{y}$ with norm $d_{\Sph}(\boldsymbol{x},\boldsymbol{y})$:
 \begin{equation}
 \exp_{\boldsymbol{x}}(\boldsymbol{v})
-= \cos\!\left(\frac{\lVert\boldsymbol{v}\rVert}{R}\right)\boldsymbol{x}
-+ R\sin\!\left(\frac{\lVert\boldsymbol{v}\rVert}{R}\right)\frac{\boldsymbol{v}}{\lVert\boldsymbol{v}\rVert},
+= \cos\!\left(\lVert\boldsymbol{v}\rVert\right)\boldsymbol{x}
++ \sin\!\left(\lVert\boldsymbol{v}\rVert\right)\frac{\boldsymbol{v}}{\lVert\boldsymbol{v}\rVert},
 \qquad
 \log_{\boldsymbol{x}}(\boldsymbol{y}) = \frac{\theta}{\sin\theta}\,\Pi_{\boldsymbol{x}}\boldsymbol{y},
-\quad \theta = \frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{y})}{R}.
+\quad \theta = d_{\Sph}(\boldsymbol{x},\boldsymbol{y}).
 \label{eq:expmap}
 \end{equation}
 When the tangent length or angular separation is zero, we evaluate the $\log$ and $\exp$ maps at their continuous limits. These operations specify how to move activations on $\Sph$. %The next section discusses how to construct a steering field from the desired and undesired activation populations.}
@@ -32,7 +32,7 @@ In this section, we develop \Cobras, starting from a Schr\"{o}dinger Bridge form
 \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figures/cobras_overview.pdf}
-    \caption{\textcolor{teal}{Overview of \Cobras. \textbf{(a)} Contrastive activations form desired and undesired populations on $\Sph$. \textbf{(b)} Fitted Schr\"{o}dinger potentials guide attraction and repulsion through an activation-dependent steering field. \textbf{(c)} For comparison, a fixed-direction intervention applies the same direction and step size to every activation. \textbf{(d)} The support gate leaves the low-support activation unchanged. \textbf{(e)} Generations on TruthfulQA and an OOD GSM8K question.}}
+    \caption{Overview of \Cobras. \textbf{(a)} Contrastive activations form desired and undesired populations on $\Sph$. \textbf{(b)} Fitted Schr\"{o}dinger potentials guide attraction and repulsion through an activation-dependent steering field. \textbf{(c)} For comparison, a fixed-direction intervention applies the same direction and step size to every activation. \textbf{(d)} The support gate leaves the low-support activation unchanged. \textbf{(e)} Generations on TruthfulQA and an OOD GSM8K question.}
     \label{fig:overview}
 \end{figure}
 
@@ -57,32 +57,29 @@ Q(\mathrm{d}\boldsymbol{x}_{[0,1]}),
 \end{equation}
 where $\boldsymbol{x}_{[0,1]}=(\boldsymbol{x}_t)_{t\in[0,1]}$ denotes a continuous activation trajectory. The positive functions $\varphi,\psi:\Sph\times[0,1]\to(0,\infty)$ are called \emph{Schr\"{o}dinger potentials}. Their endpoint potentials $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{x},1)$ are determined jointly to satisfy $P^\star_0=\pminus$ and $P^\star_1=\pplus$. The reference Brownian dynamics propagate the former forward and the latter backward in time, determining $\varphi(\boldsymbol{x},t)$ and $\psi(\boldsymbol{x},t)$ at intermediate time $t$. For $P=P^\star$, we write $P_t(\boldsymbol{x})$ for the density of the marginal $P_t$ with respect to spherical volume. Since the reference has uniform time marginals, this density is proportional to the product of the potentials:
 \begin{equation}
-\textcolor{teal}{
 P_t(\boldsymbol{x})
 \propto \varphi(\boldsymbol{x},t)\psi(\boldsymbol{x},t).
-}
 \label{eq:product}
 \end{equation}
 
-\textcolor{teal}{The bridge $P^\star$ describes a distribution over stochastic activation trajectories. To motivate a deterministic steering field, we consider its probability-flow ODE, whose solutions have distribution $P_t$ at every time $t$ when initialized with $\boldsymbol{x}_0\sim\pminus$~\citep{song2020score, de2022riemannian}. For the Brownian reference $Q$, this ODE takes the form}
+The bridge $P^\star$ describes a distribution over stochastic activation trajectories. To motivate a deterministic steering field, we consider its probability-flow ODE, whose solutions have distribution $P_t$ at every time $t$ when initialized with $\boldsymbol{x}_0\sim\pminus$~\citep{song2020score, de2022riemannian}. For the Brownian reference $Q$, this ODE takes the form
 \begin{equation}
-\textcolor{teal}{\displaystyle
+\displaystyle
 \frac{\mathrm{d}\boldsymbol{x}_t}{\mathrm{d}t}
 =
 \frac{\sigma^2}{2}\nablaS
 \log\frac{\psi(\boldsymbol{x}_t,t)}
 {\varphi(\boldsymbol{x}_t,t)}.
-}
 \label{eq:ldr}
 \end{equation}
-\textcolor{teal}{The drift of this ODE motivates constructing a steering field from the gradient of the log-ratio of the potentials. To develop a sample-based construction, we first estimate discrete counterparts of the endpoint potentials $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{x},1)$. To this end, we express the trajectory optimization in Eq.~\eqref{eq:sb} as a static problem over the joint distribution of starting and ending activations and solve its discrete approximation using the celebrated Sinkhorn algorithm~\citep{cuturi2013sinkhorn}.}
+The drift of this ODE motivates constructing a steering field from the gradient of the log-ratio of the potentials. To develop a sample-based construction, we first estimate discrete counterparts of the endpoint potentials $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{x},1)$. To this end, we express the trajectory optimization in Eq.~\eqref{eq:sb} as a static problem over the joint distribution of starting and ending activations and solve its discrete approximation using the celebrated Sinkhorn algorithm~\citep{cuturi2013sinkhorn}.
 
-\textcolor{teal}{Let $P_{01}$ and $Q_{01}$ denote the joint distributions of
+Let $P_{01}$ and $Q_{01}$ denote the joint distributions of
 starting and ending activations under $P$ and $Q$, respectively.
 The optimization in Eq.~\eqref{eq:sb} reduces to the static
-Schr\"{o}dinger Bridge problem:}
+Schr\"{o}dinger Bridge problem:
 \begin{equation}
-\textcolor{teal}{\displaystyle
+\displaystyle
 \min_{P}\,
 \underset{\text{s.t.}\;P_{01}(\cdot,\Sph)=\pminus,\;P_{01}(\Sph,\cdot)=\pplus}
 {\KL(P_{01}\,\Vert\,Q_{01})}
@@ -92,10 +89,9 @@ P^\star_{01}(\mathrm{d}\boldsymbol{x},\mathrm{d}\boldsymbol{y})
 \varphi(\boldsymbol{x},0)\,
 \psi(\boldsymbol{y},1)\,
 Q_{01}(\mathrm{d}\boldsymbol{x},\mathrm{d}\boldsymbol{y}).
-}
 \label{eq:static-sb}
 \end{equation}
-\textcolor{teal}{Here $\boldsymbol{x}$ and $\boldsymbol{y}$ denote the starting
+Here $\boldsymbol{x}$ and $\boldsymbol{y}$ denote the starting
 and ending activations, and the two constraints prescribe
 their marginal distributions. Enforcing these constraints
 yields coupled equations for the endpoint potentials
@@ -104,16 +100,16 @@ In practice, however, the endpoint distributions $\pminus$ and
 $\pplus$ are observed only through the finite contrastive sample
 sets $\mathcal{D}^-$ and $\mathcal{D}^+$. To estimate the endpoint
 potentials from these data, we therefore discretize the static
-problem on the contrastive samples.}
+problem on the contrastive samples.
 
-\textcolor{teal}{The discrete counterpart of $P_{01}$ is a joint endpoint distribution $\widehat{P}_{01}$, represented by a nonnegative matrix whose entry $\widehat{P}_{01,ji}$ assigns probability mass to the sample pair $(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)$. Its marginals must match the empirical endpoint distributions, requiring $\sum_i\widehat{P}_{01,ji}=1/N_-$ and $\sum_j\widehat{P}_{01,ji}=1/N_+$.}
+The discrete counterpart of $P_{01}$ is a joint endpoint distribution $\widehat{P}_{01}$, represented by a nonnegative matrix whose entry $\widehat{P}_{01,ji}$ assigns probability mass to the sample pair $(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)$. Its marginals must match the empirical endpoint distributions, requiring $\sum_i\widehat{P}_{01,ji}=1/N_-$ and $\sum_j\widehat{P}_{01,ji}=1/N_+$.
 
-\textcolor{teal}{We also replace $Q_{01}$ with a discrete reference
+We also replace $Q_{01}$ with a discrete reference
 distribution $\widehat{Q}_{01}$ on the same sample pairs.
 We construct this reference using a geodesic surrogate
-for the Brownian transition density:}
+for the Brownian transition density:
 \begin{equation}
-\textcolor{teal}{\displaystyle
+\displaystyle
 \widehat{Q}_{01,ji}
 =
 \frac{e^{-c_{ji}}}{\sum_{j',i'}e^{-c_{j'i'}}},
@@ -122,14 +118,13 @@ c_{ji}
 =
 \frac{d_{\Sph}(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)^2}
 {2\varepsilon},
-}
 \label{eq:discrete-reference}
 \end{equation}
-\textcolor{teal}{where $\varepsilon>0$ controls the spread of the reference
+where $\varepsilon>0$ controls the spread of the reference
 weights across sample pairs. The discrete
-Schr\"{o}dinger Bridge therefore solves}
+Schr\"{o}dinger Bridge therefore solves
 \begin{equation}
-\textcolor{teal}{\displaystyle
+\displaystyle
 \widehat{P}_{01}^{\star}
 =
 \operatorname*{arg\,min}_{\widehat{P}_{01}}
@@ -140,24 +135,22 @@ Schr\"{o}dinger Bridge therefore solves}
 }{
 \KL(\widehat{P}_{01}\,\Vert\,\widehat{Q}_{01})
 }.
-}
 \label{eq:discrete-sb}
 \end{equation}
 
-\textcolor{teal}{As in Eq.~\eqref{eq:static-sb}, the optimal joint endpoint
+As in Eq.~\eqref{eq:static-sb}, the optimal joint endpoint
 distribution factorizes into the reference distribution
-and two endpoint potentials:}
+and two endpoint potentials:
 \begin{equation}
-\textcolor{teal}{\displaystyle
+\displaystyle
 \widehat{P}_{01,ji}^{\star}
 =
 \widehat{\varphi}_{0,j}\,
 \widehat{\psi}_{1,i}\,
 \widehat{Q}_{01,ji}.
-}
 \label{eq:discrete-factors}
 \end{equation}
-\textcolor{teal}{Here $\widehat{\varphi}_{0,j}$ and $\widehat{\psi}_{1,i}$
+Here $\widehat{\varphi}_{0,j}$ and $\widehat{\psi}_{1,i}$
 are discrete counterparts of
 $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{y},1)$,
 associated with undesired sample $j$ and desired sample $i$,
@@ -165,62 +158,60 @@ respectively. We compute these potentials using the
 Sinkhorn algorithm~\citep{cuturi2013sinkhorn}, which
 alternately updates $\widehat{\varphi}_{0,j}$ to enforce
 the undesired marginal and $\widehat{\psi}_{1,i}$ to enforce
-the desired marginal.}
+the desired marginal.
 
-\textcolor{teal}{The drift of the probability-flow ODE in Eq.~\eqref{eq:ldr} motivates constructing our steering field from the gradient of a log-ratio of potentials. In Section~\ref{subsec:estimation}, we use the fitted endpoint potentials to construct a steering field that can be evaluated at a given activation during inference.}
+The drift of the probability-flow ODE in Eq.~\eqref{eq:ldr} motivates constructing our steering field from the gradient of a log-ratio of potentials. In Section~\ref{subsec:estimation}, we use the fitted endpoint potentials to construct a steering field that can be evaluated at a given activation during inference.
 
 
-\subsection{\textcolor{teal}{Constructing the steering field}}
+\subsection{Constructing the steering field}
 \label{subsec:estimation}
-\textcolor{teal}{The drift of the ODE in Eq.~\eqref{eq:ldr} motivates constructing a steering field from the gradient of a log-ratio of potentials. However, the fitted endpoint potentials $\widehat{\varphi}_{0,j}$ and $\widehat{\psi}_{1,i}$ are associated with discrete contrastive samples. To obtain spatial gradients at the current activation $\boldsymbol{x}\in\Sph$, we construct two weighted kernel sums from these potentials and the reference distribution $\widehat{Q}_{01}$. These sums incorporate the samples' proximity to the activation through the kernel}
+The drift of the ODE in Eq.~\eqref{eq:ldr} motivates constructing a steering field from the gradient of a log-ratio of potentials. However, the fitted endpoint potentials $\widehat{\varphi}_{0,j}$ and $\widehat{\psi}_{1,i}$ are associated with discrete contrastive samples. To obtain spatial gradients at the current activation $\boldsymbol{x}\in\Sph$, we construct two weighted kernel sums from these potentials and the reference distribution $\widehat{Q}_{01}$. These sums incorporate the samples' proximity to the activation through the kernel
 \begin{equation}
-\textcolor{teal}{\displaystyle
+\displaystyle
 K_b(\boldsymbol{x},\boldsymbol{h})
 =\exp\!\left[-\frac{d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2}{2b}\right],
 \qquad b>0,
-}
 \label{eq:kernel}
 \end{equation}
-\textcolor{teal}{where $\boldsymbol{h}\in\mathcal{D}^-\cup\mathcal{D}^+$ and $b$ is the bandwidth. Combining these proximity weights with the fitted endpoint potentials and reference distribution, we define}
+where $\boldsymbol{h}\in\mathcal{D}^-\cup\mathcal{D}^+$ and $b$ is the bandwidth. Combining these proximity weights with the fitted endpoint potentials and reference distribution, we define
 \begin{align}
-\textcolor{teal}{\widetilde{\varphi}_b(\boldsymbol{x})}
-&\textcolor{teal}{=\sum_j
+\widetilde{\varphi}_b(\boldsymbol{x})
+&=\sum_j
 \left[\sum_i \widehat{\psi}_{1,i}\,\widehat{Q}_{01,ji}\,
 K_b(\boldsymbol{x},\boldsymbol{h}_i^+)\right]
-K_b(\boldsymbol{x},\boldsymbol{h}_j^-),}
+K_b(\boldsymbol{x},\boldsymbol{h}_j^-),
 \label{eq:local-phi}\\
-\textcolor{teal}{\widetilde{\psi}_b(\boldsymbol{x})}
-&\textcolor{teal}{=\sum_i
+\widetilde{\psi}_b(\boldsymbol{x})
+&=\sum_i
 \left[\sum_j \widehat{\varphi}_{0,j}\,\widehat{Q}_{01,ji}\,
 K_b(\boldsymbol{x},\boldsymbol{h}_j^-)\right]
-K_b(\boldsymbol{x},\boldsymbol{h}_i^+).}
+K_b(\boldsymbol{x},\boldsymbol{h}_i^+).
 \label{eq:local-psi}
 \end{align}
-\textcolor{teal}{In $\widetilde{\psi}_b$, the bracketed coefficient for each desired sample aggregates contributions from undesired samples, weighted by their fitted endpoint potentials, their proximity to $\boldsymbol{x}$, and their reference weights connecting them to that desired sample. The outer kernel additionally accounts for the desired sample's proximity to $\boldsymbol{x}$. The construction of $\widetilde{\varphi}_b$ exchanges the roles of the two populations.}
+In $\widetilde{\psi}_b$, the bracketed coefficient for each desired sample aggregates contributions from undesired samples, weighted by their fitted endpoint potentials, their proximity to $\boldsymbol{x}$, and their reference weights connecting them to that desired sample. The outer kernel additionally accounts for the desired sample's proximity to $\boldsymbol{x}$. The construction of $\widetilde{\varphi}_b$ exchanges the roles of the two populations.
 
-\textcolor{teal}{We define the steering field $\boldsymbol{v}$ from the spatial gradient of the log-ratio of these two sums, holding the bracketed coefficients fixed at their values computed at $\boldsymbol{x}$ during differentiation:}
+We define the steering field $\boldsymbol{v}$ from the spatial gradient of the log-ratio of these two sums, holding the bracketed coefficients fixed at their values computed at $\boldsymbol{x}$ during differentiation:
 \begin{equation}
-\textcolor{teal}{\displaystyle
+\displaystyle
 \boldsymbol{v}(\boldsymbol{x})
 =b\nablaS
 \log\frac{\widetilde{\psi}_b(\boldsymbol{x})}
 {\widetilde{\varphi}_b(\boldsymbol{x})}.
-}
 \label{eq:cobras-field}
 \end{equation}
 
-\textcolor{teal}{Expanding Eq.~\eqref{eq:cobras-field} gives a weighted average of tangent vectors toward desired samples minus a weighted average toward undesired samples, yielding attraction and repulsion, respectively (Figure~\ref{fig:overview}b). For $\boldsymbol{v}(\boldsymbol{x})\ne\boldsymbol{0}$, the normalized vector $\boldsymbol{v}(\boldsymbol{x})/\|\boldsymbol{v}(\boldsymbol{x})\|$ gives the steering direction. In practice, we compute these averages of tangent vectors using a kernel bandwidth selected separately for each population at the current activation. Appendix~\ref{apx:bandwidth} specifies this construction. Having defined the steering field, we next determine how strongly to apply it to each activation in Section~\ref{subsec:strength}.}
+Expanding Eq.~\eqref{eq:cobras-field} gives a weighted average of tangent vectors toward desired samples minus a weighted average toward undesired samples, yielding attraction and repulsion, respectively (Figure~\ref{fig:overview}b). For $\boldsymbol{v}(\boldsymbol{x})\ne\boldsymbol{0}$, the normalized vector $\boldsymbol{v}(\boldsymbol{x})/\|\boldsymbol{v}(\boldsymbol{x})\|$ gives the steering direction. In practice, we compute these averages of tangent vectors using a kernel bandwidth selected separately for each population at the current activation. Appendix~\ref{apx:bandwidth} specifies this construction. Having defined the steering field, we next determine how strongly to apply it to each activation in Section~\ref{subsec:strength}.
 
 \subsection{Adaptive steering strength}
 \label{subsec:strength}
 
-\textcolor{teal}{Activation steering should weaken when an activation already aligns with the desired behavior or when the contrastive data provide little support for the prompt. We therefore normalize $\boldsymbol{v}(\boldsymbol{x})$ and control the intervention size separately through two factors. The coefficient $s$ reduces the steering strength for activations already aligned with the desired behavior, while the gate $g$ attenuates or disables steering on prompts with little contrastive support.}
+Activation steering should weaken when an activation already aligns with the desired behavior or when the contrastive data provide little support for the prompt. We therefore normalize $\boldsymbol{v}(\boldsymbol{x})$ and control the intervention size separately through two factors. The coefficient $s$ reduces the steering strength for activations already aligned with the desired behavior, while the gate $g$ attenuates or disables steering on prompts with little contrastive support.
 
-\noindent\textbf{\textcolor{teal}{Alignment coefficient.}}~\textcolor{teal}{To determine $s$, we measure alignment with a unit contrastive axis $\boldsymbol{\mu}$, obtained by normalizing the difference between the desired and undesired sample means. We write $\cos(\boldsymbol{x},\boldsymbol{\mu})$ for their cosine similarity, with larger values indicating stronger alignment with the desired behavior.}
+\noindent\textbf{Alignment coefficient.}~To determine $s$, we measure alignment with a unit contrastive axis $\boldsymbol{\mu}$, obtained by normalizing the difference between the desired and undesired sample means. We write $\cos(\boldsymbol{x},\boldsymbol{\mu})$ for their cosine similarity, with larger values indicating stronger alignment with the desired behavior.
 
-\textcolor{teal}{Following Spherical Steering~\citep{you2026spherical}, we use von Mises--Fisher (vMF) scores for the desired direction $\boldsymbol{\mu}$ and the undesired direction $-\boldsymbol{\mu}$. With concentration $\kappa>0$, the desired and undesired scores are $e^{\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}$ and $e^{-\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}$, respectively. We divide the undesired score by the sum of both scores to obtain}
+Following Spherical Steering~\citep{you2026spherical}, we use von Mises--Fisher (vMF) scores for the desired direction $\boldsymbol{\mu}$ and the undesired direction $-\boldsymbol{\mu}$. With concentration $\kappa>0$, the desired and undesired scores are $e^{\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}$ and $e^{-\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}$, respectively. We divide the undesired score by the sum of both scores to obtain
 \[
-\textcolor{teal}{\displaystyle
+\displaystyle
 s(\boldsymbol{x})
 =
 \frac{e^{-\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}}
@@ -228,46 +219,41 @@ s(\boldsymbol{x})
 +e^{-\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}}
 =
 \frac{1}{1+e^{2\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}}.
-}
 \]
-\textcolor{teal}{When the desired score dominates, $s$ is smaller and the intervention weakens. The concentration $\kappa$ controls how sharply the strength changes with alignment.}
+When the desired score dominates, $s$ is smaller and the intervention weakens. The concentration $\kappa$ controls how sharply the strength changes with alignment.
 
-\noindent\textbf{\textcolor{teal}{Support gate.}}~\textcolor{teal}{Alignment with $\boldsymbol{\mu}$ alone does not establish proximity to the contrastive data. In particular, a prompt activation can align with the undesired direction and receive a large coefficient $s$ even when it has little support from the contrastive data. We therefore use the gate $g$ to attenuate steering on prompts for which contrastive samples provide little support.}
+\noindent\textbf{Support gate.}~Alignment with $\boldsymbol{\mu}$ alone does not establish proximity to the contrastive data. In particular, a prompt activation can align with the undesired direction and receive a large coefficient $s$ even when it has little support from the contrastive data. We therefore use the gate $g$ to attenuate steering on prompts for which contrastive samples provide little support.
 
-\textcolor{teal}{To assess support at the prompt activation $\boldsymbol{x}$, we use the fitted endpoint potentials directly as weights in a kernel sum over each contrastive population. Using the kernel in Eq.~\eqref{eq:kernel} with support bandwidth $b_g>0$, we define}
+To assess support at the prompt activation $\boldsymbol{x}$, we use the fitted endpoint potentials directly as weights in a kernel sum over each contrastive population. Using the kernel in Eq.~\eqref{eq:kernel} with support bandwidth $b_g>0$, we define
 \begin{equation}
-\textcolor{teal}{\displaystyle
+\displaystyle
 \widehat{\varphi}_{b_g}(\boldsymbol{x})=\sum\nolimits_j \widehat{\varphi}_{0,j}K_{b_g}(\boldsymbol{x},\boldsymbol{h}_j^-),
 \qquad
 \widehat{\psi}_{b_g}(\boldsymbol{x})=\sum\nolimits_i \widehat{\psi}_{1,i}K_{b_g}(\boldsymbol{x},\boldsymbol{h}_i^+).
-}
 \label{eq:frozen-factors}
 \end{equation}
-\textcolor{teal}{Motivated by the product form of the bridge density in Eq.~\eqref{eq:product}, we define an unnormalized support score by multiplying the two kernel sums. For calibration, we use its negative logarithm:}
+Motivated by the product form of the bridge density in Eq.~\eqref{eq:product}, we define an unnormalized support score by multiplying the two kernel sums. For calibration, we use its negative logarithm:
 \begin{equation}
-\textcolor{teal}{\displaystyle
+\displaystyle
 \hat{p}_{b_g}(\boldsymbol{x})
 =\widehat{\varphi}_{b_g}(\boldsymbol{x})\widehat{\psi}_{b_g}(\boldsymbol{x}),
 \qquad
 u(\boldsymbol{x})=-\log\hat{p}_{b_g}(\boldsymbol{x}).
-}
 \label{eq:support-score}
 \end{equation}
-\textcolor{teal}{Larger values of $u$ indicate lower support. To assess whether the prompt activation $\boldsymbol{x}$ is out of distribution (OOD), we compare $u(\boldsymbol{x})$ with scores computed on a reference set $\mathcal{D}_{\mathrm{ref}}$ of in-distribution prompt activations held out from evaluation. Both reference and query activations are extracted from the last prompt token at the steering layer. For $n=|\mathcal{D}_{\mathrm{ref}}|$, we define the reference percentile $r(\boldsymbol{x})\in[0,1]$ as the fraction of reference activations whose scores are lower than $u(\boldsymbol{x})$:}
+Larger values of $u$ indicate lower support. To assess whether the prompt activation $\boldsymbol{x}$ is out of distribution (OOD), we compare $u(\boldsymbol{x})$ with scores computed on a reference set $\mathcal{D}_{\mathrm{ref}}$ of in-distribution prompt activations held out from evaluation. Both reference and query activations are extracted from the last prompt token at the steering layer. For $n=|\mathcal{D}_{\mathrm{ref}}|$, we define the reference percentile $r(\boldsymbol{x})\in[0,1]$ as the fraction of reference activations whose scores are lower than $u(\boldsymbol{x})$:
 \[
-\textcolor{teal}{\displaystyle
+\displaystyle
 r(\boldsymbol{x})
 =\frac{|\{\boldsymbol{z}\in\mathcal{D}_{\mathrm{ref}}:u(\boldsymbol{z})<u(\boldsymbol{x})\}|}{n}.
-}
 \]
-\textcolor{teal}{A reference percentile close to one indicates that $\boldsymbol{x}$ has lower contrastive support than most reference activations. We use a coverage parameter $p\in(0,1)$ to set the percentile above which steering is attenuated. We define the support gate as}
+A reference percentile close to one indicates that $\boldsymbol{x}$ has lower contrastive support than most reference activations. We use a coverage parameter $p\in(0,1)$ to set the percentile above which steering is attenuated. We define the support gate as
 \begin{equation}
-\textcolor{teal}{\displaystyle
+\displaystyle
 g(\boldsymbol{x})=\min\!\left\{1,\frac{1-r(\boldsymbol{x})}{1-p}\right\}.
-}
 \label{eq:gate}
 \end{equation}
-\textcolor{teal}{The gate leaves steering strength unchanged when $r(\boldsymbol{x})\le p$ and decreases linearly with $r(\boldsymbol{x})$ above $p$, disabling steering when $u(\boldsymbol{x})$ exceeds every reference score. Appendix~\ref{apx:ood-gate} examines this calibration and evaluates how well the scores distinguish in-distribution and OOD prompt activations.}
+The gate leaves steering strength unchanged when $r(\boldsymbol{x})\le p$ and decreases linearly with $r(\boldsymbol{x})$ above $p$, disabling steering when $u(\boldsymbol{x})$ exceeds every reference score. Appendix~\ref{apx:ood-gate} examines this calibration and evaluates how well the scores distinguish in-distribution and OOD prompt activations.
 
 \begin{remark}
 The support construction also motivates a simplified, universal kNN gate that can be seamlessly integrated as an external module into existing steering methods. Using nearest-neighbor distances to the undesired contrastive samples, this gate scales each method's intervention without changing how that intervention is computed. Appendix~\ref{apx:knn} presents the gate, explains its connection to the support score, and evaluates it across steering methods.\end{remark}
@@ -275,19 +261,18 @@ The support construction also motivates a simplified, universal kNN gate that ca
 \subsection{Applying the intervention during generation}
 \label{subsec:procedure}
 
-\textcolor{teal}{We now describe the inference procedure for \Cobras. To do so, we combine the steering field $\boldsymbol{v}$ with the alignment coefficient $s$ and support gate $g$ to steer activations during generation. For each token, let $\boldsymbol{x}_0\in\Sph$ denote its activation before steering. When processing the last prompt token, we compute $g_{\mathrm{prompt}}:=g(\boldsymbol{x}_0)$ and use this value for steering that activation and all subsequent token activations. For each token activation, we evaluate $s(\boldsymbol{x}_0)$ once and keep it fixed during steering. We use the initial angular separation $\theta_0=\arccos\!\bigl(\cos(\boldsymbol{x}_0,\boldsymbol{\mu})\bigr)$ between $\boldsymbol{x}_0$ and the contrastive axis $\boldsymbol{\mu}$ to scale the steering speed, with $s(\boldsymbol{x}_0)$ and $g_{\mathrm{prompt}}$ providing attenuation. Because the steering field depends on the current activation, we take $K$ successive steps, recomputing $\boldsymbol{v}(\boldsymbol{x}_k)$ at each step $k=0,\ldots,K-1$. For an integration horizon $T\ge0$, the geodesic Euler updates are}
+We now describe the inference procedure for \Cobras. To do so, we combine the steering field $\boldsymbol{v}$ with the alignment coefficient $s$ and support gate $g$ to steer activations during generation. For each token, let $\boldsymbol{x}_0\in\Sph$ denote its activation before steering. When processing the last prompt token, we compute $g_{\mathrm{prompt}}:=g(\boldsymbol{x}_0)$ and use this value for steering that activation and all subsequent token activations. For each token activation, we evaluate $s(\boldsymbol{x}_0)$ once and keep it fixed during steering. We use the initial angular separation $\theta_0=\arccos\!\bigl(\cos(\boldsymbol{x}_0,\boldsymbol{\mu})\bigr)$ between $\boldsymbol{x}_0$ and the contrastive axis $\boldsymbol{\mu}$ to scale the steering speed, with $s(\boldsymbol{x}_0)$ and $g_{\mathrm{prompt}}$ providing attenuation. Because the steering field depends on the current activation, we take $K$ successive steps, recomputing $\boldsymbol{v}(\boldsymbol{x}_k)$ at each step $k=0,\ldots,K-1$. For an integration horizon $T\ge0$, the geodesic Euler updates are
 \begin{equation}
-\textcolor{teal}{\displaystyle
-\Delta=T\,s(\boldsymbol{x}_0)\,g_{\mathrm{prompt}}\,\theta_0\frac{R}{K},
+\displaystyle
+\Delta=\frac{T}{K}\,s(\boldsymbol{x}_0)\,g_{\mathrm{prompt}}\,\theta_0,
 \qquad
 \boldsymbol{x}_{k+1}
 =\exp_{\boldsymbol{x}_k}\!\left(
 \Delta\frac{\boldsymbol{v}(\boldsymbol{x}_k)}{\|\boldsymbol{v}(\boldsymbol{x}_k)\|}
 \right).
-}
 \label{eq:step}
 \end{equation}
-\textcolor{teal}{Each update follows a geodesic arc of length $\Delta$ in the current steering direction through the exponential map, keeping the activation on $\Sph$. Algorithm~\ref{alg:cobras} summarizes the procedure.}
+Each update follows a geodesic arc of length $\Delta$ in the current steering direction through the exponential map, keeping the activation on $\Sph$. Algorithm~\ref{alg:cobras} summarizes the procedure.
 
 \begin{algorithm}[t]
 \caption{\Cobras}
