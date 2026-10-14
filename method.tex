@@ -156,9 +156,8 @@ $\varphi(\boldsymbol{x},0)$ and $\psi(\boldsymbol{y},1)$,
 associated with undesired sample $j$ and desired sample $i$,
 respectively. We compute these potentials using the
 Sinkhorn algorithm~\citep{cuturi2013sinkhorn}, which
-alternately updates $\widehat{\varphi}_{0,j}$ to enforce
-the undesired marginal and $\widehat{\psi}_{1,i}$ to enforce
-the desired marginal.
+alternately updates $\widehat{\varphi}_{0,j}$  and $\widehat{\psi}_{1,i}$ to enforce
+the undesired  the desired marginals, respectively.
 
 The drift of the probability-flow ODE in Eq.~\eqref{eq:ldr} motivates constructing our steering field from the gradient of a log-ratio of potentials. In Section~\ref{subsec:estimation}, we use the fitted endpoint potentials to construct a steering field that can be evaluated at a given activation during inference.
 
