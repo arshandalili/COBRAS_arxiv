@@ -459,11 +459,11 @@ The small-bandwidth limit thus depends on nearest-sample distances to both popul
 \label{alg:knn-external}
 \small
 \begin{algorithmic}[1]
-\Require A fitted steering method, projected undesired activations $\mathcal{D}^-\subset\Sph$, sphere radius $R$, layer $\ell$, and gate parameters $k,\tau,\gamma$
+\Require A fitted steering method, undesired activations $\mathcal{D}^-\subset\Sph$, layer $\ell$, and gate parameters $k,\tau,\gamma$
 \Statex \textbf{Offline calibration}
 \State Compute $\rho_{\mathrm{ref}}$ from leave-one-out neighbor distances using Eq.~\eqref{eq:knn-gate}
 \Statex \textbf{For each new prompt}
-\State Obtain the last prompt activation $\boldsymbol{h}$ at layer $\ell$ and project it to $\boldsymbol{x}=R\boldsymbol{h}/\|\boldsymbol{h}\|$
+\State Obtain the last prompt activation $\boldsymbol{x}\in\Sph$ at layer $\ell$
 \State Compute and cache $g_{\mathrm{prompt}}\gets g_{\mathrm{kNN}}(\boldsymbol{x})$ using Eq.~\eqref{eq:knn-gate}
 \For{each token activation $\boldsymbol{h}$ at layer $\ell$, starting with the last prompt token}
     \State Apply the method's steering intervention to obtain $\tilde{\boldsymbol{h}}$
