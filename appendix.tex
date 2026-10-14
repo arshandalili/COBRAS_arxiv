@@ -103,11 +103,11 @@ Table~\ref{tab:steering_framework} summarizes the density models or estimation p
 \textbf{Method} & \textbf{Geometry} & \makecell[c]{\textbf{Steps}\\$K$} & \textbf{Density assumptions / estimation} & \textbf{Steering direction} \\
 \midrule[0.6pt]
 \textbf{CAA}~\citep{rimsky2024steering} & $\mathbb{R}^d$ & $1$ & $\begin{aligned}\pplus&=\mathcal{N}(\boldsymbol{\mu}_+,\boldsymbol{I}_d),\\\pminus&=\mathcal{N}(\boldsymbol{\mu}_-,\boldsymbol{I}_d)\end{aligned}$ & $\boldsymbol{\mu}_+-\boldsymbol{\mu}_-$ \\ \cmidrule[0.25pt](lr){1-5}
-\textbf{SS}~\citep{you2026spherical} & $\Sph$ & $1$ & $\begin{aligned}\pplus(\boldsymbol{x})&\propto e^{\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})},\\\pminus&=\operatorname{Unif}(\Sph)\end{aligned}$ & $\Pi_{\boldsymbol{x}}\boldsymbol{\mu}$ \\ \cmidrule[0.25pt](lr){1-5}
-\textbf{ITI (probe)}~\citep{li2023inference} & $\mathbb{R}^d$ & $1$ & Linear logistic probe for density-ratio estimation & $\boldsymbol{\theta}$ \\ \cmidrule[0.25pt](lr){1-5}
-\textbf{HPR}~\citep{pham2024householder} & $\Sph$ & $1$ & Linear probe without an intercept & $\Pi_{\boldsymbol{x}}\boldsymbol{\theta}$ for $\boldsymbol{\theta}^{\top}\boldsymbol{x}<0$ \\ \cmidrule[0.25pt](lr){1-5}
-\textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & $>1$ & Nonlinear density-ratio estimation using polynomial count-sketch features $\boldsymbol{\Phi}$ & $\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}$ \\ \midrule[0.6pt]
-\textbf{\Cobras~(ours)} & $\Sph$ & $>1$ & Kernel sums constructed from the fitted Schr\"{o}dinger Bridge & $\displaystyle\nablaS\log\frac{\widetilde{\psi}_b(\boldsymbol{x})}{\widetilde{\varphi}_b(\boldsymbol{x})}$ \\
+\textbf{SS}~\citep{you2026spherical} & $\Sph$ & $1$ & $\begin{aligned}\pplus&=\operatorname{vMF}(\boldsymbol{\mu},\kappa),\\\pminus&=\operatorname{Unif}(\Sph)\end{aligned}$ & $\Pi_{\boldsymbol{x}}\boldsymbol{\mu}$ \\ \cmidrule[0.25pt](lr){1-5}
+\textbf{ITI (probe)}~\citep{li2023inference} & $\mathbb{R}^d$ & $1$ & Linear probe & $\boldsymbol{\theta}$ \\ \cmidrule[0.25pt](lr){1-5}
+\textbf{HPR}~\citep{pham2024householder} & $\Sph$ & $1$ & Linear probe & $\Pi_{\boldsymbol{x}}\boldsymbol{\theta}$ for $\boldsymbol{\theta}^{\top}\boldsymbol{x}<0$ \\ \cmidrule[0.25pt](lr){1-5}
+\textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & $>1$ & Polynomial count-sketch features~$\boldsymbol{\Phi}$ & $\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}$ \\ \midrule[0.6pt]
+\textbf{\Cobras~(ours)} & $\Sph$ & $>1$ & Kernel sums with transport weights & $\displaystyle\nablaS\log\frac{\widetilde{\psi}_b(\boldsymbol{x})}{\widetilde{\varphi}_b(\boldsymbol{x})}$ \\
 \bottomrule[0.8pt]
 \end{tabular}
 }
