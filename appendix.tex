@@ -663,46 +663,31 @@ Following Zhao~\etal~\cite{zhaoodesteer}, we evaluate all methods on four open-s
 \label{apx:bandwidth}
 \label{apx:pseudocode}
 
-We extend the ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement the steering methods and baselines.
-
-\noindent\textbf{Steering at inference.}~At each integration step, we select a bandwidth separately for each population:
+We extend the ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement the steering methods and baselines. For \Cobras, we set $\varepsilon$ to the squared median $5$-NN geodesic distance in $\mathcal{D}^+\cup\mathcal{D}^-$, with a minimum of $(10^{-3}R)^2$. Sinkhorn fitting uses five sweeps of Eq.~\eqref{eq:sinkhorn}, initialized with zero log-potentials. The implementation uses unnormalized reference weights $e^{-c_{ji}}$, absorbing their common normalization into the fitted potentials. The normalized steering weights and calibrated support gate are invariant to this choice. The support gate uses the fixed bandwidth $b_g=\varepsilon/256$. At each integration step, we select a bandwidth separately for each population:
 \begin{equation}
 b_\pm(\boldsymbol{x})=
 \max\!\left\{\max_{\boldsymbol{h}\in\mathcal{D}^\pm}
 d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2,\ b_{\min}\right\}.
 \label{eq:adaptive-bandwidth}
 \end{equation}
-\textcolor{blue}{We use $b_{\min}=(10^{-3}R)^2$.} Every kernel centered on a desired sample uses $b_+$, including the kernels inside $m^-$. Every kernel centered on an undesired sample uses $b_-$, including those inside $m^+$. The final field remains the difference of weighted log-maps in Eq.~\eqref{eq:cobras-field}, without dividing either branch by its bandwidth. Thus the common-$b$ gradient-ratio identity and Proposition~\ref{prop:ldr-limit} describe the fixed-bandwidth construction. \textcolor{blue}{The support gate uses the separate, fixed bandwidth $b_g=\sigma^2/256$.}
+where $b_{\min}=(10^{-3}R)^2$. Every kernel centered on a desired sample uses $b_+$, and every kernel centered on an undesired sample uses $b_-$. This applies to both the inner and outer kernels in Eqs.~\eqref{eq:local-psi} and~\eqref{eq:local-phi}. We evaluate the steering field using the weighted log-maps in Eq.~\eqref{eq:weighted-cobras-field}, without dividing either branch by its bandwidth. Weighted kernel estimates and normalized weights are evaluated in log space. We clamp cosines away from $\pm1$ and vector norms away from zero for numerical stability.
 
-\paragraph{Numerical evaluation.}
-Algorithm~\ref{alg:cobras} in Section~\ref{subsec:procedure} gives the adaptive procedure. \textcolor{blue}{Weighted kernel estimates} and normalized weights are evaluated in log space. Implementations also clamp cosines away from $\pm1$ and vector norms away from zero for numerical stability. \textcolor{blue}{Steering acts through a forward hook at layer $\ell$ on the last-token activation at each decoding step, with the prompt gate cached for the continuation.}
-
-\paragraph{\textcolor{blue}{Experimental settings.}}
-\textcolor{blue}{Unless varied in an ablation, we use $K=10$ integration steps and $\kappa=20$. The main in-distribution evaluation is ungated, with $g_q=1$ and $T=0.5$. Support-gated OOD evaluation uses $p=0.7$ and $T=0.65$. The component and progressive ablations use the kNN gate, as specified in Appendix~\ref{apx:component-ablations}. Experiments were run using a combination of one H100 80GB GPU and two A100 80GB GPUs.}
+Unless varied in an ablation, we use $K=10$ integration steps and $\kappa=20$. The main in-distribution evaluation is ungated, with $g_{\mathrm{prompt}}=1$ and integration horizon $T=0.5$. Support-gated OOD evaluation uses $p=0.7$ and $T=0.65$. For baseline steering-strength selection, we sweep $T=20$--$23$ for Falcon-7B, $T=2$--$5$ for Mistral-7B, $T=3$--$6$ for LLaMA3.1-8B, and $T=13$--$16$ for Qwen2.5-7B. For baselines without a comparable steering-strength parameter, we use the settings reported in their papers.
 
 \FloatBarrier
-\section{\textcolor{blue}{Computational Cost}}
+\section{Computational Cost}
 \label{apx:computational-cost}
 
-\textcolor{blue}{\Cobras fits the transport plan once and evaluates the steering field repeatedly during generation. We examine the cost of both stages and assess how reducing the contrastive set or the number of integration steps changes decoding overhead and steering performance.}
+Our experiments used one H100 80GB GPU and two A100 80GB GPUs. \Cobras fits the endpoint potentials and computes reference support scores offline. On a single A100 80GB GPU in float32, fitting takes $13$ ms for $N_+=1311$ and $N_-=1672$ after initialization. With synthetic activations and blocked distance computation, fitting takes $9.6$ s at $60{,}000$ samples per population. At $100{,}000$ per population, the cost matrix alone occupies $37.3$ GiB and the fit exceeds available memory, exposing the storage limit of the pairwise representation.
 
-\paragraph{\textcolor{blue}{Computational complexity.}}
-Transport fitting and reference-score computation are performed offline. With pairwise transport costs and Sinkhorn scalings precomputed, each steered token requires $K$ field evaluations, each costing $O(N_-N_+ + d(N_-+N_+))$. The $N_-N_+$ term comes from combining connections between the contrastive populations, while $d(N_-+N_+)$ covers distances and tangent vectors in activation space. This expression describes steering integration and excludes the language model's forward pass. The support gate is evaluated once per prompt.
+During generation, each steered token requires $K$ field evaluations, each costing $O(N_-N_+ + d(N_-+N_+))$. The pairwise term combines contributions across the two populations, while the remaining term covers activation distances and tangent vectors. This cost excludes the language model's forward pass. The support gate is evaluated once per prompt. To measure decoding overhead, we benchmark LLaMA3.1-8B at layer $13$ on the same GPU in float32, using $100$ prompts, batch size $10$, and $50$ greedy decoding steps per prompt. We report the median runtime over four rounds after one warm-up round. With $N_+=1311$, $N_-=1672$, and $K=10$, \Cobras increases runtime per decoding step for the batch from $62.5$ to $82.7$ ms, an overhead of $32\%$.
 
-\paragraph{\textcolor{blue}{Fitting and memory.}}
-\textcolor{blue}{On an A100 80GB GPU in float32, fitting takes approximately $13$ ms for $N_+=1311$ and $N_-=1672$ after initialization. A scaling experiment with synthetic activations and blocked distance computation takes $9.6$ s at $60{,}000$ samples per population. At $100{,}000$ per population, the fit exceeds available memory. The float32 cost matrix alone occupies $37.3$ GiB, illustrating the storage constraint imposed by the pairwise representation.}
-
-\paragraph{\textcolor{blue}{Decoding overhead.}}
-\textcolor{blue}{We benchmark LLaMA3.1-8B at layer $13$ on the same GPU in float32, using $100$ prompts, batch size $10$, and $50$ greedy decoding steps per prompt. We time each method in five repeated rounds, discard the first round (to avoid warm-up effects), and report the median runtime over the remaining four. With $N_+=1311$, $N_-=1672$, and $K=10$, the unsteered model takes $62.5$ ms per decoding step for the batch. \Cobras adds $20.2$ ms, giving $82.7$ ms total and approximately $32\%$ overhead.}
-
-\paragraph{\textcolor{blue}{Reducing computational cost.}}
-\textcolor{blue}{We compare three approximations. Random subsampling reduces the contrastive set before fitting, fewer integration steps reduce field evaluations per token, and nearest-sample truncation restricts field evaluation to the $64$ closest samples in each population. Table~\ref{tab:runtime-approximations} reports decoding overhead and the corresponding TruthfulQA performance.}
+We then reduce cost by subsampling before fitting, taking fewer integration steps, or restricting field evaluation to the $64$ nearest samples per population. Table~\ref{tab:runtime-approximations} compares overhead and TruthfulQA performance, using ungated steering with $T=0.5$ for all variants. Using a quarter of each population with two integration steps reduces overhead from $32\%$ to $7\%$ at a cost of $1.8$ percentage points in True$\times$Info. Subsampling alone provides little speedup, while nearest-sample truncation sacrifices more accuracy for a smaller reduction in overhead.
 
 \begin{table}[ht]
-\color{blue}
 \centering
 \small
-\caption{\textcolor{blue}{Computational trade-offs on LLaMA3.1-8B. Overhead is relative to unsteered decoding on an A100 80GB GPU in float32 at batch size $10$. TruthfulQA True$\times$Info uses a separate evaluation on all $817$ questions.}}
+\caption{Computational trade-offs on LLaMA3.1-8B. Overhead is relative to unsteered decoding. True$\times$Info is measured in a separate evaluation on all $817$ TruthfulQA questions.}
 \label{tab:runtime-approximations}
 \begin{tabular}{lccc}
 \toprule
@@ -717,9 +702,6 @@ $64$ nearest samples per population & 10 & 22 & 61.6 \\
 \end{table}
 \FloatBarrier
 
-\textcolor{blue}{Combining a quarter of the contrastive set with two integration steps reduces added overhead from $32\%$ to $7\%$, with a $1.8$-point decrease in True$\times$Info. Subsampling alone yields little decoding speedup in this setting, while truncation loses more accuracy. Fewer steps combined with subsampling therefore provide the most favorable measured accuracy--cost trade-off among these approximations.}
-
-\FloatBarrier
 \section{Additional Results}
 
 \subsection{\textcolor{blue}{Ablation studies}}
