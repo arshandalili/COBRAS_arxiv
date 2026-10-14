@@ -472,7 +472,7 @@ The small-bandwidth limit thus depends on nearest-sample distances to both popul
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{Support gating with kNN across steering methods}
+\subsection{kNN gating across steering methods}
 \label{apx:knn-external}
 
 To evaluate the kNN gate across steering methods, we compare CAA, ODESteer, SphericalSteer, and \Cobras with and without gating on LLaMA3.1-8B. All methods are fitted on TruthfulQA, whose True$\times$Info score measures steering performance. Accuracy on GSM8K and MMLU measures OOD retention. We use the default kNN settings from Appendix~\ref{apx:knn-gate}. Table~\ref{tab:knn-external} also includes \Cobras with the support gate in Eq.~\eqref{eq:gate} at coverage $p=0.7$.
@@ -480,13 +480,13 @@ To evaluate the kNN gate across steering methods, we compare CAA, ODESteer, Sphe
 \begin{table}[ht]
 \centering
 \small
-\caption{Effect of support gating on LLaMA3.1-8B. TruthfulQA True$\times$Info is averaged over three seeds. Each OOD benchmark uses the same $100$ sampled questions for every method and gate setting.}
+\caption{Steering performance and OOD retention with and without gating on LLaMA3.1-8B. TruthfulQA True$\times$Info is averaged over three seeds. Each OOD benchmark uses the same $100$ sampled questions for every method and gate setting.}
 \label{tab:knn-external}
 \begin{tabular}{lccc}
 \toprule
 Method & TQA T$\times$I (\%) & GSM8K (\%) & MMLU (\%) \\
 \midrule
-Unsteered & 43.3 & 57 & 66 \\
+Unsteered & 43.2 & 57 & 66 \\
 \midrule
 CAA & 60.3 & 18 & 63 \\
 CAA + kNN gate & 58.6 & 55 & 66 \\
@@ -496,50 +496,52 @@ SphericalSteer & 64.4 & 2 & 51 \\
 SphericalSteer + kNN gate & 61.7 & 54 & 66 \\
 \midrule
 \Cobras, no gate & 66.5 & 0 & 48 \\
-\Cobras + kNN gate & 63.7 & 52 & 66 \\
-\Cobras + support gate & 63.5 & 56 & 66 \\
+\Cobras + kNN gate & 63.6 & 52 & 66 \\
+\Cobras + support gate & 63.4 & 56 & 66 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Adding the kNN gate brings GSM8K and MMLU accuracy close to the unsteered levels for all four methods. This recovery comes with a decrease of $1.7$ to $2.8$ percentage points in TruthfulQA True$\times$Info, while all gated methods remain above the unsteered TruthfulQA score. Among the methods using the kNN gate, \Cobras achieves the highest reported mean TruthfulQA score at $63.7\%$, compared with $61.7\%$ for SphericalSteer.
+Adding the kNN gate brings GSM8K and MMLU accuracy close to the unsteered levels for all four methods. This recovery comes with a decrease of $1.7$ to $2.9$ percentage points in TruthfulQA True$\times$Info, while all gated methods remain above the unsteered TruthfulQA score. Among the methods using the kNN gate, \Cobras achieves the highest reported mean TruthfulQA score at $63.6\%$, compared with $61.7\%$ for SphericalSteer.
 
-For \Cobras, replacing the kNN gate with the support gate gives similar TruthfulQA performance while also keeping OOD accuracy close to the unsteered levels. We next examine how gate calibration affects the balance between steering performance and OOD retention.
+For \Cobras, the support gate gives similar TruthfulQA performance to the kNN gate and improves GSM8K accuracy from $52\%$ to $56\%$, with MMLU accuracy unchanged. We next examine how sensitive these results are to gate calibration.
 
 \FloatBarrier
 \subsection{Calibration and sensitivity of the nearest-neighbor gate}
 \label{apx:knn-calibration}
-\textcolor{blue}{Calibration determines which prompts the kNN gate attenuates. In Eq.~\eqref{eq:knn-gate}, $\rho_{\mathrm{ref}}$ is computed from contrastive question--answer activations, whereas the gate is evaluated at the last prompt token. In a Llama3.1-8B diagnostic, the median TruthfulQA prompt lies at the $96$th percentile of the reference distances and the median GSM8K prompt at the $99.2$nd. Only a few percentile points therefore separate the two medians. The quantile $\tau$ must account for the shift from question--answer to prompt activations, making the intervention sensitive to its setting.}
-
-\textcolor{blue}{Table~\ref{tab:abstain-results} shows how changing $\tau$ and $k$ affects the balance between in-distribution steering and OOD retention. Raising $\tau$ enlarges the reference radius and permits stronger steering, improving TruthfulQA True$\times$Info but sharply reducing GSM8K accuracy on Llama3.1-8B at $\tau=0.995$. Increasing $k$ also improves TruthfulQA scores on both models, with a substantial GSM8K loss on Llama3.1-8B and little change in GSM8K accuracy on Mistral-7B.}
+We first analyze how the kNN gate's calibration quantile $\tau$ and neighborhood size $k$ affect steering performance and OOD retention. Table~\ref{tab:abstain-results} reports a sensitivity experiment on LLaMA3.1-8B and Mistral-7B with $T=0.65$, $K=10$, and $\gamma=200$. We vary $\tau$ with $k=32$ fixed, then vary $k$ with $\tau=0.98$ fixed.
 
 \begin{table}[ht]
 \centering
 \small
-\caption{Sensitivity of the kNN support gate in Eq.~\eqref{eq:knn-gate}. Percentile ablations fix $k=32$. Neighborhood ablations fix $\tau=0.98$. The neighborhood size $k$ is distinct from the number of integration steps $K$.}
+\caption{Sensitivity of \Cobras with the kNN gate to $\tau$ and $k$. Results use seed $42$ on all $817$ TruthfulQA questions and the full GSM8K test set of $1{,}319$ questions.}
 \label{tab:abstain-results}
 \begin{tabular}{lccccc}
 \toprule
 \multirow{2}{*}{Ablation} & \multirow{2}{*}{Value}
-& \multicolumn{2}{c}{Llama3.1-8B-Base} & \multicolumn{2}{c}{Mistral-7B-Base} \\
+& \multicolumn{2}{c}{LLaMA3.1-8B-Base} & \multicolumn{2}{c}{Mistral-7B-Base} \\
 \cmidrule(lr){3-4}\cmidrule(lr){5-6}
 & & TQA T$\times$I (\%) & GSM8K (\%) & TQA T$\times$I (\%) & GSM8K (\%) \\
 \midrule
 \multirow{4}{*}{Quantile ($\tau$)}
-& $0.900$ & 44.7 & 48.7 & 36.2 & 36.9 \\
-& $0.950$ & 54.8 & 48.9 & 37.1 & 36.3 \\
+& $0.900$ & 44.7 & 48.7 & 36.2 & 36.3 \\
+& $0.950$ & 54.8 & 48.9 & 37.1 & 36.2 \\
 & $0.980$ & 65.5 & 47.5 & 42.7 & 36.2 \\
-& $0.995$ & 69.2 & 11.6 & 59.5 & 35.5 \\
+& $0.995$ & 69.2 & 11.6 & 59.5 & 36.4 \\
 \midrule
 \multirow{3}{*}{Neighbors ($k$)}
 & $32$ & 65.5 & 47.5 & 42.7 & 36.2 \\
-& $128$ & 68.9 & 25.9 & 49.8 & 36.5 \\
-& $256$ & 69.4 & 15.1 & 52.5 & 36.9 \\
+& $128$ & 68.9 & 25.9 & 49.8 & 36.3 \\
+& $256$ & 69.4 & 15.1 & 52.5 & 36.3 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textcolor{blue}{The support gate addresses the reference mismatch by calibrating on prompt activations at the position used during inference and setting attenuation through their reference ranks (Section~\ref{subsec:strength}). In a separate comparison on the same $100$ GSM8K questions used in Table~\ref{tab:knn-external}, sweeping the kNN gate over $\tau\in\{0.90,0.95,0.98,0.995\}$ gives $57$, $57$, $52$, and $15\%$ accuracy, whereas sweeping the coverage over $p\in\{0.4,0.7,0.8,0.9\}$ gives $56$, $56$, $54$, and $52\%$. The support gate shows less variation in OOD accuracy across the tested settings. Calibrating on prompts makes the control parameter refer directly to the activations encountered at inference.}
+The results show that the balance between steering performance and OOD retention can be sensitive to $\tau$. Raising $\tau$ enlarges the reference radius and permits stronger steering, improving TruthfulQA True$\times$Info on both models. On LLaMA3.1-8B, increasing $\tau$ from $0.98$ to $0.995$ raises this score from $65.5\%$ to $69.2\%$ but reduces GSM8K accuracy from $47.5\%$ to $11.6\%$. Increasing $k$ also improves TruthfulQA scores on both models while reducing GSM8K accuracy on LLaMA3.1-8B. Mistral-7B's GSM8K accuracy remains near $36\%$ throughout both sweeps.
+
+To understand the sensitivity to $\tau$, we examine the contrastive set used to calibrate the kNN gate. The reference radius $\rho_{\mathrm{ref}}$ in Eq.~\eqref{eq:knn-gate} is computed from neighbor distances between contrastive question--answer activations, whereas the gate is evaluated at the last prompt activation. In a LLaMA3.1-8B diagnostic with $k=32$, the median neighbor distances for TruthfulQA and GSM8K prompt activations fall at the $96$th and $99.2$nd reference percentiles, respectively. These percentiles help explain why raising $\tau$ first enables stronger TruthfulQA steering and then allows substantial steering on GSM8K. With $\gamma=200$, the gate changes sharply as $\rho_{\mathrm{ref}}$ passes an activation's neighbor distance, making the choice of $\tau$ particularly consequential.
+
+The support gate in Eq.~\eqref{eq:gate} addresses this calibration mismatch by using support scores from the last-token activations of reference prompts. Its coverage parameter $p$ therefore refers directly to percentiles of scores for prompt activations. We compare the two gates in a separate LLaMA3.1-8B sensitivity experiment on the same $100$ GSM8K questions used in Table~\ref{tab:knn-external}. Sweeping the kNN gate over $\tau\in\{0.90,0.95,0.98,0.995\}$ gives $57$, $57$, $52$, and $15\%$ accuracy, respectively. Sweeping the support gate over $p\in\{0.4,0.7,0.8,0.9\}$ gives $56$, $56$, $54$, and $52\%$, respectively. Across these settings, the support gate keeps accuracy close to the unsteered $57\%$ and avoids the sharp degradation observed with the kNN gate. Together with the similar TruthfulQA performance in Table~\ref{tab:knn-external}, these results favor the support gate for preserving OOD performance with less sensitivity to calibration.
 
 \FloatBarrier
 \section{Experimental Details}
