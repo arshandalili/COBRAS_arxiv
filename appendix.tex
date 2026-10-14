@@ -861,8 +861,7 @@ From Table~\ref{tab:norm_concentration}, we observe that norms are least concent
 \subsection{Effect of steering strength $T$ on \Cobras} 
 \label{appendix:cobras_vs_t}
 
-Figure~\ref{fig:cobras_vs_t} shows that steering strength has a non-monotonic effect. On TruthfulQA, moderate $T$ generally improves True$\times$Info, with peaks around $T=0.6$ for LLaMA3.1-8B, $T=0.7$ for Mistral-7B, and $T=0.4$ for Qwen2.5-7B; larger values often degrade performance, suggesting over-steering. Falcon-7B is flatter and weaker overall, with a sharp drop at high $T$. On UltraFeedback, the trend is more model-dependent: LLaMA3.1-8B benefits from moderate $T$, Falcon-7B is relatively stable, while Mistral-7B and Qwen2.5-7B degrade as $T$ increases. Overall, these results support using moderate steering, typically $T\approx0.5$--$0.7$ for TruthfulQA and lower-to-moderate values for UltraFeedback.
-
+We vary the integration horizon $T$ from $0.1$ to $1.0$ on TruthfulQA and UltraFeedback, using $K=10$ and ungated steering.
 
 \begin{figure}[t]
     \centering
@@ -880,17 +879,17 @@ Figure~\ref{fig:cobras_vs_t} shows that steering strength has a non-monotonic ef
         \label{fig:cobras_uf_vs_t}
     \end{subfigure}
 
-    \caption{\Cobras performance as a function of steering strength $T$. Moderate values of $T$ generally yield the best TruthfulQA performance, while overly large values degrade both TruthfulQA and UltraFeedback performance for several models. Results are averaged over three runs with different seeds.}
+    \caption{Sensitivity of \Cobras to the integration horizon $T$ on TruthfulQA and UltraFeedback. Results are averaged over three runs with different seeds.}
     \label{fig:cobras_vs_t}
 \end{figure}
 
+Figure~\ref{fig:cobras_vs_t} shows that the integration horizon has a non-monotonic effect. On TruthfulQA, moderate $T$ generally improves True$\times$Info, with peaks around $T=0.6$ for LLaMA3.1-8B, $T=0.7$ for Mistral-7B, and $T=0.4$ for Qwen2.5-7B. Larger values often degrade performance, suggesting over-steering. Falcon-7B is flatter and weaker overall, with a sharp drop at high $T$. On UltraFeedback, the trend is more model-dependent. LLaMA3.1-8B benefits from moderate $T$, Falcon-7B is relatively stable, while Mistral-7B and Qwen2.5-7B degrade as $T$ increases. The preferred horizon therefore depends on both the model and the target behavior.
 
 \FloatBarrier
-\subsection{Impact of geodesic Euler steps $K$}
+\subsection{Effect of the number of integration steps $K$}
 \label{appendix:cobras_vs_k}
 
-We vary the number of geodesic Euler steps $K$ to examine how integration affects TruthfulQA performance. At fixed steering strength $T$, increasing $K$ divides the same steering budget into smaller updates and re-evaluates the query-dependent field after each update. Table~\ref{tab:cobras_truthfulqa_iters} includes the unsteered models as references for the resulting changes in truthfulness and informativeness.
-
+We vary the number of geodesic Euler steps $K$ under ungated steering to examine how integration affects TruthfulQA performance (Table~\ref{tab:cobras_truthfulqa_iters}). At a fixed integration horizon $T$, increasing $K$ divides the same intervention into smaller updates and recomputes the activation-dependent field after each update.
 
 \begin{table*}[h!]
 \centering
@@ -928,6 +927,29 @@ We vary the number of geodesic Euler steps $K$ to examine how integration affect
 \FloatBarrier
 
 Every tested $K$ gives higher True and True$\times$Info scores than the corresponding unsteered reference. Increasing $K$ raises informativeness but can lower truthfulness. On Falcon-7B, moving from $K=1$ to $K=10$ raises Info from $73.7$ to $93.4$ and lowers True from $60.5$ to $45.5$, while improving the joint score from $37.3$ to $40.3$. The joint-score gain is larger on LLaMA3.1-8B and smaller on Mistral-7B. Although $K=10$ gives the highest mean joint score for each model, the Falcon trend is not monotonic. The choice of $K$ should therefore reflect both the desired truthfulness--informativeness balance and the cost of additional field evaluations (Appendix~\ref{apx:computational-cost}).
+
+\FloatBarrier
+\subsection{Sensitivity of baseline steering methods}
+\label{appendix:baseline_strength}
+
+o select the steering strength for each baseline, we sweep over model-specific ranges: $T=20$--$23$ for Falcon-7B, $T=2$--$5$ for Mistral-7B, $T=3$--$6$ for LLaMA3.1-8B, and $T=13$--$16$ for Qwen2.5-7B. Figure~\ref{fig:performance_vs_t} shows the performance of RepE, ITI, CAA, and ODESteer on TruthfulQA and UltraFeedback. For baselines without a comparable steering-strength parameter, we use the best values reported in their papers.
+
+\begin{figure}[ht]
+    \centering
+     \includegraphics[width=\linewidth]{figures/performance_vs_steering_strength.png}
+    \caption{Sensitivity of RepE, ITI, CAA, and ODESteer to steering strength on TruthfulQA and UltraFeedback. The strength ranges differ across models.}
+    \label{fig:performance_vs_t}
+\end{figure}
+
+The results show that the best steering strength depends on both the model and the method. In general, some methods improve TruthfulQA performance at moderate values of $T$, but larger steering strengths can hurt UltraFeedback performance. This trend is especially visible for ODESteer on Mistral-7B and LLaMA3.1-8B, where increasing $T$ leads to a large drop in UltraFeedback win rate. CAA is more stable on UltraFeedback and often improves with larger $T$, while ITI tends to change more gradually across the sweep.
+
+
+\FloatBarrier
+\subsection{Lexical diversity after detoxification}
+
+Table~\ref{tab:detox_dist} shows the generation diversity of steering methods on the detoxification task using Dist-$n$ metrics. Overall, \Cobras preserves lexical diversity close to the original model across all four backbones. The gap is small for Mistral-7B and LLaMA3.1-8B, where Dist-2 and Dist-3 remain nearly unchanged compared to the original model.
+
+We also observe that some baselines reduce diversity more noticeably. For example, CAA lowers diversity on Falcon-7B and Qwen2.5-7B, while SphericalSteer shows a larger drop on Qwen2.5-7B. In contrast, \Cobras maintains high Dist-2 and Dist-3 scores, suggesting that its detoxification effect does not come from generating overly repetitive or generic responses.
 
 \begin{table*}[h!]
 \centering
@@ -1000,39 +1022,6 @@ SphericalSteer & & 0.844 {\tiny $\pm$ 0.008} & 0.942 {\tiny $\pm$ 0.008} & 0.948
 }
 \end{table*}
 
-\subsection{Diversity on Detoxification}
-
-
-Table~\ref{tab:detox_dist} shows the generation diversity of steering methods on the detoxification task using Dist-$n$ metrics. Overall, \Cobras preserves lexical diversity close to the original model across all four backbones. The gap is small for Mistral-7B and LLaMA3.1-8B, where Dist-2 and Dist-3 remain nearly unchanged compared to the original model.
-
-We also observe that some baselines reduce diversity more noticeably. For example, CAA lowers diversity on Falcon-7B and Qwen2.5-7B, while SphericalSteer shows a larger drop on Qwen2.5-7B. In contrast, \Cobras maintains high Dist-2 and Dist-3 scores, suggesting that its detoxification effect does not come from generating overly repetitive or generic responses.
-
-
-
-
-
-\clearpage
-
-\begin{figure}[t]
-    \centering
-     \includegraphics[width=\linewidth]{figures/performance_vs_steering_strength.png}
-    \caption{
-        Performance vs. steering strength ($T$) on TruthfulQA and UltraFeedback across four models for selected steering methods.
-    }
-    \label{fig:performance_vs_t}
-\end{figure}
-
-
-
-\subsection{Performance vs Steering Strength for baselines}
-
-To select the steering strength for each baseline, we sweep over model-specific ranges: $T=20$--$23$ for Falcon-7B, $T=2$--$5$ for Mistral-7B, $T=3$--$6$ for LLaMA3.1-8B, and $T=13$--$16$ for Qwen2.5-7B. Figure~\ref{fig:performance_vs_t} shows the performance of RepE, ITI, CAA, and ODESteer on TruthfulQA and UltraFeedback. For baselines without a comparable steering-strength parameter, we use the best values reported in their papers.
-
-The results show that the best steering strength depends on both the model and the method. In general, some methods improve TruthfulQA performance at moderate values of $T$, but larger steering strengths can hurt UltraFeedback performance. This trend is especially visible for ODESteer on Mistral-7B and LLaMA3.1-8B, where increasing $T$ leads to a large drop in UltraFeedback win rate. CAA is more stable on UltraFeedback and often improves with larger $T$, while ITI tends to change more gradually across the sweep.
-
-
-
-% \FloatBarrier
 \clearpage
 \section{Sample Responses}
 \label{apx:sample-responses}
