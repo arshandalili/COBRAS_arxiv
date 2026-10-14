@@ -89,25 +89,25 @@ On the undesired side of the probe boundary, $\boldsymbol{u}^{\top}\boldsymbol{x
 \]
 ODESteer integrates the corresponding ODE using $K$ Euler steps over an integration horizon $T$, evaluating the direction at each current activation.
 
-Table~\ref{tab:steering_framework} summarizes these steering directions and the number of intervention steps.
+Table~\ref{tab:steering_framework} summarizes the density models or estimation procedures underlying these interpretations, the steering directions, and the number of intervention steps.
 \begin{table}[t!]
 \centering
-\caption{Steering directions shown up to positive scaling, with $K$ denoting the number of intervention steps per activation.}
+\caption{Steering directions (up to positive scaling) and the density models or estimation procedures used in their interpretation. Here $K$ is the number of intervention steps per activation.}
 \label{tab:steering_framework}
 \small
 \setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{1.3}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{>{\raggedright\arraybackslash}m{2.5cm} >{\centering\arraybackslash}m{1.6cm} >{\centering\arraybackslash}m{1.2cm} >{\raggedright\arraybackslash}m{7.8cm}}
+\begin{tabular}{>{\raggedright\arraybackslash}m{2.1cm} >{\centering\arraybackslash}m{1.35cm} >{\centering\arraybackslash}m{1.0cm} >{\raggedright\arraybackslash}m{4.2cm} >{\raggedright\arraybackslash}m{4.4cm}}
 \toprule[0.8pt]
-\textbf{Method} & \textbf{Geometry} & \makecell[c]{\textbf{Steps}\\$K$} & \textbf{Steering direction} \\
+\textbf{Method} & \textbf{Geometry} & \makecell[c]{\textbf{Steps}\\$K$} & \textbf{Density assumptions / estimation} & \textbf{Steering direction} \\
 \midrule[0.6pt]
-\textbf{CAA}~\citep{rimsky2024steering} & $\mathbb{R}^d$ & $1$ & $\boldsymbol{\mu}_+-\boldsymbol{\mu}_-$ \\ \cmidrule[0.25pt](lr){1-4}
-\textbf{SS}~\citep{you2026spherical} & $\Sph$ & $1$ & $\Pi_{\boldsymbol{x}}\boldsymbol{\mu}$ \\ \cmidrule[0.25pt](lr){1-4}
-\textbf{ITI (probe)}~\citep{li2023inference} & $\mathbb{R}^d$ & $1$ & $\boldsymbol{\theta}$ \\ \cmidrule[0.25pt](lr){1-4}
-\textbf{HPR}~\citep{pham2024householder} & $\Sph$ & $1$ & $\Pi_{\boldsymbol{x}}\boldsymbol{\theta}$ for $\boldsymbol{\theta}^{\top}\boldsymbol{x}<0$ \\ \cmidrule[0.25pt](lr){1-4}
-\textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & $>1$ & $\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}$ \\ \midrule[0.6pt]
-\textbf{\Cobras~(ours)} & $\Sph$ & $>1$ & $\displaystyle\nablaS\log\frac{\widetilde{\psi}_b(\boldsymbol{x})}{\widetilde{\varphi}_b(\boldsymbol{x})}$, with differentiation as in Eq.~\eqref{eq:cobras-field} \\
+\textbf{CAA}~\citep{rimsky2024steering} & $\mathbb{R}^d$ & $1$ & $\begin{aligned}\pplus&=\mathcal{N}(\boldsymbol{\mu}_+,\boldsymbol{I}_d),\\\pminus&=\mathcal{N}(\boldsymbol{\mu}_-,\boldsymbol{I}_d)\end{aligned}$ & $\boldsymbol{\mu}_+-\boldsymbol{\mu}_-$ \\ \cmidrule[0.25pt](lr){1-5}
+\textbf{SS}~\citep{you2026spherical} & $\Sph$ & $1$ & $\begin{aligned}\pplus(\boldsymbol{x})&\propto e^{\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})},\\\pminus&=\operatorname{Unif}(\Sph)\end{aligned}$ & $\Pi_{\boldsymbol{x}}\boldsymbol{\mu}$ \\ \cmidrule[0.25pt](lr){1-5}
+\textbf{ITI (probe)}~\citep{li2023inference} & $\mathbb{R}^d$ & $1$ & Linear logistic probe for density-ratio estimation & $\boldsymbol{\theta}$ \\ \cmidrule[0.25pt](lr){1-5}
+\textbf{HPR}~\citep{pham2024householder} & $\Sph$ & $1$ & Linear probe without an intercept & $\Pi_{\boldsymbol{x}}\boldsymbol{\theta}$ for $\boldsymbol{\theta}^{\top}\boldsymbol{x}<0$ \\ \cmidrule[0.25pt](lr){1-5}
+\textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & $>1$ & Nonlinear density-ratio estimation using polynomial count-sketch features $\boldsymbol{\Phi}$ & $\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}$ \\ \midrule[0.6pt]
+\textbf{\Cobras~(ours)} & $\Sph$ & $>1$ & Kernel sums constructed from the fitted Schr\"{o}dinger Bridge & $\displaystyle\nablaS\log\frac{\widetilde{\psi}_b(\boldsymbol{x})}{\widetilde{\varphi}_b(\boldsymbol{x})}$ \\
 \bottomrule[0.8pt]
 \end{tabular}
 }
