@@ -378,15 +378,15 @@ On both models, the score $u$ separates GSM8K and MMLU from TruthfulQA more stro
 
 At $p=0.7$, mean $g$ on GSM8K is $7.3\%$ for LLaMA3.1-8B and $0.0\%$ for Mistral-7B, and is below $0.1\%$ on MMLU for both models. NQ and TriviaQA retain larger mean gate values on both models and therefore receive less attenuation. Since the gate computed at the last prompt token is reused during generation, these differences in attenuation persist throughout the generation.
 
-\section{\textcolor{blue}{Nearest-neighbor support gating}}
+\section{Nearest-neighbor support gating}
 \label{apx:knn}
 
-\textcolor{blue}{In this section, we describe a kNN gate that can be seamlessly integrated as an external module to other steering methods and explain its relation to the support score in Eq.~\eqref{eq:support-score}. We then examine how much OOD retention comes from gating, whether the steering rule still matters under a shared gate, and how calibration affects the intervention.}
+In this section, we describe a kNN gate that controls steering strength using distances to undesired contrastive samples. We relate this gate to the support score in Eq.~\eqref{eq:support-score}, evaluate its use across steering methods, and examine its sensitivity to calibration.
 
-\subsection{\textcolor{blue}{Gate construction and connection to the support score}}
+\subsection{Gate construction and connection to the support score}
 \label{apx:knn-gate}
 
-\textcolor{blue}{Following nearest-neighbor OOD detection~\citep{sun2022out}, we use distance to the undesired activations as a support surrogate, reducing steering when a prompt is far from the contrastive data.} Let $\rho_k(\boldsymbol{x};\mathcal{D}^-)$ be the geodesic distance from $\boldsymbol{x}\in\Sph$ to its $k$-th nearest sample in $\mathcal{D}^-$. We set a reference radius from the within-population distances, excluding each sample from its own neighbors, and define the gate
+Following nearest-neighbor OOD detection~\citep{sun2022out}, we measure support using the geodesic distance from the prompt activation $\boldsymbol{x}\in\Sph$ to its $k$-th nearest sample in $\mathcal{D}^-$, denoted by $\rho_k(\boldsymbol{x};\mathcal{D}^-)$. We calibrate a reference radius using the $\tau$-quantile of these distances within $\mathcal{D}^-$, excluding each sample from its own neighbors, and define
 \begin{equation}
 \begin{aligned}
 \rho_{\mathrm{ref}}
@@ -398,75 +398,36 @@ g_{\mathrm{kNN}}(\boldsymbol{x})
 \end{aligned}
 \label{eq:knn-gate}
 \end{equation}
-The gate equals $1/2$ at $\rho_{\mathrm{ref}}$ and decreases smoothly as the query moves away from the undesired samples. The quantile $\tau\in(0,1)$ therefore sets the radius at which steering is halved, and $\gamma>0$ sets how sharply it falls. By contrast, the coverage $p$ in Eq.~\eqref{eq:gate} sets the reference rank up to which steering keeps full strength. We use $\gamma=200$ throughout, with default settings $k=32$ and $\tau=0.98$.
+Here $\tau\in(0,1)$ selects the reference radius at which the gate halves the intervention, and $\gamma>0$ controls the sharpness of attenuation. We fix $\gamma=200$ and use $k=32$ and $\tau=0.98$ unless otherwise specified.
 
-\textcolor{blue}{We evaluate the kNN gate once at the last prompt activation and reuse it throughout the continuation.} For \Cobras it replaces $g_q$ in Eq.~\eqref{eq:step}. For another method that maps an activation $\boldsymbol{h}$ to $\tilde{\boldsymbol{h}}$, the gated output is $\boldsymbol{h}+g_{\mathrm{kNN}}\,(\tilde{\boldsymbol{h}}-\boldsymbol{h})$, so the gate scales each method's own displacement. \textcolor{blue}{The external module therefore applies support control without changing how the underlying method computes its update. Algorithm~\ref{alg:knn-external} summarizes the procedure.}
+\noindent\textbf{Connection to the support score.}~\label{apx:knn-connection}To connect this distance-based construction to the support score, we examine the kernel sums in Eq.~\eqref{eq:frozen-factors} as $b_g\to0$, holding the contrastive samples and strictly positive endpoint potentials fitted at fixed $\varepsilon$ unchanged.
 
-\begin{algorithm}[t]
-\caption{\textcolor{blue}{Applying the kNN gate to a steering method}}
-\label{alg:knn-external}
-\small
-\begingroup
-\color{blue}
-\begin{algorithmic}[1]
-\Require A fitted steering method, projected undesired activations $\mathcal{D}^-\subset\Sph$, sphere radius $R$, layer $\ell$, and gate parameters $k,\tau,\gamma$
-\Statex \textbf{Offline calibration}
-\State Compute $\rho_{\mathrm{ref}}$ from leave-one-out neighbor distances using Eq.~\eqref{eq:knn-gate}
-\Statex \textbf{For each new prompt}
-\State Obtain the last prompt activation $\boldsymbol{h}$ at layer $\ell$ and project it to $\boldsymbol{x}=R\boldsymbol{h}/\|\boldsymbol{h}\|$
-\State Compute and cache $g_q\gets g_{\mathrm{kNN}}(\boldsymbol{x})$ using Eq.~\eqref{eq:knn-gate}
-\For{each token activation $\boldsymbol{h}$ at layer $\ell$, starting with the last prompt token}
-    \State Compute the method's steering direction and apply its update to obtain $\tilde{\boldsymbol{h}}$
-    \State Replace $\boldsymbol{h}$ by $\boldsymbol{h}+g_q(\tilde{\boldsymbol{h}}-\boldsymbol{h})$
-\EndFor
-\end{algorithmic}
-\endgroup
-\end{algorithm}
-
-\paragraph{\textcolor{blue}{Connection to the support score.}}
-\label{apx:knn-connection}
-To relate the kNN gate to the support score in Eq.~\eqref{eq:support-score}, we show how nearest-sample distances arise from the kernel factors as $b_g\to0$. We start with the undesired factor and then combine the two factors.
-
-Throughout the derivation, the contrastive samples and positive scalings $a_j^-,a_i^+$ fitted at a fixed $\varepsilon$ remain unchanged. For the undesired factor, let $j_\star$ index a nearest sample to $\boldsymbol{x}$, so $\rho_1(\boldsymbol{x};\mathcal{D}^-)=d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_{j_\star}^-)=\min_j d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_j^-)$. The nearest sample has the largest kernel value by Eq.~\eqref{eq:kernel},
+For the undesired kernel sum, let $j_\star$ index a nearest sample to $\boldsymbol{x}$, so $\rho_1(\boldsymbol{x};\mathcal{D}^-)=d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_{j_\star}^-)=\min_j d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_j^-)$. The nearest sample has the largest kernel value by Eq.~\eqref{eq:kernel},
 \[
 K_{b_g}(\boldsymbol{x},\boldsymbol{h}_j^-)
 \le e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}
 =K_{b_g}(\boldsymbol{x},\boldsymbol{h}_{j_\star}^-).
 \]
-Keeping the nearest-sample term gives a lower bound on $\widehat{\varphi}_{b_g}$ in Eq.~\eqref{eq:frozen-factors}, while bounding every kernel by the nearest-sample value gives an upper bound,
+Keeping the nearest-sample term and replacing its coefficient by the minimum endpoint potential gives a lower bound on $\widehat{\varphi}_{b_g}$ in Eq.~\eqref{eq:frozen-factors}, while bounding every kernel by the nearest-sample value gives an upper bound:
 \[
-\begin{aligned}
-\widehat{\varphi}_{b_g}(\boldsymbol{x})
-&=\sum_j a_j^-K_{b_g}(\boldsymbol{x},\boldsymbol{h}_j^-)\\
-&\ge a_{j_\star}^-K_{b_g}(\boldsymbol{x},\boldsymbol{h}_{j_\star}^-)
-\ge\left(\min_j a_j^-\right)e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)},\\
-\widehat{\varphi}_{b_g}(\boldsymbol{x})
-&\le\sum_j a_j^-e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}
-=\left(\sum_j a_j^-\right)e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}.
-\end{aligned}
+\textcolor{RoyalBlue}{\left(\min_j \widehat{\varphi}_{0,j}\right)}
+e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}
+\;\le\;\widehat{\varphi}_{b_g}(\boldsymbol{x})\;\le\;
+\textcolor{BurntOrange}{\left(\sum_j \widehat{\varphi}_{0,j}\right)}
+e^{-\rho_1(\boldsymbol{x};\mathcal{D}^-)^2/(2b_g)}.
 \]
 Taking logarithms and multiplying by $-2b_g<0$ reverses the inequalities. Expanding the logarithms gives
 \begin{equation}
 \begin{aligned}
 \rho_1(\boldsymbol{x};\mathcal{D}^-)^2
--2b_g\log\sum_j a_j^-
+\textcolor{BurntOrange}{-2b_g\log\sum_j \widehat{\varphi}_{0,j}}
 &\le -2b_g\log\widehat{\varphi}_{b_g}(\boldsymbol{x})\\
 &\le\rho_1(\boldsymbol{x};\mathcal{D}^-)^2
--2b_g\log\min_j a_j^-.
+\textcolor{RoyalBlue}{-2b_g\log\min_j \widehat{\varphi}_{0,j}}.
 \end{aligned}
 \label{eq:knn-kernel-bound}
 \end{equation}
-Repeating these steps for the desired factor, with $\rho_1(\boldsymbol{x};\mathcal{D}^+)=\min_i d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_i^+)$, gives
-\[
-\begin{aligned}
-\rho_1(\boldsymbol{x};\mathcal{D}^+)^2
--2b_g\log\sum_i a_i^+
-&\le -2b_g\log\widehat{\psi}_{b_g}(\boldsymbol{x})\\
-&\le\rho_1(\boldsymbol{x};\mathcal{D}^+)^2
--2b_g\log\min_i a_i^+.
-\end{aligned}
-\]
-The scalings are fixed and positive, so all terms proportional to $b_g$ vanish as $b_g\to0$. The bounds therefore yield
+Both bounds in Eq.~\eqref{eq:knn-kernel-bound} converge to $\rho_1(\boldsymbol{x};\mathcal{D}^-)^2$ as $b_g\to0$, since the endpoint potentials remain fixed and strictly positive. The enclosed quantity therefore converges to the same value. Applying the same argument to the desired kernel sum, with $\rho_1(\boldsymbol{x};\mathcal{D}^+)=\min_i d_{\Sph}(\boldsymbol{x},\boldsymbol{h}_i^+)$, gives the two limits
 \[
 \begin{aligned}
 -2b_g\log\widehat{\varphi}_{b_g}(\boldsymbol{x})
@@ -489,7 +450,27 @@ Using $u(\boldsymbol{x})=-\log\hat{p}_{b_g}(\boldsymbol{x})$ and $\hat{p}_{b_g}(
 \label{eq:knn-product-limit}
 \end{equation}
 
-The support score therefore combines proximity to both populations. The kNN gate uses distance to undesired samples as a surrogate without fitting transport and replaces the nearest sample with the $k$-th neighbor to reduce dependence on an individual activation and make it more robust.
+The small-bandwidth limit thus depends on nearest-sample distances to both populations. The kNN gate uses distance to undesired samples as a surrogate without fitting transport and replaces the nearest sample with the $k$-th neighbor to reduce dependence on an individual sample.
+
+\noindent\textbf{Applying the gate.}~We evaluate the kNN gate once at the last prompt activation, cache its value as $g_{\mathrm{prompt}}$, and reuse it throughout the continuation. For \Cobras, this value replaces $g_{\mathrm{prompt}}$ in Eq.~\eqref{eq:step} and scales the integration step size. For another method that maps an activation $\boldsymbol{h}$ to $\tilde{\boldsymbol{h}}$, the gated output is $\boldsymbol{h}+g_{\mathrm{prompt}}(\tilde{\boldsymbol{h}}-\boldsymbol{h})$, so the gate scales the method's displacement. Algorithm~\ref{alg:knn-external} summarizes this external wrapper.
+
+\begin{algorithm}[t]
+\caption{Applying the kNN gate to other steering methods}
+\label{alg:knn-external}
+\small
+\begin{algorithmic}[1]
+\Require A fitted steering method, projected undesired activations $\mathcal{D}^-\subset\Sph$, sphere radius $R$, layer $\ell$, and gate parameters $k,\tau,\gamma$
+\Statex \textbf{Offline calibration}
+\State Compute $\rho_{\mathrm{ref}}$ from leave-one-out neighbor distances using Eq.~\eqref{eq:knn-gate}
+\Statex \textbf{For each new prompt}
+\State Obtain the last prompt activation $\boldsymbol{h}$ at layer $\ell$ and project it to $\boldsymbol{x}=R\boldsymbol{h}/\|\boldsymbol{h}\|$
+\State Compute and cache $g_{\mathrm{prompt}}\gets g_{\mathrm{kNN}}(\boldsymbol{x})$ using Eq.~\eqref{eq:knn-gate}
+\For{each token activation $\boldsymbol{h}$ at layer $\ell$, starting with the last prompt token}
+    \State Apply the method's steering intervention to obtain $\tilde{\boldsymbol{h}}$
+    \State Replace $\boldsymbol{h}$ by $\boldsymbol{h}+g_{\mathrm{prompt}}(\tilde{\boldsymbol{h}}-\boldsymbol{h})$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
 
 \subsection{\textcolor{blue}{The kNN gate on other steering methods}}
 \label{apx:knn-external}
