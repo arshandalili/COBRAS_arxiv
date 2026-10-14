@@ -475,9 +475,7 @@ The small-bandwidth limit thus depends on nearest-sample distances to both popul
 \subsection{Support gating with kNN across steering methods}
 \label{apx:knn-external}
 
-To evaluate the kNN gate across steering methods, we compare CAA, ODESteer, SphericalSteer, and \Cobras with and without gating on LLaMA3.1-8B. All methods are fitted on TruthfulQA, whose True$\times$Info score measures steering performance. Accuracy on GSM8K and MMLU measures OOD retention.
-
-We use the default kNN settings from Appendix~\ref{apx:knn-gate}. Table~\ref{tab:knn-external} also includes \Cobras with the support gate in Eq.~\eqref{eq:gate} at coverage $p=0.7$.
+To evaluate the kNN gate across steering methods, we compare CAA, ODESteer, SphericalSteer, and \Cobras with and without gating on LLaMA3.1-8B. All methods are fitted on TruthfulQA, whose True$\times$Info score measures steering performance. Accuracy on GSM8K and MMLU measures OOD retention. We use the default kNN settings from Appendix~\ref{apx:knn-gate}. Table~\ref{tab:knn-external} also includes \Cobras with the support gate in Eq.~\eqref{eq:gate} at coverage $p=0.7$.
 
 \begin{table}[ht]
 \centering
