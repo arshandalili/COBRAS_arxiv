@@ -751,67 +751,62 @@ $64$ nearest samples per population & 10 & 22 & 61.6 \\
 \FloatBarrier
 
 \section{Additional Results}
+\label{apx:additional-results}
 
-\subsection{\textcolor{blue}{Ablation studies}}
+We examine activation norm concentration, the contributions of steering components, sensitivity to steering parameters, and lexical diversity after detoxification.
+
+\subsection{Activation norm concentration}
+\label{appendix:norm_concentration}
+
+To assess the spherical approximation, we check whether activation norms concentrate around a common value at each layer. We compute the coefficient of variation (CoV), the standard deviation of the norms divided by their mean, separately at every layer. A smaller CoV indicates tighter concentration around that layer's mean norm. For each model, we extract last-token activations from $5{,}918$ question--answer pairs spanning the $817$ TruthfulQA questions, using both correct and incorrect reference answers. We evaluate the four models used in the main experiments and four additional architectures: Gemma-2-2B~\cite{team2024gemma}, GPT-OSS-20B~\cite{agarwal2025gpt}, LLaMA-3.2-1B, and Qwen2.5-1.5B.
+
+\begin{table}[t]
+\centering
+\caption{Residual-stream norm concentration on TruthfulQA. Each interval gives the minimum and maximum per-layer CoV within the indicated layer group. The two blocks contain the four main models and four additional architectures.}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Model} & \textbf{\# Layers} & \textbf{Early ($0$--$2$)} & \textbf{Later ($\geq 3$)} \\
+\midrule
+LLaMA3.1-8B       & 32 & [0.072, 0.134] & [0.017, 0.080] \\
+Mistral-7B        & 32 & [0.084, 0.123] & [0.035, 0.081] \\
+Falcon-7B         & 32 & [0.108, 0.165] & [0.021, 0.085] \\
+Qwen2.5-7B        & 28 & [0.021, 0.043] & [0.018, 0.034] \\
+\midrule
+Gemma-2-2B        & 26 & [0.088, 0.115] & [0.054, 0.128] \\
+GPT-OSS-20B (MoE) & 24 & [0.016, 0.029] & [0.022, 0.146] \\
+LLaMA-3.2-1B      & 16 & [0.061, 0.084] & [0.005, 0.072] \\
+Qwen2.5-1.5B      & 28 & [0.024, 0.029] & [0.017, 0.044] \\
+\bottomrule
+\end{tabular}
+\label{tab:norm_concentration}
+\end{table}
+
+Table~\ref{tab:norm_concentration} shows that later-layer CoV is at most $0.085$ for the four main models and $0.146$ across all eight models. These measurements support the approximation of similar activation norms at a given layer, with greater dispersion in some layers of Gemma-2-2B and GPT-OSS-20B.
+
+\FloatBarrier
+\subsection{Component ablations}
 \label{apx:component-ablations}
 
-\textcolor{blue}{We evaluate the contributions of individual components and their combined effect on LLaMA3.1-8B at layer $13$, using TruthfulQA for fitting. Unless ablated, both studies use $T=0.65$, $K=10$, and the kNN gate with the default settings in Appendix~\ref{apx:knn}.}
+We examine the contributions of spherical geometry, sample weighting, the alignment coefficient, and the support gate on LLaMA3.1-8B at layer $13$. Each variant in Table~\ref{tab:component-ablation} changes one component of \Cobras, with TruthfulQA used for fitting and $T=0.65$, $K=10$, and support coverage $p=0.7$ held fixed unless varied.
 
-\paragraph{\textcolor{blue}{Effect of individual components.}}
-\textcolor{blue}{Table~\ref{tab:component-ablation} reports the effect of removing each component from \Cobras. Removing query-dependent weighting makes the sample weights in Eq.~\eqref{eq:cobras-field} uniform within each population. For vMF attenuation, we also include a step-matched control that preserves the full method's mean step length, separating the benefit of query dependence from a change in average intervention strength.}
+The Euclidean variant replaces spherical distances and updates with Euclidean ones, refitting transport and recalibrating the support gate for that geometry. The uniform-weight variant replaces the weights in Eq.~\eqref{eq:weighted-cobras-field} by uniform weights within each population. We assess alignment attenuation by setting $s=1$ and by replacing $s$ with its mean over calibration activations, which controls for average intervention strength. Finally, setting $g=1$ isolates the effect of the support gate.
 
 \begin{table}[ht]
-\color{blue}
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\caption{\textcolor{blue}{Ablation of \Cobras components on LLaMA3.1-8B. Each variant removes one component from \Cobras with kNN gating. TruthfulQA results are averaged over three seeds. OOD accuracy is measured on $100$ questions per benchmark.}}
+\caption{Component ablations on LLaMA3.1-8B with the support gate. Scores are percentages. TruthfulQA scores are averaged over three seeds, with standard deviations shown for True$\times$Info. Dashes mark pending evaluations.}
 \label{tab:component-ablation}
 \begin{tabular}{lccccc}
 \toprule
-\multirow{2}{*}{Variant} & \multicolumn{3}{c}{TruthfulQA (\%)} & \multicolumn{2}{c}{OOD accuracy (\%)} \\
+\multirow{2}{*}{Variant} & \multicolumn{3}{c}{TruthfulQA} & \multicolumn{2}{c}{OOD accuracy} \\
 \cmidrule(lr){2-4}\cmidrule(lr){5-6}
 & True$\uparrow$ & Info$\uparrow$ & T$\times$I$\uparrow$ & GSM8K$\uparrow$ & MMLU$\uparrow$ \\
 \midrule
-Unsteered & 45.5 & 97.1 & 43.2 & 57 & 66 \\
-\textbf{\Cobras} & 77.8 & 85.4 & 63.6 & 52 & 66 \\
-\midrule
-\quad w/o vMF attenuation & 82.6 & 51.1 & 34.4 & 52 & 66 \\
-\quad w/o vMF attenuation (step-matched) & 77.4 & 72.9 & 50.9 & 53 & 66 \\
-\quad w/o kNN gate & 85.6 & 80.3 & 66.5 & 0 & 48 \\
-\quad w/o spherical projection & 80.6 & 83.8 & 64.9 & 1 & 43 \\
-\quad w/o query-dependent weights & 77.2 & 84.5 & 62.4 & 52 & 66 \\
-\quad w/o multi-step integration ($K=1$) & 77.8 & 83.5 & 62.0 & 53 & 66 \\
-\quad w/o direction normalization & 74.8 & 87.3 & 62.6 & 52 & 66 \\
-\bottomrule
-\end{tabular}
-\end{table}
-\FloatBarrier
-
-\textcolor{blue}{Without vMF attenuation, truthfulness increases but informativeness falls, reducing True$\times$Info from $63.6$ to $34.4$. Matching the mean step length recovers $50.9$, showing that query-dependent strength contributes beyond reducing the average intervention. Removing the kNN gate improves TruthfulQA performance but sharply reduces OOD accuracy, confirming its role in capability retention. Query-dependent sample weights and multiple integration steps provide smaller additional gains in the joint score.}
-
-\textcolor{blue}{The spherical ablation replaces geodesic quantities with Euclidean ones while retaining the original gate calibration. Its OOD results therefore reflect both the geometry change and the resulting mismatch in gate calibration.}
-
-\FloatBarrier
-\paragraph{\textcolor{blue}{Progressive ablation.}}
-\textcolor{blue}{To examine how the components work together, Table~\ref{tab:progressive-ablation} adds them sequentially. We start from the log-ratio gradient of the fitted kernel factors in Eq.~\eqref{eq:frozen-factors} at a shared fixed bandwidth, without normalization or attenuation. We then introduce direction normalization, vMF attenuation, and kNN gating. The final row uses \Cobras's conditional coefficients and adaptive bandwidths in place of the initial field.}
-
-\begin{table}[ht]
-\color{blue}
-\centering
-\small
-\caption{\textcolor{blue}{Progressive ablation on LLaMA3.1-8B, starting from the fitted kernel log-ratio gradient. Additions are cumulative, with the final row using \Cobras's conditional weighting and adaptive bandwidths. Evaluation follows Table~\ref{tab:component-ablation}.}}
-\label{tab:progressive-ablation}
-\begin{tabular}{lcccc}
-\toprule
-\multirow{2}{*}{Steering update} & \multicolumn{3}{c}{TruthfulQA (\%)} & \multirow{2}{*}{GSM8K (\%)$\uparrow$} \\
-\cmidrule(lr){2-4}
-& True$\uparrow$ & Info$\uparrow$ & T$\times$I$\uparrow$ & \\
-\midrule
-Kernel log-ratio gradient & 96.0 & 13.7 & 10.5 & 0 \\
-\quad + direction normalization & 94.1 & 25.9 & 20.8 & 0 \\
-\quad + vMF attenuation & 85.9 & 74.7 & 61.3 & 0 \\
-\quad + kNN gate & 77.6 & 81.5 & 59.8 & 52 \\
+Unsteered & 45.6 & 97.1 & $43.4\pm0.9$ & 48.7 & 61.6 \\
+\textbf{\Cobras} & 74.8 & 88.2 & $63.6\pm1.0$ & 49.5 & 61.6 \\
 \midrule
 \textbf{\Cobras} & 77.8 & 85.4 & 63.6 & 52 \\
 \bottomrule
@@ -819,9 +814,10 @@ Kernel log-ratio gradient & 96.0 & 13.7 & 10.5 & 0 \\
 \end{table}
 \FloatBarrier
 
-\textcolor{blue}{Following the kernel log-ratio gradient without attenuation produces high truthfulness but low informativeness. Normalization and vMF attenuation improve the joint score to $61.3$. Adding the kNN gate recovers GSM8K accuracy at a modest cost on TruthfulQA. The full \Cobras field then increases True$\times$Info from $59.8$ to $63.6$ while preserving the same GSM8K accuracy, improving ID steering under the same support control.}
+Removing the support gate raises TruthfulQA True$\times$Info from $63.6\%$ to $67.6\%$, while GSM8K accuracy falls from $49.5\%$ to $0.6\%$ and MMLU accuracy falls from $61.6\%$ to $44.4\%$. This comparison shows how support-based attenuation preserves OOD performance at the cost of some TruthfulQA gain.
 
 \FloatBarrier
+
 \subsection{Effect of the integration horizon $T$}
 \label{appendix:cobras_vs_t}
 
