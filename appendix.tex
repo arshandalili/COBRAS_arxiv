@@ -356,7 +356,7 @@ In this appendix, we specify the reference prompts used to calibrate the support
 \begin{table}[ht]
 \centering
 \small
-\caption{Score separation and steering attenuation on LLaMA3.1-8B at layer $13$ and Mistral-7B at layer $15$, with $p=0.7$ and $b_g=\sigma^2/256$. Transport fitting and gate calibration use TruthfulQA. The TruthfulQA mean gate is computed on the $817$ calibration prompts themselves; each OOD set contains $1{,}000$ prompts.}
+\caption{AUROC of the support score $u$ for distinguishing OOD prompts from TruthfulQA, and mean gate $g$ at coverage $p=0.7$.}
 \label{tab:gate-separation}
 \begin{tabular}{llrrrr}
 \toprule
