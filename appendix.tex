@@ -472,15 +472,17 @@ The small-bandwidth limit thus depends on nearest-sample distances to both popul
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{\textcolor{blue}{The kNN gate on other steering methods}}
+\subsection{Support gating with kNN across steering methods}
 \label{apx:knn-external}
 
-\textcolor{blue}{We compare CAA, ODESteer, SphericalSteer, and \Cobras with and without the same kNN gate. The comparison tests whether support gating preserves OOD performance across methods and whether the steering rule still affects in-distribution gains under a shared gate. Table~\ref{tab:knn-external} reports results on Llama3.1-8B with steering fitted on TruthfulQA and also includes \Cobras with its support gate.}
+To evaluate the kNN gate across steering methods, we compare CAA, ODESteer, SphericalSteer, and \Cobras with and without gating on LLaMA3.1-8B. All methods are fitted on TruthfulQA, whose True$\times$Info score measures steering performance. Accuracy on GSM8K and MMLU measures OOD retention.
+
+We use the default kNN settings from Appendix~\ref{apx:knn-gate}. Table~\ref{tab:knn-external} also includes \Cobras with the support gate in Eq.~\eqref{eq:gate} at coverage $p=0.7$.
 
 \begin{table}[ht]
 \centering
 \small
-\caption{Support gating attached to different steering methods on Llama3.1-8B. TruthfulQA True$\times$Info is averaged over three seeds. GSM8K and MMLU accuracy use the same $100$ sampled questions for every row. Baselines use $T=4$ and \Cobras uses $T=0.65$. The kNN gate follows Eq.~\eqref{eq:knn-gate} with $k=32$, $\tau=0.98$, and $\gamma=200$. The support gate follows Eq.~\eqref{eq:gate} with coverage $p=0.7$.}
+\caption{Effect of support gating on LLaMA3.1-8B. TruthfulQA True$\times$Info is averaged over three seeds. Each OOD benchmark uses the same $100$ sampled questions for every method and gate setting.}
 \label{tab:knn-external}
 \begin{tabular}{lccc}
 \toprule
@@ -502,9 +504,9 @@ SphericalSteer + kNN gate & 61.7 & 54 & 66 \\
 \end{tabular}
 \end{table}
 
-Attaching the kNN gate brings GSM8K and MMLU accuracy close to the unsteered levels for all four methods, with a decrease of $1.7$ to $2.8$ points in TruthfulQA True$\times$Info. Support gating therefore accounts for much of the OOD retention in this comparison. Under the shared gate, \Cobras retains the highest mean TruthfulQA score at $63.7\%$, compared with $61.7\%$ for SphericalSteer, while maintaining similar OOD accuracy. The steering rule thus remains important for in-distribution gains even when methods share the same support control.
+Adding the kNN gate brings GSM8K and MMLU accuracy close to the unsteered levels for all four methods. This recovery comes with a decrease of $1.7$ to $2.8$ percentage points in TruthfulQA True$\times$Info, while all gated methods remain above the unsteered TruthfulQA score. Among the methods using the kNN gate, \Cobras achieves the highest reported mean TruthfulQA score at $63.7\%$, compared with $61.7\%$ for SphericalSteer.
 
-\textcolor{blue}{The support gate also preserves OOD accuracy with similar TruthfulQA performance, showing that \Cobras can use its fitted transport scalings for support control. Each OOD benchmark contains $100$ sampled questions here, so small accuracy differences among the gated methods should be interpreted cautiously. The comparison supports the usefulness of both gate implementations, whose calibration rules we examine next.}
+For \Cobras, replacing the kNN gate with the support gate gives similar TruthfulQA performance while also keeping OOD accuracy close to the unsteered levels. We next examine how gate calibration affects the balance between steering performance and OOD retention.
 
 \FloatBarrier
 \subsection{Calibration and sensitivity of the nearest-neighbor gate}
