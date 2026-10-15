@@ -528,31 +528,31 @@ To evaluate the kNN gate across steering methods, we compare CAA, ODESteer, Sphe
 \begin{table}[ht]
 \centering
 \small
-\caption{Steering performance and OOD retention with and without gating on LLaMA3.1-8B. TruthfulQA True$\times$Info is averaged over three seeds. Each OOD benchmark uses the same $100$ sampled questions for every method and gate setting.}
+\caption{Steering performance and OOD retention with and without gating on LLaMA3.1-8B. TruthfulQA True$\times$Info is averaged over three seeds.}
 \label{tab:knn-external}
 \begin{tabular}{lccc}
 \toprule
 Method & TQA T$\times$I (\%) & GSM8K (\%) & MMLU (\%) \\
 \midrule
-Unsteered & 43.2 & 57 & 66 \\
+Unsteered & 43.4 & 48.7 & 61.6 \\
 \midrule
-CAA & 60.3 & 18 & 63 \\
-CAA + kNN gate & 58.6 & 55 & 66 \\
-ODESteer & 58.5 & 30 & 65 \\
-ODESteer + kNN gate & 56.8 & 58 & 66 \\
-SphericalSteer & 64.4 & 2 & 51 \\
-SphericalSteer + kNN gate & 61.7 & 54 & 66 \\
+CAA & 60.3 & 15.8 & 59.8 \\
+CAA + kNN gate & 58.6 & 48.9 & 61.6 \\
+ODESteer & 58.5 & 37.4 & 61.0 \\
+ODESteer + kNN gate & 56.8 & 48.9 & 61.6 \\
+SphericalSteer & 64.4 & 1.0 & 45.5 \\
+SphericalSteer + kNN gate & 61.7 & 47.3 & 61.6 \\
 \midrule
-\Cobras, no gate & 66.5 & 0 & 48 \\
-\Cobras + kNN gate & 63.6 & 52 & 66 \\
-\Cobras + support gate & 63.4 & 56 & 66 \\
+\Cobras, no gate & 67.6 & 0.6 & 44.4 \\
+\Cobras + kNN gate & 63.6 & 47.5 & 61.6 \\
+\Cobras + support gate & 63.6 & 49.5 & 61.6 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Adding the kNN gate brings GSM8K and MMLU accuracy close to the unsteered levels for all four methods. This recovery comes with a decrease of $1.7$ to $2.9$ percentage points in TruthfulQA True$\times$Info, while all gated methods remain above the unsteered TruthfulQA score. Among the methods using the kNN gate, \Cobras achieves the highest reported mean TruthfulQA score at $63.6\%$, compared with $61.7\%$ for SphericalSteer.
+Across all four methods, the kNN gate brings GSM8K accuracy to $47.3\%$--$48.9\%$, close to the unsteered $48.7\%$, and restores MMLU accuracy to $61.6\%$. This OOD recovery costs $1.7$--$4.0$ percentage points in TruthfulQA True$\times$Info, but every gated method remains above the unsteered $43.4\%$. With the same gate applied across methods, \Cobras achieves the highest reported mean True$\times$Info at $63.6\%$, compared with $61.7\%$ for SphericalSteer. Thus, gating improves OOD retention across methods, while the steering rule still affects target-task performance.
 
-For \Cobras, the support gate gives similar TruthfulQA performance to the kNN gate and improves GSM8K accuracy from $52\%$ to $56\%$, with MMLU accuracy unchanged. We next examine how sensitive these results are to gate calibration.
+For \Cobras, both gates give the same reported mean TruthfulQA True$\times$Info of $63.6\%$ and MMLU accuracy of $61.6\%$. The support gate retains higher GSM8K accuracy, at $49.5\%$ compared with $47.5\%$ for kNN. We next examine whether this OOD retention persists as the calibration parameters vary.
 
 \FloatBarrier
 \subsection{Calibration and sensitivity of the nearest-neighbor gate}
@@ -589,7 +589,7 @@ The results show that the balance between steering performance and OOD retention
 
 To understand the sensitivity to $\tau$, we examine the contrastive set used to calibrate the kNN gate. The reference radius $\rho_{\mathrm{ref}}$ in Eq.~\eqref{eq:knn-gate} is computed from neighbor distances between contrastive question--answer activations, whereas the gate is evaluated at the last prompt activation. In a LLaMA3.1-8B diagnostic with $k=32$, the median neighbor distances for TruthfulQA and GSM8K prompt activations fall at the $96$th and $99.2$nd reference percentiles, respectively. These percentiles help explain why raising $\tau$ first enables stronger TruthfulQA steering and then allows substantial steering on GSM8K. With $\gamma=200$, the gate changes sharply as $\rho_{\mathrm{ref}}$ passes an activation's neighbor distance, making the choice of $\tau$ particularly consequential.
 
-The support gate in Eq.~\eqref{eq:gate} addresses this calibration mismatch by using support scores from the last-token activations of reference prompts. Its coverage parameter $p$ therefore refers directly to percentiles of scores for prompt activations. We compare the two gates in a separate LLaMA3.1-8B sensitivity experiment on the same $100$ GSM8K questions used in Table~\ref{tab:knn-external}. Sweeping the kNN gate over $\tau\in\{0.90,0.95,0.98,0.995\}$ gives $57$, $57$, $52$, and $15\%$ accuracy, respectively. Sweeping the support gate over $p\in\{0.4,0.7,0.8,0.9\}$ gives $56$, $56$, $54$, and $52\%$, respectively. Across these settings, the support gate keeps accuracy close to the unsteered $57\%$ and avoids the sharp degradation observed with the kNN gate. Together with the similar TruthfulQA performance in Table~\ref{tab:knn-external}, these results favor the support gate for preserving OOD performance with less sensitivity to calibration.
+The support gate in Eq.~\eqref{eq:gate} addresses this calibration mismatch by using support scores from the last-token activations of reference prompts. Its coverage parameter $p$ therefore refers directly to percentiles of scores for prompt activations. On the full GSM8K test set for LLaMA3.1-8B, accuracy declines from $49.7\%$ to $43.6\%$ as $p$ increases from $0.6$ to $0.9$ (Table~\ref{tab:support-gate-coverage}). In contrast, the kNN sweep retains $47.5\%$--$48.9\%$ accuracy through $\tau=0.98$, then falls to $11.6\%$ at $\tau=0.995$ (Table~\ref{tab:abstain-results}). The support gate therefore shows a more gradual OOD trade-off over the tested settings, while matching the kNN gate's mean TruthfulQA score at their default settings in Table~\ref{tab:knn-external}.
 
 \FloatBarrier
 \section{Experimental Details}
@@ -789,15 +789,15 @@ Table~\ref{tab:norm_concentration} shows that later-layer CoV is at most $0.085$
 \subsection{Component ablations}
 \label{apx:component-ablations}
 
-We examine the contributions of spherical geometry, sample weighting, the alignment coefficient, and the support gate on LLaMA3.1-8B at layer $13$. Each variant in Table~\ref{tab:component-ablation} changes one component of \Cobras, with TruthfulQA used for fitting and $T=0.65$, $K=10$, and support coverage $p=0.7$ held fixed unless varied.
+We examine how spherical geometry, sample weighting, the alignment coefficient, and the support gate contribute to steering performance and OOD retention on LLaMA3.1-8B at layer $13$. Table~\ref{tab:component-ablation} compares variants fitted on TruthfulQA with $T=0.65$, $K=10$, and support coverage $p=0.7$ unless varied.
 
-The Euclidean variant replaces spherical distances and updates with Euclidean ones, refitting transport and recalibrating the support gate for that geometry. The uniform-weight variant replaces the weights in Eq.~\eqref{eq:weighted-cobras-field} by uniform weights within each population. We assess alignment attenuation by setting $s=1$ and by replacing $s$ with its mean over calibration activations, which controls for average intervention strength. Finally, setting $g=1$ isolates the effect of the support gate.
+The Euclidean variant replaces geodesic quantities, including those in the support score, with Euclidean ones and recalibrates the gate at the same coverage. The uniform-weight variant replaces the weights in Eq.~\eqref{eq:weighted-cobras-field} by uniform weights within each population. To assess alignment attenuation, we set $s=1$ and then reduce $T$ to $0.556$ in a step-matched control, testing whether any loss can be explained by the increase in average step length. Finally, setting $g=1$ removes support gating.
 
 \begin{table}[ht]
 \centering
 \small
 \setlength{\tabcolsep}{4pt}
-\caption{Component ablations on LLaMA3.1-8B with the support gate. Scores are percentages. TruthfulQA scores are averaged over three seeds, with standard deviations shown for True$\times$Info. Dashes mark pending evaluations.}
+\caption{Component ablations on LLaMA3.1-8B. Scores are percentages. TruthfulQA results are averaged over three seeds, with standard deviations shown for True$\times$Info.}
 \label{tab:component-ablation}
 \begin{tabular}{lccccc}
 \toprule
@@ -808,13 +808,21 @@ The Euclidean variant replaces spherical distances and updates with Euclidean on
 Unsteered & 45.6 & 97.1 & $43.4\pm0.9$ & 48.7 & 61.6 \\
 \textbf{\Cobras} & 74.8 & 88.2 & $63.6\pm1.0$ & 49.5 & 61.6 \\
 \midrule
-\textbf{\Cobras} & 77.8 & 85.4 & 63.6 & 52 \\
+\quad Euclidean geometry & 73.2 & 87.8 & $61.5\pm1.2$ & 15.1 & 61.6 \\
+\quad uniform sample weights & 74.4 & 87.6 & $62.9\pm0.6$ & 49.7 & 61.6 \\
+\quad w/o alignment coefficient & 81.5 & 52.1 & $34.3\pm1.1$ & 48.8 & 61.6 \\
+\quad w/o alignment coefficient (step-matched) & 75.5 & 74.1 & $50.4\pm0.6$ & 49.4 & 61.6 \\
+\quad w/o support gate & 83.6 & 83.4 & $67.6\pm0.6$ & 0.6 & 44.4 \\
 \bottomrule
 \end{tabular}
 \end{table}
 \FloatBarrier
 
-Removing the support gate raises TruthfulQA True$\times$Info from $63.6\%$ to $67.6\%$, while GSM8K accuracy falls from $49.5\%$ to $0.6\%$ and MMLU accuracy falls from $61.6\%$ to $44.4\%$. This comparison shows how support-based attenuation preserves OOD performance at the cost of some TruthfulQA gain.
+The Euclidean variant reduces True$\times$Info from $63.6\%$ to $61.5\%$ and GSM8K accuracy from $49.5\%$ to $15.1\%$. A diagnostic on $1{,}000$ GSM8K prompts gives a mean gate value of $71.7\%$ in Euclidean geometry, compared with the spherical gate's $7.3\%$ in Table~\ref{tab:gate-separation}. Despite equal calibration coverage, the Euclidean gate therefore attenuates steering much less on these OOD prompts. Replacing the sample weights with uniform weights has a smaller effect, giving $62.9\%$ True$\times$Info and similar OOD accuracy to \Cobras.
+
+Removing the alignment coefficient raises True from $74.8\%$ to $81.5\%$ but lowers Info from $88.2\%$ to $52.1\%$, reducing True$\times$Info to $34.3\%$. Reducing $T$ in the step-matched control recovers Info to $74.1\%$ and True$\times$Info to $50.4\%$, so both remain below \Cobras. This suggests that alignment attenuation helps preserve informativeness beyond the effect of reducing the average step length.
+
+Removing the support gate instead raises True$\times$Info from $63.6\%$ to $67.6\%$, while GSM8K accuracy falls from $49.5\%$ to $0.6\%$ and MMLU accuracy falls from $61.6\%$ to $44.4\%$. The support gate therefore trades some target-task gain for retaining OOD accuracy.
 
 \FloatBarrier
 
