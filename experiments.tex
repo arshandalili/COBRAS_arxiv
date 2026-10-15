@@ -13,7 +13,7 @@ We evaluate whether \Cobras improves the target behavior while preserving other 
 
 \begin{table*}[t]
 \centering
-\caption{Performance of Activation Steering methods on Helpfulness (Ultrafeedback), Truthfulness (TruthfulQA), and Detoxification (Real Toxicity Prompts) for 4 LLM models. Results are means $\pm$ standard deviations over three runs with different seeds. Primary metrics are highlighted in light purple.
+\caption{Performance of steering methods on Helpfulness (Ultrafeedback), Truthfulness (TruthfulQA), and Detoxification (Real Toxicity Prompts) for 4 LLM models. Results are means $\pm$ standard deviations over three runs with different seeds. Primary metrics are highlighted in light purple.
 }
 \large
 \renewcommand{\arraystretch}{1.2}
@@ -136,18 +136,18 @@ SphericalSteer &  & -7.203 {\tiny $\pm$ 0.208} & 4.309 {\tiny $\pm$ 0.192} & 43.
 \begin{figure}[t]
     \centering
     \includegraphics[width=\linewidth]{figures/within_task_ood.png}
-    \caption{Within-task OOD evaluation. Answer-ranking accuracy on TriviaQA~\citep{joshi2017triviaqa} and NQ~\citep{kwiatkowski2019natural} is plotted against TruthfulQA True$\times$Info. Falcon-7B is omitted because its unsteered performance was low.}
-    \label{fig:within_task_ood}\vspace{-3mm}
+    \caption{Within-task OOD evaluation. Answer-ranking accuracy on TriviaQA~\citep{joshi2017triviaqa} and NQ~\citep{kwiatkowski2019natural} is plotted against TruthfulQA True$\times$Info. Falcon-7B is omitted due to its low unsteered performance.}
+    \label{fig:within_task_ood}\vspace{-5mm}
 \end{figure}
 
-\noindent\textbf{RQ1: In-distribution steering performance.}~We first evaluate \Cobras in the standard in-distribution setting, where each steering method is trained and tested on the same task axis. We consider three representative alignment objectives: helpfulness on UltraFeedback, truthfulness on TruthfulQA, and detoxification on RealToxicityPrompts. Table~\ref{tab:main_results} reports results across four base models.
+\noindent\textbf{RQ1: In-distribution steering performance.}~We first evaluate \Cobras in the standard in-distribution setting, where each steering method is trained and tested on the same task axis. We consider three representative alignment objectives: helpfulness on UltraFeedback, truthfulness on TruthfulQA, and detoxification on RealToxicityPrompts. Table~\ref{tab:main_results} reports results across four  models.
 
 \Cobras improves the primary metric over the unsteered model for all three tasks across models. On helpfulness, it achieves the highest mean UltraFeedback win rate for every model, improving over the original model by $+2.8$, $+7.1$, $+9.7$, and $+1.9$ absolute points on Falcon-7B, Mistral-7B, LLaMA3.1-8B, and Qwen2.5-7B, respectively. On truthfulness, it obtains the highest mean TruthfulQA True$\times$Info score across all four models, with especially large gains on Mistral-7B $(+29.5)$ and LLaMA3.1-8B $(+25.1)$. On detoxification, it reduces toxicity by approximately $41\%$--$54\%$ relative to the original models and has the lowest mean toxicity on three of four models. On Falcon-7B, CAA reduces toxicity further ($0.076$ versus $0.138$) but has substantially higher perplexity ($75.550$ versus $15.304$).
 % Compared to prior steering baselines, \Cobras provides the most consistent gains across objectives. While some baselines perform well on individual tasks, they often introduce undesirable trade-offs, such as reduced informativeness on TruthfulQA or large perplexity increases on RealToxicityPrompts. In contrast, \Cobras improves the target alignment metrics while largely preserving generation quality, as reflected by competitive reward-model scores, informativeness, perplexity, and diversity. These results show that \Cobras is a strong and robust in-distribution steering method across helpfulness, truthfulness, and detoxification.
 
 Compared to prior steering baselines, \Cobras delivers the most consistent gains across objectives. While other methods can perform well on individual tasks, they often trade off informativeness, perplexity, or diversity. In contrast, \Cobras improves target alignment metrics while largely preserving generation quality, making it a robust in-distribution steering method across helpfulness, truthfulness, and detoxification.
 
-\noindent\textbf{RQ2: Performance under distribution shift.}~Activation steering can be brittle under distribution shift, with prior work showing that steering vectors may be unreliable in-distribution and can misgeneralize out-of-distribution (OOD) ~\citep{tan2024analysing,braun2025understanding,korznikov2025rogue}. We therefore evaluate whether \Cobras improves TruthfulQA performance without degrading other capabilities. To this end, we conduct experiments on both (i) within-task OOD and (ii) cross-task OOD, using the support gate in Eq.~\eqref{eq:gate} for \Cobras.
+\noindent\textbf{RQ2: Performance under distribution shift.}~Activation steering can be brittle under distribution shift, with prior work showing that steering vectors may be unreliable in-distribution and can misgeneralize out-of-distribution (OOD) ~\citep{tan2024analysing,braun2025understanding,korznikov2025rogue}. We therefore evaluate whether \Cobras improves TruthfulQA performance without degrading other capabilities by conducting experiments on both (i) within-task OOD and (ii) cross-task OOD, using the support gate in Eq.~\eqref{eq:gate} for \Cobras.
 
 
 \noindent\textbf{Within-task OOD.}~In this experiment, we evaluate the performance of steering methods on two datasets, Natural Questions (NQ~\cite{kwiatkowski2019natural}) and TriviaQA~\cite{joshi2017triviaqa}, relevant to truthfulness by training only on TruthfulQA. Figure~\ref{fig:within_task_ood} plots OOD accuracy against TruthfulQA True$\times$Info; the ideal method appears in the upper-right, improving truthfulness while preserving OOD accuracy. While most methods move substantially along the TruthfulQA axis, their behavior on TriviaQA and NQ varies considerably, with some producing marked accuracy losses—most visibly on NQ. \Cobras shows a different pattern: across all three models, it attains the largest TruthfulQA improvements while keeping performance on both OOD datasets near the top of the corresponding plots. These results suggest that the gains from \Cobras are not limited to the training distribution and transfer with minimal disruption to closely related QA capabilities.
@@ -157,7 +157,7 @@ Compared to prior steering baselines, \Cobras delivers the most consistent gains
     \centering
     \includegraphics[width=\linewidth]{figures/cross_task_ood.png}
     \caption{Performance of steering methods in Cross-task OOD: MMLU~\cite{hendrycks2020measuring} and GSM8K~\cite{cobbe2021gsm8k} performance. We skipped Falcon-7B because the original model's performance was low.}
-    \label{fig:cross_task_ood}\vspace{-3mm}
+    \label{fig:cross_task_ood}\vspace{-5mm}
 \end{figure}
 
 \noindent\textbf{Cross-task OOD.}~In this experiment, we train all steering methods on TruthfulQA and evaluate OOD performance on MMLU~\cite{hendrycks2020measuring} and GSM8K~\cite{cobbe2021gsm8k}. Figure~\ref{fig:cross_task_ood} plots OOD accuracy against TruthfulQA True$\times$Info; the ideal method appears in the upper-right, improving truthfulness while preserving OOD accuracy. Baselines show inconsistent trade-offs: several methods improve TruthfulQA but substantially reduce OOD performance, especially on GSM8K for LLaMA3.1-8B and Mistral-7B, and on MMLU for Mistral-7B. This suggests that some steering methods sacrifice general reasoning ability for in-distribution gains. By contrast, \Cobras consistently lies near the upper-right across all models and OOD benchmarks. It improves TruthfulQA over the original model while maintaining OOD accuracy close to, or above, the unsteered model, avoiding the severe GSM8K drops seen in several baselines. Overall, \Cobras achieves the most favorable trade-off between in-distribution steering effectiveness and OOD capability preservation.

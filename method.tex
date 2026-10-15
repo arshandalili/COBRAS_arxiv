@@ -102,9 +102,7 @@ sets $\mathcal{D}^-$ and $\mathcal{D}^+$. To estimate the endpoint
 potentials from these data, we therefore discretize the static
 problem on the contrastive samples.
 
-The discrete counterpart of $P_{01}$ is a joint endpoint distribution $\widehat{P}_{01}$, represented by a nonnegative matrix whose entry $\widehat{P}_{01,ji}$ assigns probability mass to the sample pair $(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)$. Its marginals must match the empirical endpoint distributions, requiring $\sum_i\widehat{P}_{01,ji}=1/N_-$ and $\sum_j\widehat{P}_{01,ji}=1/N_+$.
-
-We also replace $Q_{01}$ with a discrete reference
+The discrete counterpart of $P_{01}$ is a joint endpoint distribution $\widehat{P}_{01}$, represented by a nonnegative matrix whose entry $\widehat{P}_{01,ji}$ assigns probability mass to the sample pair $(\boldsymbol{h}_j^-,\boldsymbol{h}_i^+)$. Its marginals must match the empirical endpoint distributions, requiring $\sum_i\widehat{P}_{01,ji}=1/N_-$ and $\sum_j\widehat{P}_{01,ji}=1/N_+$. We also replace $Q_{01}$ with a discrete reference
 distribution $\widehat{Q}_{01}$ on the same sample pairs.
 We construct this reference using a geodesic surrogate
 for the Brownian transition density:
@@ -208,7 +206,7 @@ Activation steering should weaken when an activation already aligns with the des
 
 \noindent\textbf{Alignment coefficient.}~To determine $s$, we measure alignment with a unit contrastive axis $\boldsymbol{\mu}$, obtained by normalizing the difference between the desired and undesired sample means. We write $\cos(\boldsymbol{x},\boldsymbol{\mu})$ for their cosine similarity, with larger values indicating stronger alignment with the desired behavior.
 
-Following Spherical Steering~\citep{you2026spherical}, we use von Mises--Fisher (vMF) scores for the desired direction $\boldsymbol{\mu}$ and the undesired direction $-\boldsymbol{\mu}$. With concentration $\kappa>0$, the desired and undesired scores are $e^{\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}$ and $e^{-\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}$, respectively. We divide the undesired score by the sum of both scores to obtain
+Following~\citep{you2026spherical}, we use von Mises--Fisher (vMF) scores for the desired direction $\boldsymbol{\mu}$ and the undesired direction $-\boldsymbol{\mu}$. With concentration $\kappa>0$, the desired and undesired scores are $e^{\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}$ and $e^{-\kappa\cos(\boldsymbol{x},\boldsymbol{\mu})}$, respectively.  We divide the undesired score by the sum of both scores to obtain
 \[
 \displaystyle
 s(\boldsymbol{x})
