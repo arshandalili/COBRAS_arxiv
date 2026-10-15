@@ -9,7 +9,7 @@ The appendix is organized as follows:
     \item Appendix~\ref{apx:knn} analyzes the construction, baseline integration, and parameter sensitivity of the kNN gate.
     \item Appendix~\ref{appendix:experimental_details} outlines the models, evaluation benchmarks, metrics, and implementation settings.
     \item Appendix~\ref{apx:computational-cost} evaluates fitting costs, memory requirements, and decoding overhead for \Cobras.
-    \item Appendix~\ref{apx:additional-results} examines norm concentration, component contributions, parameter sensitivity, and lexical diversity.
+    \item Appendix~\ref{apx:additional-results} examines activation norm concentration, component ablations, sensitivity to the integration horizon $T$, integration steps $K$, and vMF concentration $\kappa$, baseline steering strength, and lexical diversity after detoxification.
     \item Appendix~\ref{apx:sample-responses} presents sample responses on UltraFeedback and TruthfulQA.
 \end{itemize}
 
@@ -897,10 +897,47 @@ We vary the number of geodesic Euler steps $K$ under ungated steering to examine
 Every tested $K$ gives higher True and True$\times$Info scores than the corresponding unsteered reference. Increasing $K$ raises informativeness but can lower truthfulness. On Falcon-7B, moving from $K=1$ to $K=10$ raises Info from $73.7$ to $93.4$ and lowers True from $60.5$ to $45.5$, while improving the joint score from $37.3$ to $40.3$. The joint-score gain is larger on LLaMA3.1-8B and smaller on Mistral-7B. Although $K=10$ gives the highest mean joint score for each model, the Falcon trend is not monotonic. The choice of $K$ should therefore reflect both the desired truthfulness--informativeness balance and the cost of additional field evaluations (Appendix~\ref{apx:computational-cost}).
 
 \FloatBarrier
+\subsection{Effect of the vMF concentration $\kappa$}
+\label{appendix:cobras_vs_kappa}
+
+We vary the vMF concentration $\kappa\in\{0,10,20,40,80\}$ of the alignment coefficient $s$ (Section~\ref{subsec:strength}) on TruthfulQA, using $K=10$ and ungated steering (Table~\ref{tab:cobras_vs_kappa}). For each model, we fix the integration horizon $T$ at the value with the highest True$\times$Info in Figure~\ref{fig:cobras_tqa_vs_t}. At $\kappa=0$, $s=1/2$ for every activation, removing the coefficient's dependence on alignment with $\boldsymbol{\mu}$.
+
+\begin{table}[ht]
+\centering
+\small
+\setlength{\tabcolsep}{3.5pt}
+\caption{TruthfulQA performance of \Cobras across vMF concentrations $\kappa$ under ungated steering. Each model uses the fixed integration horizon $T$ shown in its column header. Scores are percentages averaged over three seeds; $\pm$ denotes standard deviation. Unsteered references are evaluated alongside the sweep.}
+\label{tab:cobras_vs_kappa}
+\begin{tabular}{lccccccccc}
+\toprule
+& \multicolumn{3}{c}{LLaMA3.1-8B ($T=0.6$)} & \multicolumn{3}{c}{Mistral-7B ($T=0.7$)} & \multicolumn{3}{c}{Qwen2.5-7B ($T=0.4$)} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+$\kappa$ & True$\uparrow$ & Info$\uparrow$ & T$\times$I$\uparrow$ & True$\uparrow$ & Info$\uparrow$ & T$\times$I$\uparrow$ & True$\uparrow$ & Info$\uparrow$ & T$\times$I$\uparrow$ \\
+\midrule
+Unsteered & 45.6 & 97.1 & $43.4\pm0.9$ & 40.5 & 95.1 & $35.8\pm1.2$ & 79.5 & 85.5 & $65.4\pm0.4$ \\
+\midrule
+$0$ & 65.6 & 94.6 & $60.5\pm1.6$ & 67.4 & 91.9 & $59.5\pm1.8$ & 84.2 & 86.7 & $71.2\pm1.0$ \\
+$10$ & 75.4 & 89.2 & $65.2\pm1.2$ & 78.0 & 87.6 & $66.0\pm1.2$ & 83.9 & 85.5 & $69.6\pm1.9$ \\
+$20$ & 79.9 & 86.4 & $67.1\pm1.9$ & 81.2 & 83.9 & $65.7\pm0.7$ & 83.1 & 85.0 & $68.4\pm1.5$ \\
+$40$ & 81.8 & 84.8 & $67.0\pm1.0$ & 83.8 & 80.0 & $64.5\pm0.9$ & 84.4 & 83.4 & $68.1\pm1.7$ \\
+$80$ & 81.9 & 84.3 & $66.5\pm0.8$ & 84.4 & 78.2 & $63.1\pm0.6$ & 85.0 & 81.8 & $67.4\pm1.6$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+
+All tested concentrations improve True and True$\times$Info over the unsteered reference, but the preferred $\kappa$ depends on the model. On LLaMA3.1-8B and Mistral-7B, increasing $\kappa$ trades informativeness for truthfulness. Over $\kappa\in\{10,20,40,80\}$, True$\times$Info varies by $1.9$ and $2.9$ percentage points, respectively, and the default $\kappa=20$ is within $0.3$ points of the highest mean for both models. Relative to this default, $\kappa=0$ lowers True$\times$Info by $6.6$ and $6.2$ points, respectively.
+
+Qwen2.5-7B follows a different pattern: True$\times$Info decreases monotonically with $\kappa$, reaching its highest value at $\kappa=0$ ($71.2\%$, compared with $68.4\%$ at $\kappa=20$).
+
+This sweep changes both the alignment dependence and the average value of $s$, so it cannot attribute these differences solely to alignment attenuation. The complementary step-matched control in Appendix~\ref{apx:component-ablations} examines alignment attenuation on LLaMA3.1-8B while matching the average step length.
+
+\FloatBarrier
 \subsection{Sensitivity of baseline steering methods}
 \label{appendix:baseline_strength}
 
-o select the steering strength for each baseline, we sweep over model-specific ranges: $T=20$--$23$ for Falcon-7B, $T=2$--$5$ for Mistral-7B, $T=3$--$6$ for LLaMA3.1-8B, and $T=13$--$16$ for Qwen2.5-7B. Figure~\ref{fig:performance_vs_t} shows the performance of RepE, ITI, CAA, and ODESteer on TruthfulQA and UltraFeedback. For baselines without a comparable steering-strength parameter, we use the best values reported in their papers.
+To select the steering strength for each baseline, we sweep over model-specific ranges: $T=20$--$23$ for Falcon-7B, $T=2$--$5$ for Mistral-7B, $T=3$--$6$ for LLaMA3.1-8B, and $T=13$--$16$ for Qwen2.5-7B. Figure~\ref{fig:performance_vs_t} shows the performance of RepE, ITI, CAA, and ODESteer on TruthfulQA and UltraFeedback. For baselines without a comparable steering-strength parameter, we use the best values reported in their papers.
 
 \begin{figure}[ht]
     \centering
