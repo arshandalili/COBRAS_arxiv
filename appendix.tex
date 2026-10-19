@@ -37,10 +37,10 @@ b\nablaS\log\frac{\hat{p}_b^+(\boldsymbol{x})}{\hat{p}_b^-(\boldsymbol{x})}.
 Fix the contrastive sets $\mathcal{D}^-$ and $\mathcal{D}^+$ on $\Sph$ and the bandwidth $b>0$. On the domain where both fields are defined, the unnormalized field $\boldsymbol{v}$ defined in Eq.~\eqref{eq:cobras-field} converges uniformly to $\boldsymbol{v}_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$ as $\varepsilon\to\infty$.
 \end{proposition}
 
-Proposition~\ref{prop:ldr-limit} establishes convergence to the kernel log-density-ratio field at fixed contrastive samples and bandwidth. Appendix~\ref{apx:proof-ldr-limit} provides the proof for Proposition~\ref{prop:ldr-limit}. At finite $\varepsilon$, the steering field combines each sample's proximity to the current activation with weights constructed from the endpoint potentials and reference distribution of the discrete Schr\"{o}dinger Bridge. It therefore incorporates the transport between the two activation populations, while the limiting field depends only on their separate kernel density estimates.
+Proposition~\ref{prop:ldr-limit} establishes convergence to the kernel log-density-ratio field at fixed contrastive samples and bandwidth. Appendix~\ref{apx:proof-ldr-limit} provides the proof for Proposition~\ref{prop:ldr-limit}. At finite $\varepsilon$, the steering field combines each sample's proximity to the current activation with weights constructed from the endpoint potentials and reference distribution of the discrete Schr\"{o}dinger Bridge. It therefore incorporates the transport between the two activation contrastive datasets, while the limiting field depends only on their separate kernel density estimates.
 
 \label{apx:sampling-limit}
-\noindent\textbf{Sampling limit.}~The reduction above holds for fixed contrastive samples and bandwidth $b$. Relating the resulting field to the population log-density-ratio gradient would additionally require consistency of the density estimates and their Riemannian gradients as the sample sizes grow and the bandwidth shrinks. Establishing this sampling limit for the geodesic kernel used here is outside the scope of our analysis.
+\noindent\textbf{Sampling limit.}~The reduction above holds for fixed contrastive samples and bandwidth $b$. Relating the resulting field to the contrastive dataset log-density-ratio gradient would additionally require consistency of the density estimates and their Riemannian gradients as the sample sizes grow and the bandwidth shrinks. Establishing this sampling limit for the geodesic kernel used here is outside the scope of our analysis.
 
 \subsection{Interpretations of existing steering methods}
 \label{apx:baseline-interpretations}
@@ -70,7 +70,7 @@ Where nonzero, this gradient points along the geodesic toward the desired direct
 \]
 Its Euclidean gradient is $\boldsymbol{\theta}$, giving the probe-weight intervention direction. An intercept would add a constant without changing this gradient. ITI also considers a mean-difference intervention, used in its main experiments, to which the Gaussian interpretation given for CAA applies.
 
-\noindent\textbf{Householder pseudo-rotation (HPR)~\citep{pham2024householder}.}~HPR uses a linear probe without an intercept to identify undesired activations and constructs the Householder reflection matrix $\boldsymbol{H}=\boldsymbol{I}-2\boldsymbol{u}\boldsymbol{u}^{\top}$, where $\boldsymbol{u}=\boldsymbol{\theta}/\|\boldsymbol{\theta}\|$ is the unit normal to the probe's decision boundary. For $\boldsymbol{x}\in\Sph$, projecting the reflection displacement onto the tangent space gives
+\noindent\textbf{Householder pseudo-rotation (HPR)~\citep{pham2024householder}.}~HPR uses a linear probe without an intercept to identify undesired activations and constructs the Householder reflection matrix $\boldsymbol{H}=\boldsymbol{I}-2\boldsymbol{u}\boldsymbol{u}^{\top}$, where $\boldsymbol{u}=\boldsymbol{\theta}/\|\boldsymbol{\theta}\|$ is the unit normal to the probe's decision boundary. For $\boldsymbol{x}\in\Sph$, projecting the reflection displacement onto the tangent space gives \textcolor{red}{$\theta$}
 \[
 \begin{aligned}
 \Pi_{\boldsymbol{x}}(\boldsymbol{H}\boldsymbol{x}-\boldsymbol{x})
@@ -112,7 +112,7 @@ Table~\ref{tab:steering_framework} summarizes the density models or estimation p
 }
 \end{table}
 
-\section{Derivations and Technical Proofs}
+\section{Technical Proofs and Derivations}
 \label{apx:theory}
 
 This appendix derives the probability-flow ODE, the Sinkhorn updates for the discrete endpoint potentials, and the weighted tangent-vector expression for the steering field. It then proves the reduction to a kernel log-density-ratio field for fixed contrastive samples and bandwidth.
@@ -201,7 +201,7 @@ b\nablaS K_b(\boldsymbol{x},\boldsymbol{h})
 \label{eq:grad-psi}
 \end{equation}
 
-Holding the bracketed coefficients in Eqs.~\eqref{eq:local-psi} and~\eqref{eq:local-phi} fixed, we apply Eq.~\eqref{eq:grad-psi} to the outer kernels in $\widetilde{\psi}_b$ and $\widetilde{\varphi}_b$. Taking the logarithmic gradients divides each differentiated sum by the original sum, giving the normalized sample weights
+Holding the bracketed coefficients in Eqs.~\eqref{eq:local-phi} and~\eqref{eq:local-psi} fixed, we apply Eq.~\eqref{eq:grad-psi} to the outer kernels in $\widetilde{\psi}_b$ and $\widetilde{\varphi}_b$. Taking the logarithmic gradients divides each differentiated sum by the original sum, giving the normalized sample weights
 \begin{align}
 w_i^+(\boldsymbol{x})
 &=\frac{\left[\sum_j\widehat{\varphi}_{0,j}\widehat{Q}_{01,ji}K_b(\boldsymbol{x},\boldsymbol{h}_j^-)\right]K_b(\boldsymbol{x},\boldsymbol{h}_i^+)}
@@ -212,7 +212,7 @@ w_j^-(\boldsymbol{x})
 {\widetilde{\varphi}_b(\boldsymbol{x})}.
 \label{eq:weights-neg}
 \end{align}
-These weights are positive and sum to one within each population. Substituting them into Eq.~\eqref{eq:cobras-field} yields
+These weights are positive and sum to one within each contrastive dataset. Substituting them into Eq.~\eqref{eq:cobras-field} yields
 \begin{equation}
 \boldsymbol{v}(\boldsymbol{x})
 =\underbrace{\sum_i w_i^+(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)}_{\text{attraction}}
@@ -343,9 +343,9 @@ Since geodesic distances on the unit sphere are at most $\pi$, each tangent vect
 The bound is independent of $\boldsymbol{x}$, so the convergence is uniform as $\varepsilon\to\infty$.
 \end{proof}
 
-Proposition~\ref{prop:ldr-limit} establishes the kernel log-density-ratio field as a limiting case of the steering field in \Cobras. At finite $\varepsilon$, the sample weights also incorporate the fitted Schr\"{o}dinger Bridge, allowing the steering field to reflect transport between the two populations beyond their separate kernel density estimates.
+Proposition~\ref{prop:ldr-limit} establishes the kernel log-density-ratio field as a limiting case of the steering field in \Cobras. At finite $\varepsilon$, the sample weights also incorporate the fitted Schr\"{o}dinger Bridge, allowing the steering field to reflect transport between the two contrastive datasets beyond their separate kernel density estimates.
 
-\FloatBarrier
+%\FloatBarrier
 \section{Calibration and Evaluation of the Support Gate}
 \label{apx:ood-gate}
 
@@ -394,12 +394,12 @@ At $p=0.7$, mean $g$ on GSM8K is $7.3\%$ for LLaMA3.1-8B and $0.0\%$ for Mistral
 \midrule
 \multicolumn{6}{l}{\textbf{LLaMA3.1-8B} ($T=0.65$)} \\
 \addlinespace[2pt]
-Unsteered & $43.4\pm0.9$ & 67.1 & 87.0 & 61.6 & 48.7 \\
+\textcolor{red}{Unsteered} & $43.4\pm0.9$ & 67.1 & 87.0 & 61.6 & 48.7 \\
 $p=0.6$ & $62.1\pm0.6$ & 66.9 & 86.6 & 61.6 & 49.7 \\
 $p=0.7$ & $63.6\pm1.0$ & 65.6 & 86.8 & 61.6 & 49.5 \\
 $p=0.8$ & $65.4\pm0.7$ & 62.9 & 86.0 & 61.6 & 48.1 \\
 $p=0.9$ & $66.3\pm1.2$ & 60.3 & 84.5 & 61.6 & 43.6 \\
-No gate & $67.6\pm0.6$ & 59.2 & 81.6 & 44.4 & 0.6 \\
+\textcolor{red}{No gate} & $67.6\pm0.6$ & 59.2 & 81.6 & 44.4 & 0.6 \\
 \midrule
 \multicolumn{6}{l}{\textbf{Mistral-7B} ($T=0.65$)} \\
 \addlinespace[2pt]
@@ -422,10 +422,16 @@ No gate & $68.4\pm1.5$ & 55.3 & 79.3 & 70.7 & 3.4 \\
 \end{tabular}
 \end{table}
 
-\FloatBarrier
+\textcolor{red}{
+for ood graphs, update COBRAS for llama 3.1-8b to p = 0.7
+for mistral, p = 0.9
+for qwen, p = 0.8
+}
+
+%\FloatBarrier
 On LLaMA3.1-8B, increasing $p$ from $0.6$ to $0.9$ raises TruthfulQA True$\times$Info from $62.1\%$ to $66.3\%$, while NQ accuracy falls from $66.9\%$ to $60.3\%$ and GSM8K accuracy falls from $49.7\%$ to $43.6\%$. Mistral-7B also gains on TruthfulQA, with modest declines on NQ and TriviaQA and stable MMLU and GSM8K accuracy. Qwen2.5-7B shows little sensitivity over these coverage values, retaining the unsteered OOD accuracies while improving TruthfulQA. Disabling the gate sharply reduces GSM8K accuracy to $0.6$--$3.4\%$ across all three models.
 
-\FloatBarrier
+%\FloatBarrier
 \section{kNN gating}
 \label{apx:knn}
 
@@ -498,7 +504,7 @@ Using $u(\boldsymbol{x})=-\log\hat{p}_{b_g}(\boldsymbol{x})$ and $\hat{p}_{b_g}(
 \label{eq:knn-product-limit}
 \end{equation}
 
-The small-bandwidth limit thus depends on nearest-sample distances to both populations. The kNN gate uses distance to undesired samples as a surrogate without fitting transport and replaces the nearest sample with the $k$-th neighbor to reduce dependence on an individual sample.
+The small-bandwidth limit thus depends on nearest-sample distances to both contrastive datasets. The kNN gate uses distance to undesired samples as a surrogate without fitting transport and replaces the nearest sample with the $k$-th neighbor to reduce dependence on an individual sample.
 
 \noindent\textbf{Applying the gate.}~We evaluate the kNN gate once at the last prompt activation, cache its value as $g_{\mathrm{prompt}}$, and reuse it throughout the continuation. For \Cobras, this value replaces $g_{\mathrm{prompt}}$ in Eq.~\eqref{eq:step} and scales the integration step size. For another method that maps an activation $\boldsymbol{h}$ to $\tilde{\boldsymbol{h}}$, the gated output is $\boldsymbol{h}+g_{\mathrm{prompt}}(\tilde{\boldsymbol{h}}-\boldsymbol{h})$, so the gate scales the method's displacement. Algorithm~\ref{alg:knn-external} summarizes this external wrapper.
 
@@ -523,7 +529,7 @@ The small-bandwidth limit thus depends on nearest-sample distances to both popul
 \subsection{kNN gating across steering methods}
 \label{apx:knn-external}
 
-To evaluate the kNN gate across steering methods, we compare CAA, ODESteer, SphericalSteer, and \Cobras with and without gating on LLaMA3.1-8B. All methods are fitted on TruthfulQA, whose True$\times$Info score measures steering performance. Accuracy on GSM8K and MMLU measures OOD retention. We use the default kNN settings from Appendix~\ref{apx:knn-gate}. Table~\ref{tab:knn-external} also includes \Cobras with the support gate in Eq.~\eqref{eq:gate} at coverage $p=0.7$.
+To evaluate the kNN gate across steering methods, we compare CAA, ODESteer, SphericalSteer, and \Cobras with and without gating on LLaMA3.1-8B. All methods are fitted on TruthfulQA, whose True$\times$Info score measures steering performance. Accuracy on GSM8K and MMLU measures OOD retention. We use the default kNN settings from Appendix~\ref{apx:knn-gate}. Table~\ref{tab:knn-external} also includes \Cobras with the support gate in Eq.~\eqref{eq:gate} at coverage $p=0.8$.
 
 \begin{table}[ht]
 \centering
@@ -534,18 +540,18 @@ To evaluate the kNN gate across steering methods, we compare CAA, ODESteer, Sphe
 \toprule
 Method & TQA T$\times$I (\%) & GSM8K (\%) & MMLU (\%) \\
 \midrule
-Unsteered & 43.4 & 48.7 & 61.6 \\
+\textcolor{red}{Unsteered} & 43.0 & 48.7 & 61.6 \\
 \midrule
-CAA & 60.3 & 15.8 & 59.8 \\
+\textcolor{red}{CAA} & 60.3 & 15.8 & 59.8 \\
 CAA + kNN gate & 58.6 & 48.9 & 61.6 \\
-ODESteer & 58.5 & 37.4 & 61.0 \\
+\textcolor{red}{ODESteer} & 58.5 & 37.4 & 61.0 \\
 ODESteer + kNN gate & 56.8 & 48.9 & 61.6 \\
-SphericalSteer & 64.4 & 1.0 & 45.5 \\
+\textcolor{red}{SphericalSteer} & 64.4 & 1.0 & 45.5 \\
 SphericalSteer + kNN gate & 61.7 & 47.3 & 61.6 \\
 \midrule
-\Cobras, no gate & 67.6 & 0.6 & 44.4 \\
+\textcolor{red}{\Cobras, no gate} & 68.1 & 0.6 & 44.4 \\
 \Cobras + kNN gate & 63.6 & 47.5 & 61.6 \\
-\Cobras + support gate & 63.6 & 49.5 & 61.6 \\
+\Cobras + support gate ($p=0.8$) & 65.4 & 48.1 & 61.6 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -554,7 +560,7 @@ Across all four methods, the kNN gate brings GSM8K accuracy to $47.3\%$--$48.9\%
 
 For \Cobras, both gates give the same reported mean TruthfulQA True$\times$Info of $63.6\%$ and MMLU accuracy of $61.6\%$. The support gate retains higher GSM8K accuracy, at $49.5\%$ compared with $47.5\%$ for kNN. We next examine whether this OOD retention persists as the calibration parameters vary.
 
-\FloatBarrier
+%\FloatBarrier
 \subsection{Calibration and sensitivity of the nearest-neighbor gate}
 \label{apx:knn-calibration}
 We first analyze how the kNN gate's calibration quantile $\tau$ and neighborhood size $k$ affect steering performance and OOD retention. Table~\ref{tab:abstain-results} reports a sensitivity experiment on LLaMA3.1-8B and Mistral-7B with $T=0.65$, $K=10$, and $\gamma=200$. We vary $\tau$ with $k=32$ fixed, then vary $k$ with $\tau=0.98$ fixed.
@@ -562,7 +568,7 @@ We first analyze how the kNN gate's calibration quantile $\tau$ and neighborhood
 \begin{table}[ht]
 \centering
 \small
-\caption{Sensitivity of \Cobras with the kNN gate to $\tau$ and $k$. Results use seed $42$ on all $817$ TruthfulQA questions and the full GSM8K test set of $1{,}319$ questions.}
+\caption{Sensitivity of \Cobras with the kNN gate to $\tau$ and $k$. Results use seed $42$ on all $817$ TruthfulQA questions and the GSM8K test set.}
 \label{tab:abstain-results}
 \begin{tabular}{lccccc}
 \toprule
@@ -591,24 +597,24 @@ To understand the sensitivity to $\tau$, we examine the contrastive set used to 
 
 The support gate in Eq.~\eqref{eq:gate} addresses this calibration mismatch by using support scores from the last-token activations of reference prompts. Its coverage parameter $p$ therefore refers directly to percentiles of scores for prompt activations. On the full GSM8K test set for LLaMA3.1-8B, accuracy declines from $49.7\%$ to $43.6\%$ as $p$ increases from $0.6$ to $0.9$ (Table~\ref{tab:support-gate-coverage}). In contrast, the kNN sweep retains $47.5\%$--$48.9\%$ accuracy through $\tau=0.98$, then falls to $11.6\%$ at $\tau=0.995$ (Table~\ref{tab:abstain-results}). The support gate therefore shows a more gradual OOD trade-off over the tested settings, while matching the kNN gate's mean TruthfulQA score at their default settings in Table~\ref{tab:knn-external}.
 
-\FloatBarrier
+%\FloatBarrier
 \section{Experimental Details}
 \label{appendix:experimental_details}
 
 \subsection{Models and generation settings}
 
-Following Zhao~\etal~\cite{zhaoodesteer}, we evaluate all methods on four open-source models: (i) Falcon-7B, \texttt{tiiuae/falcon-7b}\footnote{\url{https://huggingface.co/tiiuae/falcon-7b}}, (ii) Mistral-7B-v0.3, \texttt{mistralai/Mistral-7B-v0.3}\footnote{\url{https://huggingface.co/mistralai/Mistral-7B-v0.3}}, (iii) LLaMA3.1-8B, \texttt{meta-llama/Llama-3.1-8B}\footnote{\url{https://huggingface.co/meta-llama/Llama-3.1-8B}}, and (iv) Qwen2.5-7B, \texttt{Qwen/Qwen2.5-7B}\footnote{\url{https://huggingface.co/Qwen/Qwen2.5-7B}}. Unless otherwise specified, generation uses temperature $=0.7$, top-$p=0.9$, and repetition penalty $=1.1$.
+Following Zhao et al.~\cite{zhaoodesteer}, we evaluate all methods on four open-source models: (i) Falcon-7B, \texttt{tiiuae/falcon-7b}\footnote{\url{https://huggingface.co/tiiuae/falcon-7b}}, (ii) Mistral-7B-v0.3, \texttt{mistralai/Mistral-7B-v0.3}\footnote{\url{https://huggingface.co/mistralai/Mistral-7B-v0.3}}, (iii) LLaMA3.1-8B, \texttt{meta-llama/Llama-3.1-8B}\footnote{\url{https://huggingface.co/meta-llama/Llama-3.1-8B}}, and (iv) Qwen2.5-7B, \texttt{Qwen/Qwen2.5-7B}\footnote{\url{https://huggingface.co/Qwen/Qwen2.5-7B}}. Unless otherwise specified, generation uses temperature $=0.7$, top-$p=0.9$, and repetition penalty $=1.1$.
 
 
 \subsection{Datasets}
 
 
 \begin{itemize}
-    \item \textbf{TruthfulQA}~\citep{lin2021truthfulqa} is a benchmark consisting of 817 questions paired with true and false reference answers, along with source information. The questions cover 38 diverse categories and are commonly evaluated in a zero-shot setting. Following Zhao~\etal~\cite{zhaoodesteer}, we construct 5,918 question--answer pairs and use a 40/10/50 train/validation/test split with two-fold cross validation.
+    \item \textbf{TruthfulQA}~\citep{lin2021truthfulqa} is a benchmark consisting of 817 questions paired with true and false reference answers, along with source information. The questions cover 38 diverse categories and are commonly evaluated in a zero-shot setting. Following Zhao et al.~\cite{zhaoodesteer}, we construct 5,918 question--answer pairs and use a \textcolor{blue}{ajay pls check this;40/10/50} train/validation/test split with two-fold cross-validation.
 
-    \item \textbf{UltraFeedback}~\citep{cui2023ultrafeedback} is a large-scale alignment dataset covering instruction-following qualities such as truthfulness, honesty, and helpfulness. In our experiments, we use the UltraFeedback-Binarized dataset\footnote{\url{https://huggingface.co/datasets/HuggingFaceH4/ultrafeedback_binarized}}. Specifically, we use the preference-modeling split, where each prompt is paired with an accepted response and a rejected response. Following Zhao~\etal~\cite{zhaoodesteer}, we randomly sample 10K training pairs, 500 validation pairs, and 500 test pairs.
+    \item \textbf{UltraFeedback}~\citep{cui2023ultrafeedback} is a large-scale alignment dataset covering instruction-following qualities such as truthfulness, honesty, and helpfulness. In our experiments, we use the UltraFeedback-Binarized dataset\footnote{\url{https://huggingface.co/datasets/HuggingFaceH4/ultrafeedback_binarized}}. Specifically, we use the preference-modeling split, where each prompt is paired with an accepted response and a rejected response. Following Zhao et al.~\cite{zhaoodesteer}, we randomly sample 10K training pairs, 500 validation pairs, and 500 test pairs.
 
-    \item \textbf{RealToxicityPrompts}~\citep{gehman2020realtoxicityprompts} is a benchmark for evaluating toxic degeneration in language models. It consists of naturally occurring web prompts paired with toxicity annotations obtained from the Perspective API. The dataset contains approximately 21K toxic prompts with toxicity scores greater than 0.5 and 77K non-toxic prompts. Following Zhao~\etal~\citep{zhaoodesteer}, we train toxicity steering methods using the Jigsaw Unintended Bias in Toxicity Classification dataset\footnote{\url{https://www.kaggle.com/c/jigsaw-unintended-bias-in-toxicity-classification}} and evaluate them on RealToxicityPrompts. Specifically, we construct a balanced Jigsaw training set of 10K sentences by sampling according to toxicity scores, with 5K toxic and 5K benign examples. For evaluation, we select 500 toxic prompts from RealToxicityPrompts and use them as inputs to the LLMs. This setup allows us to assess whether steering methods reduce toxic generations while preserving response quality.
+    \item \textbf{RealToxicityPrompts}~\citep{gehman2020realtoxicityprompts} is a benchmark for evaluating toxic degeneration in language models. It consists of naturally occurring web prompts paired with toxicity annotations obtained from the Perspective API. The dataset contains approximately 21K toxic prompts with toxicity scores greater than 0.5 and 77K non-toxic prompts. Following Zhao et al.~\citep{zhaoodesteer}, we train toxicity steering methods using the Jigsaw Unintended Bias in Toxicity Classification dataset\footnote{\url{https://www.kaggle.com/c/jigsaw-unintended-bias-in-toxicity-classification}} and evaluate them on RealToxicityPrompts. Specifically, we construct a balanced Jigsaw training set of 10K sentences by sampling according to toxicity scores, with 5K toxic and 5K benign examples. For evaluation, we select 500 toxic prompts from RealToxicityPrompts and use them as inputs to the LLMs. This setup allows us to assess whether steering methods reduce toxic generations while preserving response quality.
 
     \item \textbf{TriviaQA}~\citep{joshi2017triviaqa} contains trivia questions with reference answers and evidence documents. We use the modified validation release prepared for ITI transfer evaluation, \href{https://huggingface.co/datasets/OamPatel/iti_trivia_qa_val}{\texttt{OamPatel/iti\_trivia\_qa\_val}}, which supplies accepted answer aliases and one distractor per question.
 
@@ -711,26 +717,26 @@ Following Zhao~\etal~\cite{zhaoodesteer}, we evaluate all methods on four open-s
 \label{apx:bandwidth}
 \label{apx:pseudocode}
 
-We extend the ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement the steering methods and baselines. For \Cobras, we set $\varepsilon$ to the squared median $5$-NN geodesic distance in $\mathcal{D}^+\cup\mathcal{D}^-$, with a minimum of $10^{-6}$. Sinkhorn fitting uses five sweeps of Eq.~\eqref{eq:sinkhorn}, initialized with zero log-potentials. The implementation uses unnormalized reference weights $e^{-c_{ji}}$, absorbing their common normalization into the fitted potentials. The normalized steering weights and calibrated support gate are invariant to this choice. The support gate uses the fixed bandwidth $b_g=\varepsilon/256$. At each integration step, we select a bandwidth separately for each population:
+We extend the ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/odesteer}} to implement the steering methods and baselines. For \Cobras, we set $\varepsilon$ to the squared median $5$-NN geodesic distance in $\mathcal{D}^+\cup\mathcal{D}^-$, with a minimum of $10^{-6}$. Sinkhorn fitting uses five sweeps of Eq.~\eqref{eq:sinkhorn}, initialized with zero log-potentials. The implementation uses unnormalized reference weights $e^{-c_{ji}}$, absorbing their common normalization into the fitted potentials. The normalized steering weights and calibrated support gate are invariant to this choice. The support gate uses the fixed bandwidth $b_g=\varepsilon/256$. At each integration step, we select a bandwidth separately for each contrastive dataset:
 \begin{equation}
 b_\pm(\boldsymbol{x})=
 \max\!\left\{\max_{\boldsymbol{h}\in\mathcal{D}^\pm}
 d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2,\ b_{\min}\right\}.
 \label{eq:adaptive-bandwidth}
 \end{equation}
-where $b_{\min}=10^{-6}$. Every kernel centered on a desired sample uses $b_+$, and every kernel centered on an undesired sample uses $b_-$. This applies to both the inner and outer kernels in Eqs.~\eqref{eq:local-psi} and~\eqref{eq:local-phi}. We evaluate the steering field using the weighted log-maps in Eq.~\eqref{eq:weighted-cobras-field}, without dividing either branch by its bandwidth. Weighted kernel estimates and normalized weights are evaluated in log space. We clamp cosines away from $\pm1$ and vector norms away from zero for numerical stability.
+where $b_{\min}=10^{-6}$. Every kernel centered on a desired sample uses $b_+$, and every kernel centered on an undesired sample uses $b_-$. This applies to both the inner and outer kernels in Eqs.~\eqref{eq:local-psi} and~\eqref{eq:local-phi}. We evaluate the steering field using the weighted log-maps in Eq.~\eqref{eq:weighted-cobras-field}. We clamp cosines away from $\pm1$ and vector norms away from zero for numerical stability.
 
-Unless varied in an ablation, we use $K=10$ integration steps and $\kappa=20$. The main in-distribution evaluation is ungated, with $g_{\mathrm{prompt}}=1$ and integration horizon $T=0.5$. Support-gated OOD evaluation uses $p=0.7$ and $T=0.65$. For baseline steering-strength selection, we sweep $T=20$--$23$ for Falcon-7B, $T=2$--$5$ for Mistral-7B, $T=3$--$6$ for LLaMA3.1-8B, and $T=13$--$16$ for Qwen2.5-7B. For baselines without a comparable steering-strength parameter, we use the settings reported in their papers.
+Unless varied in an ablation, we use $K=10$ integration steps and $\kappa=20$. The main in-distribution evaluation is ungated, with $g_{\mathrm{prompt}}=1$ and the integration horizon set based on each model (Appendix~\ref{appendix:cobras_vs_t}). Support-gated OOD evaluation uses $p=0.7$ and $T=0.65$ for LLaMA3.1-8B, $p=0.9$ and $T=0.65$ for Mistral-7B, and $p=0.8$ and $T=0.4$ for Qwen2.5-7B. Following ODESteer~\cite{zhaoodesteer}, we evaluate steering strengths $T=20$--$23$ for Falcon-7B, $T=3$--$4$ for Mistral-7B, $T=4$--$6$ for LLaMA3.1-8B, and $T=13$--$16$ for Qwen2.5-7B. We additionally evaluate $T=1$ for all baselines with a comparable steering-strength parameter and report the best result among these settings. For other baselines, we use the settings reported in their papers.
 
-\FloatBarrier
+%\FloatBarrier
 \section{Computational Cost}
 \label{apx:computational-cost}
 
-Our experiments used one H100 80GB GPU and two A100 80GB GPUs. \Cobras fits the endpoint potentials and computes reference support scores offline. On a single A100 80GB GPU in float32, fitting takes $13$ ms for $N_+=1311$ and $N_-=1672$ after initialization. With synthetic activations and blocked distance computation, fitting takes $9.6$ s at $60{,}000$ samples per population. At $100{,}000$ per population, the cost matrix alone occupies $37.3$ GiB and the fit exceeds available memory, exposing the storage limit of the pairwise representation.
+Our experiments used one H100 80GB GPU and two A100 80GB GPUs. \Cobras fits the endpoint potentials and computes reference support scores offline. On a single A100 80GB GPU in float32, fitting takes $13$ ms for $N_+=1311$ and $N_-=1672$ after initialization. With synthetic activations and blocked distance computation, fitting takes $9.6$ s at $60{,}000$ samples per contrastive dataset. At $100{,}000$ per contrastive dataset, the cost matrix alone occupies $37.3$ GiB, and the fit exceeds available memory, exposing the storage limit of the pairwise representation.
 
-During generation, each steered token requires $K$ field evaluations, each costing $O(N_-N_+ + d(N_-+N_+))$. The pairwise term combines contributions across the two populations, while the remaining term covers activation distances and tangent vectors. This cost excludes the language model's forward pass. The support gate is evaluated once per prompt. To measure decoding overhead, we benchmark LLaMA3.1-8B at layer $13$ on the same GPU in float32, using $100$ prompts, batch size $10$, and $50$ greedy decoding steps per prompt. We report the median runtime over four rounds after one warm-up round. With $N_+=1311$, $N_-=1672$, and $K=10$, \Cobras increases runtime per decoding step for the batch from $62.5$ to $82.7$ ms, an overhead of $32\%$.
+During generation, each steered token requires $K$ field evaluations, each costing $O(N_-N_+ + d(N_-+N_+))$. The pairwise term combines contributions across the two contrastive datasets, while the remaining term covers activation distances and tangent vectors. This cost excludes the language model's forward pass. The support gate is evaluated once per prompt. To measure decoding overhead, we benchmark LLaMA3.1-8B at layer $13$ on the same GPU in float32, using $100$ prompts, batch size $10$, and $50$ greedy decoding steps per prompt. We report the median runtime over four rounds after one warm-up round. With $N_+=1311$, $N_-=1672$, and $K=10$, \Cobras increases runtime per decoding step for the batch from $62.5$ to $82.7$ ms, an overhead of $32\%$.
 
-We then reduce cost by subsampling before fitting, taking fewer integration steps, or restricting field evaluation to the $64$ nearest samples per population. Table~\ref{tab:runtime-approximations} compares overhead and TruthfulQA performance, using ungated steering with $T=0.5$ for all variants. Using a quarter of each population with two integration steps reduces overhead from $32\%$ to $7\%$ at a cost of $1.8$ percentage points in True$\times$Info. Subsampling alone provides little speedup, while nearest-sample truncation sacrifices more accuracy for a smaller reduction in overhead.
+We then reduce cost by subsampling before fitting, taking fewer integration steps, or restricting field evaluation to the $64$ nearest samples per contrastive dataset. Table~\ref{tab:runtime-approximations} compares overhead and TruthfulQA performance, using ungated steering with $T=0.5$ for all variants. Using a quarter of each contrastive dataset with two integration steps reduces overhead from $32\%$ to $7\%$ at a cost of $1.8$ percentage points in True$\times$Info. Subsampling alone provides little speedup, while nearest-sample truncation sacrifices more accuracy for a smaller reduction in overhead.
 
 \begin{table}[ht]
 \centering
@@ -742,13 +748,13 @@ We then reduce cost by subsampling before fitting, taking fewer integration step
 Configuration & $K$ & Overhead (\%)$\downarrow$ & T$\times$I (\%)$\uparrow$ \\
 \midrule
 Full contrastive set & 10 & 32 & 67.5 \\
-$25\%$ of each population & 10 & 30 & 66.5 \\
-$25\%$ of each population & 2 & 7 & 65.7 \\
-$64$ nearest samples per population & 10 & 22 & 61.6 \\
+$25\%$ of each contrastive dataset & 10 & 30 & 66.5 \\
+$25\%$ of each contrastive dataset & 2 & 7 & 65.7 \\
+$64$ nearest samples per contrastive dataset & 10 & 22 & 61.6 \\
 \bottomrule
 \end{tabular}
 \end{table}
-\FloatBarrier
+%\FloatBarrier
 
 \section{Additional Results}
 \label{apx:additional-results}
@@ -760,7 +766,7 @@ We examine activation norm concentration, the contributions of steering componen
 
 To assess the spherical approximation, we check whether activation norms concentrate around a common value at each layer. We compute the coefficient of variation (CoV), the standard deviation of the norms divided by their mean, separately at every layer. A smaller CoV indicates tighter concentration around that layer's mean norm. For each model, we extract last-token activations from $5{,}918$ question--answer pairs spanning the $817$ TruthfulQA questions, using both correct and incorrect reference answers. We evaluate the four models used in the main experiments and four additional architectures: Gemma-2-2B~\cite{team2024gemma}, GPT-OSS-20B~\cite{agarwal2025gpt}, LLaMA-3.2-1B, and Qwen2.5-1.5B.
 
-\begin{table}[t]
+\begin{table}[ht]
 \centering
 \caption{Residual-stream norm concentration on TruthfulQA. Each interval gives the minimum and maximum per-layer CoV within the indicated layer group. The two blocks contain the four main models and four additional architectures.}
 \small
@@ -785,13 +791,13 @@ Qwen2.5-1.5B      & 28 & [0.024, 0.029] & [0.017, 0.044] \\
 
 Table~\ref{tab:norm_concentration} shows that later-layer CoV is at most $0.085$ for the four main models and $0.146$ across all eight models. These measurements support the approximation of similar activation norms at a given layer, with greater dispersion in some layers of Gemma-2-2B and GPT-OSS-20B.
 
-\FloatBarrier
+%\FloatBarrier
 \subsection{Component ablations}
 \label{apx:component-ablations}
 
 We examine how spherical geometry, sample weighting, the alignment coefficient, and the support gate contribute to steering performance and OOD retention on LLaMA3.1-8B at layer $13$. Table~\ref{tab:component-ablation} compares variants fitted on TruthfulQA with $T=0.65$, $K=10$, and support coverage $p=0.7$ unless varied.
 
-The Euclidean variant replaces geodesic quantities, including those in the support score, with Euclidean ones and recalibrates the gate at the same coverage. The uniform-weight variant replaces the weights in Eq.~\eqref{eq:weighted-cobras-field} by uniform weights within each population. To assess alignment attenuation, we set $s=1$ and then reduce $T$ to $0.556$ in a step-matched control, testing whether any loss can be explained by the increase in average step length. Finally, setting $g=1$ removes support gating.
+The Euclidean variant replaces geodesic quantities, including those in the support score, with Euclidean ones and recalibrates the gate at the same coverage. The uniform-weight variant replaces the weights in Eq.~\eqref{eq:weighted-cobras-field} by uniform weights within each contrastive dataset. To assess alignment attenuation, we set $s=1$ and then reduce $T$ to $0.556$ in a step-matched control, testing whether any loss can be explained by the increase in average step length. Finally, setting $g=1$ removes support gating.
 
 \begin{table}[ht]
 \centering
@@ -805,26 +811,26 @@ The Euclidean variant replaces geodesic quantities, including those in the suppo
 \cmidrule(lr){2-4}\cmidrule(lr){5-6}
 & True$\uparrow$ & Info$\uparrow$ & T$\times$I$\uparrow$ & GSM8K$\uparrow$ & MMLU$\uparrow$ \\
 \midrule
-Unsteered & 45.6 & 97.1 & $43.4\pm0.9$ & 48.7 & 61.6 \\
-\textbf{\Cobras} & 74.8 & 88.2 & $63.6\pm1.0$ & 49.5 & 61.6 \\
+\textcolor{red}{Unsteered} & 45.1 & 97.6 & $43.0\pm1.5$ & 48.7 & 61.6 \\
+\textcolor{red}{\textbf{\Cobras}} & 74.8 & 88.2 & $63.6\pm1.0$ & 49.5 & 61.6 \\
 \midrule
 \quad Euclidean geometry & 73.2 & 87.8 & $61.5\pm1.2$ & 15.1 & 61.6 \\
 \quad uniform sample weights & 74.4 & 87.6 & $62.9\pm0.6$ & 49.7 & 61.6 \\
 \quad w/o alignment coefficient & 81.5 & 52.1 & $34.3\pm1.1$ & 48.8 & 61.6 \\
 \quad w/o alignment coefficient (step-matched) & 75.5 & 74.1 & $50.4\pm0.6$ & 49.4 & 61.6 \\
-\quad w/o support gate & 83.6 & 83.4 & $67.6\pm0.6$ & 0.6 & 44.4 \\
+\quad w/o support gate & 82.8 & 84.9 & $68.1\pm1.3$ & 0.6 & 44.4 \\
 \bottomrule
 \end{tabular}
 \end{table}
-\FloatBarrier
+%\FloatBarrier
+\textcolor{red}{
+The Euclidean variant reduces True$\times$Info from $63.6\%$ to $61.5\%$ and GSM8K accuracy from $49.5\%$ to $15.1\%$. A diagnostic on $1{,}000$ GSM8K prompts gives a mean gate value of $71.7\%$ in Euclidean geometry, compared with the spherical gate's $7.3\%$ in Table~\ref{tab:gate-separation}. Despite equal calibration coverage, the Euclidean gate therefore attenuates steering much less on these OOD prompts. Replacing the sample weights with uniform weights has a smaller effect, giving $62.9\%$ True$\times$Info and similar OOD accuracy to \Cobras.}
 
-The Euclidean variant reduces True$\times$Info from $63.6\%$ to $61.5\%$ and GSM8K accuracy from $49.5\%$ to $15.1\%$. A diagnostic on $1{,}000$ GSM8K prompts gives a mean gate value of $71.7\%$ in Euclidean geometry, compared with the spherical gate's $7.3\%$ in Table~\ref{tab:gate-separation}. Despite equal calibration coverage, the Euclidean gate therefore attenuates steering much less on these OOD prompts. Replacing the sample weights with uniform weights has a smaller effect, giving $62.9\%$ True$\times$Info and similar OOD accuracy to \Cobras.
+\textcolor{red}{Removing the alignment coefficient raises True from $74.8\%$ to $81.5\%$ but lowers Info from $88.2\%$ to $52.1\%$, reducing True$\times$Info to $34.3\%$. Reducing $T$ in the step-matched control recovers Info to $74.1\%$ and True$\times$Info to $50.4\%$, so both remain below \Cobras. This suggests that alignment attenuation helps preserve informativeness beyond the effect of reducing the average step length.}
 
-Removing the alignment coefficient raises True from $74.8\%$ to $81.5\%$ but lowers Info from $88.2\%$ to $52.1\%$, reducing True$\times$Info to $34.3\%$. Reducing $T$ in the step-matched control recovers Info to $74.1\%$ and True$\times$Info to $50.4\%$, so both remain below \Cobras. This suggests that alignment attenuation helps preserve informativeness beyond the effect of reducing the average step length.
+\textcolor{red}{Removing the support gate instead raises True$\times$Info from $63.6\%$ to $68.1\%$, while GSM8K accuracy falls from $49.5\%$ to $0.6\%$ and MMLU accuracy falls from $61.6\%$ to $44.4\%$. The support gate therefore trades some target-task gain for retaining OOD accuracy.}
 
-Removing the support gate instead raises True$\times$Info from $63.6\%$ to $67.6\%$, while GSM8K accuracy falls from $49.5\%$ to $0.6\%$ and MMLU accuracy falls from $61.6\%$ to $44.4\%$. The support gate therefore trades some target-task gain for retaining OOD accuracy.
-
-\FloatBarrier
+%\FloatBarrier
 
 \subsection{Effect of the integration horizon $T$}
 \label{appendix:cobras_vs_t}
@@ -853,7 +859,7 @@ We vary the integration horizon $T$ from $0.1$ to $1.0$ on TruthfulQA and UltraF
 
 Figure~\ref{fig:cobras_vs_t} shows that the integration horizon has a non-monotonic effect. On TruthfulQA, moderate $T$ generally improves True$\times$Info, with peaks around $T=0.6$ for LLaMA3.1-8B, $T=0.7$ for Mistral-7B, and $T=0.4$ for Qwen2.5-7B. Larger values often degrade performance, suggesting over-steering. Falcon-7B is flatter and weaker overall, with a sharp drop at high $T$. On UltraFeedback, the trend is more model-dependent. LLaMA3.1-8B benefits from moderate $T$, Falcon-7B is relatively stable, while Mistral-7B and Qwen2.5-7B degrade as $T$ increases. The preferred horizon therefore depends on both the model and the target behavior.
 
-\FloatBarrier
+%\FloatBarrier
 \subsection{Effect of the number of integration steps $K$}
 \label{appendix:cobras_vs_k}
 
@@ -892,12 +898,12 @@ We vary the number of geodesic Euler steps $K$ under ungated steering to examine
 \label{tab:cobras_truthfulqa_iters}
 \end{table*}
 
-\FloatBarrier
+%\FloatBarrier
 
 Every tested $K$ gives higher True and True$\times$Info scores than the corresponding unsteered reference. Increasing $K$ raises informativeness but can lower truthfulness. On Falcon-7B, moving from $K=1$ to $K=10$ raises Info from $73.7$ to $93.4$ and lowers True from $60.5$ to $45.5$, while improving the joint score from $37.3$ to $40.3$. The joint-score gain is larger on LLaMA3.1-8B and smaller on Mistral-7B. Although $K=10$ gives the highest mean joint score for each model, the Falcon trend is not monotonic. The choice of $K$ should therefore reflect both the desired truthfulness--informativeness balance and the cost of additional field evaluations (Appendix~\ref{apx:computational-cost}).
 
-\FloatBarrier
-\subsection{Effect of the vMF concentration $\kappa$}
+%\FloatBarrier
+\subsection{\textcolor{red}{Effect of the vMF concentration $\kappa$; check numbers}}
 \label{appendix:cobras_vs_kappa}
 
 We vary the vMF concentration $\kappa\in\{0,10,20,40,80\}$ of the alignment coefficient $s$ (Section~\ref{subsec:strength}) on TruthfulQA, using $K=10$ and ungated steering (Table~\ref{tab:cobras_vs_kappa}). For each model, we fix the integration horizon $T$ at the value with the highest True$\times$Info in Figure~\ref{fig:cobras_tqa_vs_t}. At $\kappa=0$, $s=1/2$ for every activation, removing the coefficient's dependence on alignment with $\boldsymbol{\mu}$.
@@ -914,18 +920,18 @@ We vary the vMF concentration $\kappa\in\{0,10,20,40,80\}$ of the alignment coef
 \cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
 $\kappa$ & True$\uparrow$ & Info$\uparrow$ & T$\times$I$\uparrow$ & True$\uparrow$ & Info$\uparrow$ & T$\times$I$\uparrow$ & True$\uparrow$ & Info$\uparrow$ & T$\times$I$\uparrow$ \\
 \midrule
-Unsteered & 45.6 & 97.1 & $43.4\pm0.9$ & 40.5 & 95.1 & $35.8\pm1.2$ & 79.5 & 85.5 & $65.4\pm0.4$ \\
+Unsteered & 45.1 & 97.6 & $43.0\pm1.5$ & 41.7 & 94.8 & $36.9\pm0.6$ & 78.3 & 86.4 & $64.8\pm0.7$ \\
 \midrule
 $0$ & 65.6 & 94.6 & $60.5\pm1.6$ & 67.4 & 91.9 & $59.5\pm1.8$ & 84.2 & 86.7 & $71.2\pm1.0$ \\
 $10$ & 75.4 & 89.2 & $65.2\pm1.2$ & 78.0 & 87.6 & $66.0\pm1.2$ & 83.9 & 85.5 & $69.6\pm1.9$ \\
-$20$ & 79.9 & 86.4 & $67.1\pm1.9$ & 81.2 & 83.9 & $65.7\pm0.7$ & 83.1 & 85.0 & $68.4\pm1.5$ \\
+\textcolor{red}{$20$} & 79.9 & 86.4 & $67.1\pm1.9$ & 81.2 & 83.9 & $65.7\pm0.7$ & 83.1 & 85.0 & $68.4\pm1.5$ \\
 $40$ & 81.8 & 84.8 & $67.0\pm1.0$ & 83.8 & 80.0 & $64.5\pm0.9$ & 84.4 & 83.4 & $68.1\pm1.7$ \\
 $80$ & 81.9 & 84.3 & $66.5\pm0.8$ & 84.4 & 78.2 & $63.1\pm0.6$ & 85.0 & 81.8 & $67.4\pm1.6$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\FloatBarrier
+%\FloatBarrier
 
 All tested concentrations improve True and True$\times$Info over the unsteered reference, but the preferred $\kappa$ depends on the model. On LLaMA3.1-8B and Mistral-7B, increasing $\kappa$ trades informativeness for truthfulness. Over $\kappa\in\{10,20,40,80\}$, True$\times$Info varies by $1.9$ and $2.9$ percentage points, respectively, and the default $\kappa=20$ is within $0.3$ points of the highest mean for both models. Relative to this default, $\kappa=0$ lowers True$\times$Info by $6.6$ and $6.2$ points, respectively.
 
@@ -933,13 +939,14 @@ Qwen2.5-7B follows a different pattern: True$\times$Info decreases monotonically
 
 This sweep changes both the alignment dependence and the average value of $s$, so it cannot attribute these differences solely to alignment attenuation. The complementary step-matched control in Appendix~\ref{apx:component-ablations} examines alignment attenuation on LLaMA3.1-8B while matching the average step length.
 
-\FloatBarrier
+%\FloatBarrier
 \subsection{Sensitivity of baseline steering methods}
 \label{appendix:baseline_strength}
 
-To select the steering strength for each baseline, we sweep over model-specific ranges: $T=20$--$23$ for Falcon-7B, $T=2$--$5$ for Mistral-7B, $T=3$--$6$ for LLaMA3.1-8B, and $T=13$--$16$ for Qwen2.5-7B. Figure~\ref{fig:performance_vs_t} shows the performance of RepE, ITI, CAA, and ODESteer on TruthfulQA and UltraFeedback. For baselines without a comparable steering-strength parameter, we use the best values reported in their papers.
+To select the steering strength for each baseline, we evaluate the model-specific ranges reported by ODESteer~\cite{zhaoodesteer}: $T=20$--$23$ for Falcon-7B, $T=3$--$4$ for Mistral-7B, $T=4$--$6$ for LLaMA3.1-8B, and $T=13$--$16$ for Qwen2.5-7B. We additionally evaluate $T=1$ for all baselines with a comparable steering-strength parameter and select the best result among these settings for each model and task. Figure~\ref{fig:performance_vs_t} shows the performance of RepE, ITI, CAA, and ODESteer on TruthfulQA and UltraFeedback. For baselines without a comparable steering-strength parameter, we use the settings reported in their papers.
 
-\begin{figure}[ht]
+
+\begin{figure}[t]
     \centering
      \includegraphics[width=\linewidth]{figures/performance_vs_steering_strength.png}
     \caption{Sensitivity of RepE, ITI, CAA, and ODESteer to steering strength on TruthfulQA and UltraFeedback. The strength ranges differ across models.}
@@ -949,7 +956,7 @@ To select the steering strength for each baseline, we sweep over model-specific 
 The results show that the best steering strength depends on both the model and the method. In general, some methods improve TruthfulQA performance at moderate values of $T$, but larger steering strengths can hurt UltraFeedback performance. This trend is especially visible for ODESteer on Mistral-7B and LLaMA3.1-8B, where increasing $T$ leads to a large drop in UltraFeedback win rate. CAA is more stable on UltraFeedback and often improves with larger $T$, while ITI tends to change more gradually across the sweep.
 
 
-\FloatBarrier
+%\FloatBarrier
 \subsection{Lexical diversity after detoxification}
 
 Table~\ref{tab:detox_dist} shows the generation diversity of steering methods on the detoxification task using Dist-$n$ metrics. Overall, \Cobras preserves lexical diversity close to the original model across all four backbones. The gap is small for Mistral-7B and LLaMA3.1-8B, where Dist-2 and Dist-3 remain nearly unchanged compared to the original model.

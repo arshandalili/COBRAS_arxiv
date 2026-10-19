@@ -200,22 +200,18 @@
 \author{%
   Seyed Arshan Dalili \\
   The Pennsylvania State University \\
-  University Park, PA 16802 \\
   \texttt{sbd5760@psu.edu} \\
   \And
   Ajay Narayanan Sridhar \\
   Georgia Institute of Technology \\
-  Atlanta, GA 30332 \\
   \texttt{ajay.narayanan@gatech.edu} \\
   \AND
   Vijaykrishnan Narayanan \\
   Georgia Institute of Technology \\
-  Atlanta, GA 30332 \\
   \texttt{vnarayanan67@gatech.edu} \\
   \And
   Mehrdad Mahdavi \\
   The Pennsylvania State University \\
-  University Park, PA 16802 \\
   \texttt{mzm616@psu.edu} \\
 }
 
@@ -225,7 +221,7 @@
 
 
 \begin{abstract}
-Activation steering offers a lightweight alternative to fine-tuning for controlling large language models at inference time. Many existing steering methods implicitly optimize a log-density-ratio objective between desired and undesired activation distributions without a principled derivation. Methods with fixed steering directions can also degrade in-distribution and out-of-distribution (OOD) performance. We introduce Conditional Optimal Bridge for Riemannian Activation Steering (\textsc{Cobras}), which casts steering as a Schr\"{o}dinger Bridge on the residual-stream hypersphere. This formulation yields a principled derivation of the log-density-ratio steering objective from a well-posed optimization problem. We construct a query-adaptive steering field that recovers log-density-ratio steering as a limiting case. The fitted transport also provides a support score for controlling OOD interventions. Across four models, \textsc{Cobras} outperforms prior steering methods in nearly all model--task settings spanning helpfulness, truthfulness, and detoxification, while largely preserving OOD performance. Code is available at \href{https://github.com/arshandalili/cobras}{here}.
+Activation steering offers a lightweight alternative to fine-tuning for controlling large language models at inference time. Many existing steering methods implicitly optimize a log-density-ratio objective between desired and undesired activation distributions without a principled derivation. Methods with fixed steering directions can also degrade out-of-distribution (OOD) performance. We introduce Conditional Optimal Bridge for Riemannian Activation Steering (\textsc{Cobras}), which casts steering as a Schr\"{o}dinger Bridge on the residual-stream hypersphere. This formulation yields a principled derivation of the log-density-ratio steering objective from a well-posed optimization problem. We construct a query-adaptive steering field that recovers log-density-ratio steering as a limiting case. The fitted transport also provides a support score for controlling OOD interventions. Across four models, \textsc{Cobras} outperforms prior steering methods in nearly all model--task settings spanning helpfulness, truthfulness, and detoxification, while largely preserving OOD performance. The code is available \href{https://github.com/arshandalili/cobras}{here}.
 \end{abstract}
 
 
