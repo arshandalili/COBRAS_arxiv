@@ -897,11 +897,11 @@ Figure~\ref{fig:cobras_vs_t} shows that the integration horizon has a non-monoto
 \subsection{Effect of the number of integration steps $K$}
 \label{appendix:cobras_vs_k}
 
-We vary the number of geodesic Euler steps $K$ under ungated steering to examine how integration affects TruthfulQA performance (Table~\ref{tab:cobras_truthfulqa_iters}). At a fixed integration horizon $T$, increasing $K$ divides the same intervention into smaller updates and recomputes the activation-dependent field after each update.
+We vary the number of geodesic Euler steps $K$ under ungated steering at $T=0.65$ for all three models to examine how integration affects TruthfulQA performance (Table~\ref{tab:cobras_truthfulqa_iters}). At a fixed integration horizon $T$, increasing $K$ divides the same intervention into smaller updates and recomputes the activation-dependent field after each update.
 
 \begin{table*}[h!]
 \centering
-\caption{TruthfulQA performance of \Cobras across geodesic Euler steps $K$. Unsteered references are reproduced from Table~\ref{tab:main_results}.}
+\caption{TruthfulQA performance of \Cobras across geodesic Euler steps $K$ with ungated steering at $T=0.65$. Results are means $\pm$ standard deviations over three seeds.}
 \renewcommand{\arraystretch}{1.2}
 \small
 % \resizebox{0.72\linewidth}{!}{%
@@ -913,13 +913,13 @@ We vary the number of geodesic Euler steps $K$ under ungated steering to examine
  & $K=1$ &  60.5 {\tiny $\pm$ 0.187} & 73.7 {\tiny $\pm$ 0.245} & 37.3 {\tiny $\pm$ 0.883} \\
  & $K=2$ &  58.3 {\tiny $\pm$ 0.628} & 78.6 {\tiny $\pm$ 0.071} & 39.9 {\tiny $\pm$ 0.367} \\
  & $K=5$ &  56.0 {\tiny $\pm$ 1.837} & 80.3 {\tiny $\pm$ 0.308} & 39.0 {\tiny $\pm$ 1.540} \\
- & $K=10$ & 45.5 {\tiny $\pm$ 2.124} & 93.4 {\tiny $\pm$ 1.379} & 40.3 {\tiny $\pm$ 1.390} \\
+ & $K=10$ & 55.9 {\tiny $\pm$ 1.041} & 80.4 {\tiny $\pm$ 0.212} & 38.8 {\tiny $\pm$ 1.180} \\
 \midrule
 \multirow{5}{*}{{Mistral-7B}} & Unsteered & 41.7 {\tiny $\pm$ 0.764} & 94.8 {\tiny $\pm$ 0.463} & 36.9 {\tiny $\pm$ 0.616} \\
  & $K=1$ &  81.4 {\tiny $\pm$ 1.180} & 82.7 {\tiny $\pm$ 0.956} & 64.6 {\tiny $\pm$ 1.841} \\
  & $K=2$ &  80.8 {\tiny $\pm$ 0.510} & 83.4 {\tiny $\pm$ 1.671} & 64.8 {\tiny $\pm$ 1.309} \\
  & $K=5$ &  79.8 {\tiny $\pm$ 0.883} & 84.6 {\tiny $\pm$ 0.324} & 64.9 {\tiny $\pm$ 0.648} \\
- & $K=10$ &  79.5 {\tiny $\pm$ 0.308} & 85.3 {\tiny $\pm$ 1.002} & 65.4 {\tiny $\pm$ 0.738} \\
+ & $K=10$ &  79.5 {\tiny $\pm$ 0.308} & 84.8 {\tiny $\pm$ 1.002} & 65.0 {\tiny $\pm$ 0.738} \\
 \midrule
 \multirow{5}{*}{{LLaMA3.1-8B}} & Unsteered & 45.1 {\tiny $\pm$ 1.309} & 97.6 {\tiny $\pm$ 0.628} & 43.0 {\tiny $\pm$ 1.496} \\
  & $K=1$ &  86.7 {\tiny $\pm$ 1.443} & 77.2 {\tiny $\pm$ 1.205} & 64.6 {\tiny $\pm$ 2.406} \\
@@ -934,7 +934,7 @@ We vary the number of geodesic Euler steps $K$ under ungated steering to examine
 
 %\FloatBarrier
 
-Every tested $K$ gives higher True and True$\times$Info scores than the corresponding unsteered reference. Increasing $K$ raises informativeness but can lower truthfulness. On Falcon-7B, moving from $K=1$ to $K=10$ raises Info from $73.7$ to $93.4$ and lowers True from $60.5$ to $45.5$, while improving the joint score from $37.3$ to $40.3$. The joint-score gain is larger on LLaMA3.1-8B and smaller on Mistral-7B. Although $K=10$ gives the highest mean joint score for each model, the Falcon trend is not monotonic. The choice of $K$ should therefore reflect both the desired truthfulness--informativeness balance and the cost of additional field evaluations (Appendix~\ref{apx:computational-cost}).
+Every tested $K$ gives higher True and True$\times$Info scores than the corresponding unsteered reference. Increasing $K$ raises informativeness but can lower truthfulness. On Falcon-7B, moving from $K=1$ to $K=10$ raises Info from $73.7$ to $80.4$ and lowers True from $60.5$ to $55.9$, while improving the joint score from $37.3$ to $38.8$. The joint-score gain is larger on LLaMA3.1-8B and smaller on Mistral-7B. The highest mean joint score occurs at $K=10$ for LLaMA3.1-8B and Mistral-7B and at $K=2$ for Falcon-7B. The choice of $K$ should therefore reflect both the desired truthfulness--informativeness balance and the cost of additional field evaluations (Appendix~\ref{apx:computational-cost}).
 
 %\FloatBarrier
 \subsection{Effect of the vMF concentration $\kappa$}
