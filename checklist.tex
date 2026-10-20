@@ -5,7 +5,7 @@
 \item {\bf Claims}
     \item[] Question: Do the main claims made in the abstract and introduction accurately reflect the paper's contributions and scope?
     \item[] Answer: \answerYes{}
-    \item[] Justification: The abstract and introduction state the bridge formulation, practical steering method, and evaluated empirical scope. Section~\ref{subsec:reduction} distinguishes the transport limit from the adaptive implementation.
+    \item[] Justification: The abstract and introduction state the bridge formulation, practical steering method, and evaluated empirical scope.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the abstract and introduction do not include the claims made in the paper.
@@ -17,7 +17,7 @@
 \item {\bf Limitations}
     \item[] Question: Does the paper discuss the limitations of the work performed by the authors?
     \item[] Answer: \answerYes{}
-    \item[] Justification: Section~\ref{sec:conclusion} discusses theoretical scope, geometry assumptions, and computational cost. Appendices~\ref{apx:ood-gate} and~\ref{apx:computational-cost} discuss support-gate evaluation and measured cost.
+    \item[] Justification: Section~\ref{sec:conclusion} discusses theoretical scope, geometry assumptions, and computational cost.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper has no limitation while the answer \answerNo{} means that the paper has limitations, but those are not discussed in the paper. 
@@ -32,8 +32,8 @@
 
 \item {\bf Theory assumptions and proofs}
     \item[] Question: For each theoretical result, does the paper provide the full set of assumptions and a complete (and correct) proof?
-    \item[] Answer: \answerYes{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
-    \item[] Justification: We state theorems in the main section, with proofs presented in the appendix.
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Appendix~\ref{subsec:reduction} states the assumptions and Proposition~\ref{prop:ldr-limit}. Appendix~\ref{apx:theory} provides the bridge and steering-field derivations and the proof of the proposition.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper does not include theoretical results. 
@@ -95,7 +95,7 @@
 \item {\bf Experiment statistical significance}
     \item[] Question: Does the paper report error bars suitably and correctly defined or other appropriate information about the statistical significance of the experiments?
     \item[] Answer: \answerYes{}
-    \item[] Justification: Table~\ref{tab:main_results} reports means and standard deviations over three random seeds. These summarize variability across runs; we do not claim statistical significance from the reported standard deviations.
+    \item[] Justification: Table~\ref{tab:main_results} reports means and standard deviations over three random seeds. These summarize variability across runs.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper does not include experiments.
@@ -111,8 +111,8 @@
 
 \item {\bf Experiments compute resources}
     \item[] Question: For each experiment, does the paper provide sufficient information on the computer resources (type of compute workers, memory, time of execution) needed to reproduce the experiments?
-    \item[] Answer: \answerNo{}
-    \item[] Justification: Appendix~\ref{appendix:implementation_details} identifies the GPUs used, and Appendix~\ref{apx:computational-cost} reports representative fitting time, decoding overhead, and memory limits.
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Appendix~\ref{apx:computational-cost} specifies computational costs. Appendix~\ref{appendix:experimental_details} specifies the evaluation sizes and settings, and the repository provides the corresponding experiment scripts.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper does not include experiments.
@@ -135,8 +135,8 @@
 
 \item {\bf Broader impacts}
     \item[] Question: Does the paper discuss both potential positive societal impacts and negative societal impacts of the work performed?
-    \item[] Answer: \answerNA{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
-    \item[] Justification: We foucs on techniques. 
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Appendix~\ref{apx:broader-impacts} discusses potential benefits for helpfulness, truthfulness, and detoxification, risks from harmful steering and biased contrastive data, and the need for application-specific evaluation and safeguards.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that there is no societal impact of the work performed.
@@ -161,8 +161,8 @@
 
 \item {\bf Licenses for existing assets}
     \item[] Question: Are the creators or original owners of assets (e.g., code, data, models), used in the paper, properly credited and are the license and terms of use explicitly mentioned and properly respected?
-    \item[] Answer: \answerYes{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
-    \item[] Justification: We cite the datasets, models and baseline papers in our experiment section.
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Section~\ref{sec:exp} and Appendix~\ref{appendix:experimental_details} credit the datasets, models, and baseline methods and link their original releases.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper does not use existing assets.
@@ -177,8 +177,8 @@
 
 \item {\bf New assets}
     \item[] Question: Are new assets introduced in the paper well documented and is the documentation provided alongside the assets?
-    \item[] Answer: \answerNA{}{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
-    \item[] Justification: The paper does not release new assets.
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The released steering code is accompanied by a README, dependency specifications, model and method configurations, data-preparation instructions, and generation and evaluation commands. The repository also provides experiment runners for the main tasks and baselines. We introduce no newly collected dataset or pretrained model checkpoint.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the paper does not release new assets.
@@ -213,8 +213,8 @@
 \item {\bf Declaration of LLM usage}
     \item[] Question: Does the paper describe the usage of LLMs if it is an important, original, or non-standard component of the core methods in this research? Note that if the LLM is used only for writing, editing, or formatting purposes and does \emph{not} impact the core methodology, scientific rigor, or originality of the research, declaration is not required.
     %this research? 
-    \item[] Answer: \answerNA{} % Replace by \answerYes{}, \answerNo{}, or \answerNA{}.
-    \item[] Justification: Our paper's core method development does not involve LLMs as any important, original, or non-standard components.
+    \item[] Answer: \answerYes{}
+    \item[] Justification: We used LLMs to assist with ideation and literature review and to polish the manuscript for clarity and readability. The authors take responsibility for the final content.
     \item[] Guidelines:
     \begin{itemize}
         \item The answer \answerNA{} means that the core method development in this research does not involve LLMs as any important, original, or non-standard components.

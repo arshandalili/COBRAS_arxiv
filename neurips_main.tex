@@ -153,6 +153,11 @@
 \usepackage{url}
 \usepackage{cleveref}
 
+% Keep algorithm-line hyperlink destinations unique across algorithms.
+\makeatletter
+\renewcommand*{\theHALG@line}{\thealgorithm.\arabic{ALG@line}}
+\makeatother
+
 \hypersetup{
     colorlinks=true,
     citecolor=burgundy,
@@ -241,6 +246,7 @@ Activation steering offers a lightweight alternative to fine-tuning for controll
 % placed in this unnumbered section (it does not count toward the page limit). Uncomment and fill in.
 \begin{ack}
 This material is based upon work supported in part by the National Science Foundation (NSF) under Grant Number 2318101. Any opinions, findings, conclusions, or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the NSF.
+The authors declare no competing interests.
 \end{ack}
 
 %%%%%%%%%%%%%%%%%%%%% References %%%%%%%%%%%%%%%%%%%%%

@@ -10,6 +10,7 @@ The appendix is organized as follows:
     \item Appendix~\ref{appendix:experimental_details} outlines the models, evaluation benchmarks, metrics, and implementation settings.
     \item Appendix~\ref{apx:computational-cost} evaluates fitting costs, memory requirements, and decoding overhead for \Cobras.
     \item Appendix~\ref{apx:additional-results} examines activation norm concentration, component ablations, sensitivity to the integration horizon $T$, integration steps $K$, and vMF concentration $\kappa$, baseline steering strength, and lexical diversity after detoxification.
+    \item Appendix~\ref{apx:broader-impacts} discusses potential societal benefits, risks, and deployment considerations.
     \item Appendix~\ref{apx:sample-responses} presents sample responses on UltraFeedback and TruthfulQA.
 \end{itemize}
 
@@ -37,10 +38,10 @@ b\nablaS\log\frac{\hat{p}_b^+(\boldsymbol{x})}{\hat{p}_b^-(\boldsymbol{x})}.
 Fix the contrastive sets $\mathcal{D}^-$ and $\mathcal{D}^+$ on $\Sph$ and the bandwidth $b>0$. On the domain where both fields are defined, the unnormalized field $\boldsymbol{v}$ defined in Eq.~\eqref{eq:cobras-field} converges uniformly to $\boldsymbol{v}_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$ as $\varepsilon\to\infty$.
 \end{proposition}
 
-Proposition~\ref{prop:ldr-limit} establishes convergence to the log-density-ratio field at fixed contrastive samples and bandwidth. Appendix~\ref{apx:proof-ldr-limit} provides the proof for Proposition~\ref{prop:ldr-limit}. At finite $\varepsilon$, the steering field combines each sample's proximity to the current activation with weights constructed from the endpoint potentials and reference distribution of the discrete Schr\"{o}dinger Bridge. It therefore incorporates the transport between the two activation contrastive datasets, while the limiting field depends only on their separate kernel density estimates.
+Proposition~\ref{prop:ldr-limit} establishes convergence to the log-density-ratio field at fixed contrastive samples and bandwidth. Appendix~\ref{apx:proof-ldr-limit} provides the proof for Proposition~\ref{prop:ldr-limit}. At finite $\varepsilon$, the steering field combines each sample's proximity to the current activation with weights constructed from the endpoint potentials and reference distribution of the discrete Schr\"{o}dinger Bridge. It therefore incorporates the transport between the two contrastive activation datasets, while the limiting field depends only on their separate kernel density estimates.
 
 \label{apx:sampling-limit}
-\noindent\textbf{Sampling limit.}~The reduction above holds for fixed contrastive samples and bandwidth $b$. Relating the resulting field to the contrastive dataset log-density-ratio gradient would additionally require consistency of the density estimates and their Riemannian gradients as the sample sizes grow and the bandwidth shrinks. Establishing this sampling limit for the geodesic kernel used here is outside the scope of our analysis.
+\noindent\textbf{Sampling limit.}~The reduction above holds for fixed contrastive samples and bandwidth $b$. Relating the resulting field to the population log-density-ratio gradient would additionally require consistency of the density estimates and their Riemannian gradients as the sample sizes grow and the bandwidth shrinks. Establishing this sampling limit for the geodesic kernel used here is outside the scope of our analysis.
 
 \subsection{Interpretations of existing steering methods}
 \label{apx:baseline-interpretations}
@@ -426,7 +427,7 @@ At $p=0.7$, mean $g$ on GSM8K is $7.3\%$ for LLaMA3.1-8B and $0.0\%$ for Mistral
 \midrule
 \multicolumn{6}{l}{\textbf{LLaMA3.1-8B} ($T=0.65$)} \\
 \addlinespace[2pt]
-\textcolor{red}{Unsteered} & $43.4\pm0.9$ & 67.1 & 87.0 & 61.6 & 48.7 \\
+Unsteered & $43.0\pm1.5$ & 67.1 & 87.0 & 61.6 & 48.7 \\
 $p=0.6$ & $62.1\pm0.6$ & 66.9 & 86.6 & 61.6 & 49.7 \\
 $p=0.7$ & $63.6\pm1.0$ & 65.6 & 86.8 & 61.6 & 49.5 \\
 $p=0.8$ & $65.4\pm0.7$ & 62.9 & 86.0 & 61.6 & 48.1 \\
@@ -435,7 +436,7 @@ $p=0.9$ & $66.3\pm1.2$ & 60.3 & 84.5 & 61.6 & 43.6 \\
 \midrule
 \multicolumn{6}{l}{\textbf{Mistral-7B} ($T=0.65$)} \\
 \addlinespace[2pt]
-Unsteered & $35.8\pm1.2$ & 64.6 & 85.9 & 58.1 & 36.2 \\
+Unsteered & $36.9\pm0.6$ & 64.6 & 85.9 & 58.1 & 36.2 \\
 $p=0.6$ & $59.2\pm0.9$ & 64.1 & 86.0 & 58.1 & 36.3 \\
 $p=0.7$ & $60.7\pm0.6$ & 63.8 & 85.6 & 58.1 & 36.3 \\
 $p=0.8$ & $62.3\pm0.2$ & 63.5 & 85.5 & 58.1 & 36.3 \\
@@ -444,7 +445,7 @@ $p=0.9$ & $64.5\pm0.5$ & 62.7 & 85.3 & 58.1 & 36.3 \\
 \midrule
 \multicolumn{6}{l}{\textbf{Qwen2.5-7B} ($T=0.4$)} \\
 \addlinespace[2pt]
-Unsteered & $65.4\pm0.4$ & 57.0 & 80.7 & 70.9 & 78.0 \\
+Unsteered & $64.8\pm0.7$ & 57.0 & 80.7 & 70.9 & 78.0 \\
 $p=0.6$ & $68.7\pm1.4$ & 57.0 & 80.7 & 70.9 & 78.0 \\
 $p=0.7$ & $68.6\pm1.1$ & 57.0 & 80.7 & 70.9 & 78.0 \\
 $p=0.8$ & $69.3\pm0.8$ & 57.0 & 80.7 & 70.9 & 78.0 \\
@@ -628,7 +629,7 @@ The results show that the balance between steering performance and OOD retention
 
 To understand the sensitivity to $\tau$, we examine the contrastive set used to calibrate the kNN gate. The reference radius $\rho_{\mathrm{ref}}$ in Eq.~\eqref{eq:knn-gate} is computed from neighbor distances between contrastive question--answer activations, whereas the gate is evaluated at the last prompt activation. In a LLaMA3.1-8B diagnostic with $k=32$, the median neighbor distances for TruthfulQA and GSM8K prompt activations fall at the $96$th and $99.2$nd reference percentiles, respectively. These percentiles help explain why raising $\tau$ first enables stronger TruthfulQA steering and then allows substantial steering on GSM8K. With $\gamma=200$, the gate changes sharply as $\rho_{\mathrm{ref}}$ passes an activation's neighbor distance, making the choice of $\tau$ particularly consequential.
 
-The support gate in Eq.~\eqref{eq:gate} addresses this calibration mismatch by using support scores from the last-token activations of reference prompts. Its coverage parameter $p$ therefore refers directly to percentiles of scores for prompt activations. On the full GSM8K test set for LLaMA3.1-8B, accuracy declines from $49.7\%$ to $43.6\%$ as $p$ increases from $0.6$ to $0.9$ (Table~\ref{tab:support-gate-coverage}). In contrast, the kNN sweep retains $47.5\%$--$48.9\%$ accuracy through $\tau=0.98$, then falls to $11.6\%$ at $\tau=0.995$ (Table~\ref{tab:abstain-results}). The support gate therefore shows a more gradual OOD trade-off over the tested settings, while matching the kNN gate's mean TruthfulQA score at their default settings in Table~\ref{tab:knn-external}.
+The support gate in Eq.~\eqref{eq:gate} addresses this calibration mismatch by using support scores from the last-token activations of reference prompts. Its coverage parameter $p$ therefore refers directly to percentiles of scores for prompt activations. On the full GSM8K test set for LLaMA3.1-8B, accuracy declines from $49.7\%$ to $43.6\%$ as $p$ increases from $0.6$ to $0.9$ (Table~\ref{tab:support-gate-coverage}). In contrast, the kNN sweep retains $47.5\%$--$48.9\%$ accuracy through $\tau=0.98$, then falls to $11.6\%$ at $\tau=0.995$ (Table~\ref{tab:abstain-results}). The support gate therefore shows a more gradual OOD trade-off over the tested settings. Table~\ref{tab:knn-external} compares the two gates at the specified configurations.
 
 %\FloatBarrier
 \section{Experimental Details}
@@ -643,7 +644,7 @@ Following Zhao et al.~\cite{zhaoodesteer}, we evaluate all methods on four open-
 
 
 \begin{itemize}
-    \item \textbf{TruthfulQA}~\citep{lin2021truthfulqa} is a benchmark consisting of 817 questions paired with true and false reference answers, along with source information. The questions cover 38 diverse categories and are commonly evaluated in a zero-shot setting. Following Zhao et al.~\cite{zhaoodesteer}, we construct 5,918 question--answer pairs and use a \textcolor{blue}{ajay pls check this;40/10/50} train/validation/test split with two-fold cross-validation.
+    \item \textbf{TruthfulQA}~\citep{lin2021truthfulqa} is a benchmark consisting of 817 questions paired with true and false reference answers, along with source information. The questions cover 38 diverse categories and are commonly evaluated in a zero-shot setting. Following Zhao et al.~\cite{zhaoodesteer}, we construct 5,918 question--answer pairs and use two-fold cross-validation: we split the questions into two approximately equal folds, fit steering on one fold, and evaluate on the other before swapping their roles.
 
     \item \textbf{UltraFeedback}~\citep{cui2023ultrafeedback} is a large-scale alignment dataset covering instruction-following qualities such as truthfulness, honesty, and helpfulness. In our experiments, we use the UltraFeedback-Binarized dataset\footnote{\url{https://huggingface.co/datasets/HuggingFaceH4/ultrafeedback_binarized}}. Specifically, we use the preference-modeling split, where each prompt is paired with an accepted response and a rejected response. Following Zhao et al.~\cite{zhaoodesteer}, we randomly sample 10K training pairs, 500 validation pairs, and 500 test pairs.
 
@@ -696,8 +697,8 @@ Following Zhao et al.~\cite{zhaoodesteer}, we evaluate all methods on four open-
     \item \textbf{Answer-ranking accuracy (NQ and TriviaQA).}
     Each candidate set contains all accepted reference answers and the supplied distractor. For NQ, the accepted answers come from the \texttt{answer} list, and for TriviaQA, they come from the full \texttt{answer.aliases} list. We score each answer by the sum of its token log-probabilities conditioned on the question prompt, without length normalization. A question is correct when the highest-scoring candidate belongs to the accepted set. Items whose distractor duplicates an accepted answer are retained for all methods and always count as correct.
 
-    \item \textbf{RM$_{\text{mean}}$ and RM$_{90}$.}
-    For UltraFeedback, we score helpfulness with \texttt{Skywork/Skywork-Reward-V2-Llama-3.1-8B}\footnote{\url{https://huggingface.co/Skywork/Skywork-Reward-V2-Llama-3.1-8B}}. We report RM$_{\text{mean}}$, the average reward score across examples and three random seeds, and RM$_{90}$, the 90th percentile reward score.
+    \item \textbf{RM$_{\text{mean}}$ and RM$_{\text{P90}}$.}
+    For UltraFeedback, we score helpfulness with \texttt{Skywork/Skywork-Reward-V2-Llama-3.1-8B}\footnote{\url{https://huggingface.co/Skywork/Skywork-Reward-V2-Llama-3.1-8B}}. We report RM$_{\text{mean}}$, the average reward score across examples and three random seeds, and RM$_{\text{P90}}$, the 90th percentile reward score.
 
     \item \textbf{Win Rate (\%).}
     We use these reward scores to compare steered generations with the unsteered model, following RewardBench~\citep{lambert2025rewardbench} and ODESteer~\citep{zhaoodesteer}. For $N$ prompts, let $s_i^A$ and $s_i^B$ denote the scores of responses from systems $A$ and $B$. The win rate of $A$ over $B$ is
@@ -726,7 +727,7 @@ Following Zhao et al.~\cite{zhaoodesteer}, we evaluate all methods on four open-
     \sum_{t=1}^{T-1}
     \log p_{\text{GPT2-XL}}(y_{t+1}\mid y_{\leq t}).
     \]
-    The perplexity of $y$ is then,
+    The perplexity of $y$ is then
     $\mathrm{PPL}(y)
     =
     \exp\left(\mathcal{L}(y)\right).$ Lower perplexity indicates that the generated text is more fluent under GPT-2-XL.
@@ -754,7 +755,7 @@ We extend the ODESteer codebase\footnote{\url{https://github.com/ZhaoHongjue/ode
 \begin{equation}
 b_\pm(\boldsymbol{x})=
 \max\!\left\{\max_{\boldsymbol{h}\in\mathcal{D}^\pm}
-d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2,\ b_{\min}\right\}.
+d_{\Sph}(\boldsymbol{x},\boldsymbol{h})^2,\ b_{\min}\right\},
 \label{eq:adaptive-bandwidth}
 \end{equation}
 where $b_{\min}=10^{-6}$. Every kernel centered on a desired sample uses $b_+$, and every kernel centered on an undesired sample uses $b_-$. This applies to both the inner and outer kernels in Eqs.~\eqref{eq:local-psi} and~\eqref{eq:local-phi}. We evaluate the steering field using the weighted log-maps in Eq.~\eqref{eq:weighted-cobras-field}. We clamp cosines away from $\pm1$ and vector norms away from zero for numerical stability.
@@ -945,7 +946,7 @@ We vary the vMF concentration $\kappa\in\{0,10,20,40,80\}$ of the alignment coef
 \centering
 \small
 \setlength{\tabcolsep}{3.5pt}
-\caption{TruthfulQA performance of \Cobras across vMF concentrations $\kappa$ under ungated steering. Each model uses the fixed integration horizon $T$ shown in its column header. Scores are percentages averaged over three seeds; $\pm$ denotes standard deviation. Unsteered references are evaluated alongside the sweep.}
+\caption{TruthfulQA performance of \Cobras across vMF concentrations $\kappa$ under ungated steering. Each model uses the fixed integration horizon $T$ shown in its column header. Scores are percentages averaged over three seeds; $\pm$ denotes standard deviation.}
 \label{tab:cobras_vs_kappa}
 \begin{tabular}{lccccccccc}
 \toprule
@@ -1004,7 +1005,7 @@ We also observe that some baselines reduce diversity more noticeably. For exampl
 \begin{tabular}{cc|ccc}
 \toprule[1.5pt]
 \multirow{2}{*}{\textbf{Method}} & \multirow{2}{*}{\textbf{Model}} &
-\multicolumn{3}{c}{\textbf{Detoxification} \textsubscript{\scriptsize\textbf{(Real Toxicity Prompts)}}} \\
+\multicolumn{3}{c}{\textbf{Detoxification} \textsubscript{\scriptsize\textbf{(RealToxicityPrompts)}}} \\
 \cmidrule(lr){3-5}
 & & \textbf{Dist-1}\,$\boldsymbol{\uparrow}$ & \textbf{Dist-2}\,$\boldsymbol{\uparrow}$ & \textbf{Dist-3}\,$\boldsymbol{\uparrow}$ \\
 \midrule
@@ -1031,9 +1032,9 @@ CAA & & 0.903 {\tiny $\pm$ 0.000} & 0.991 {\tiny $\pm$ 0.001} & 0.998 {\tiny $\p
 MiMiC & & 0.903 {\tiny $\pm$ 0.001} & 0.989 {\tiny $\pm$ 0.001} & 0.996 {\tiny $\pm$ 0.000} \\
 Linear-AcT & & 0.904 {\tiny $\pm$ 0.002} & 0.990 {\tiny $\pm$ 0.001} & 0.997 {\tiny $\pm$ 0.001} \\
 ODESteer & & 0.902 {\tiny $\pm$ 0.001} & 0.993 {\tiny $\pm$ 0.001} & 0.998 {\tiny $\pm$ 0.001} \\
-SphericalSteer & & 0.904 {\tiny $\pm$ 0.004} & 0.992 {\tiny $\pm$ 0.001} & 0.997 {\tiny $\pm$ 0.001} \\
+SphericalSteer & & 0.904 {\tiny $\pm$ 0.004} & 0.990 {\tiny $\pm$ 0.001} & 0.997 {\tiny $\pm$ 0.001} \\
 \midrule
-\Cobras (Ours) & & 0.898 {\tiny $\pm$ 0.002} & 0.990 {\tiny $\pm$ 0.001} & 0.996 {\tiny $\pm$ 0.001} \\
+\Cobras (Ours) & & 0.898 {\tiny $\pm$ 0.002} & 0.992 {\tiny $\pm$ 0.001} & 0.996 {\tiny $\pm$ 0.001} \\
 \midrule[1pt]\midrule[1pt]
 
 % ---------------- LLaMA3.1-8B ----------------
@@ -1067,11 +1068,16 @@ SphericalSteer & & 0.844 {\tiny $\pm$ 0.008} & 0.942 {\tiny $\pm$ 0.008} & 0.948
 }
 \end{table*}
 
+\section{Broader Impacts}
+\label{apx:broader-impacts}
+
+\Cobras may improve language-model helpfulness and truthfulness and reduce toxic outputs while preserving other capabilities. However, activation steering can also be redirected toward harmful behavior, and biased contrastive data may reinforce undesirable biases. Support gating does not guarantee safe behavior; deployment therefore requires evaluation and safeguards appropriate to the intended application.
+
 \clearpage
 \section{Sample Responses}
 \label{apx:sample-responses}
 
-To analyze the quality of the steering, we show random samples obtained from UltraFeedback and TruthfulQA on steering methods.
+To illustrate the quality of steering, we show sample responses from different steering methods on UltraFeedback and TruthfulQA.
 
 \input{sample_responses/ultrafeedback}
 
