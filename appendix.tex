@@ -3,7 +3,7 @@
 The appendix is organized as follows:
 
 \begin{itemize}
-    \item Appendix~\ref{apx:ldr-formalize} establishes the kernel log-density-ratio limit of \Cobras and interprets existing steering methods under stated models and fitted estimates.
+    \item Appendix~\ref{apx:ldr-formalize} establishes the log-density-ratio limit of \Cobras and interprets existing steering methods under stated models and fitted estimates.
     \item Appendix~\ref{apx:theory} formally derives the spherical bridge ODE, Sinkhorn discrete transport, kernel gradient fields, and key mathematical proofs.
     \item Appendix~\ref{apx:ood-gate} describes support-gate calibration, evaluates OOD separation and attenuation, and studies sensitivity to coverage.
     \item Appendix~\ref{apx:knn} analyzes the construction, baseline integration, and parameter sensitivity of the kNN gate.
@@ -16,9 +16,9 @@ The appendix is organized as follows:
 \section{A Unified Log-density-ratio Reduction of Activation Steering Methods}
 \label{apx:ldr-formalize}
 
-This appendix relates \Cobras and existing activation steering methods to log-density-ratio objectives. We first show that the steering field of \Cobras reduces to a kernel log-density-ratio field as $\varepsilon\to\infty$, with the contrastive samples and evaluation bandwidth fixed. We then interpret existing steering directions as log-density-ratio gradients under specified distributional models or fitted estimates.
+This appendix relates \Cobras and existing activation steering methods to log-density-ratio objectives. We first show that the steering field of \Cobras reduces to a log-density-ratio field as $\varepsilon\to\infty$, with the contrastive samples and evaluation bandwidth fixed. We then interpret existing steering directions as log-density-ratio gradients under specified distributional models or fitted estimates.
 
-\subsection{Kernel log-density-ratio limit of \Cobras}
+\subsection{Log-density-ratio limit of \Cobras}
 \label{subsec:reduction}
 
 To isolate the contribution of the fitted transport, we examine the unnormalized steering field $\boldsymbol{v}$ in Eq.~\eqref{eq:cobras-field} as the reference weights $\widehat{Q}_{01,ji}$ become uniform, keeping the contrastive samples and evaluation bandwidth $b>0$ fixed.
@@ -32,12 +32,12 @@ We write the two unweighted kernel estimates as $\hat{p}_b^-(\boldsymbol{x})=N_-
 b\nablaS\log\frac{\hat{p}_b^+(\boldsymbol{x})}{\hat{p}_b^-(\boldsymbol{x})}.
 \]
 
-\begin{proposition}[Reduction to the kernel log-density-ratio field]
+\begin{proposition}[Reduction to the log-density-ratio field]
 \label{prop:ldr-limit}
 Fix the contrastive sets $\mathcal{D}^-$ and $\mathcal{D}^+$ on $\Sph$ and the bandwidth $b>0$. On the domain where both fields are defined, the unnormalized field $\boldsymbol{v}$ defined in Eq.~\eqref{eq:cobras-field} converges uniformly to $\boldsymbol{v}_b^{\mathrm{kde}}$ at rate $O(1/\varepsilon)$ as $\varepsilon\to\infty$.
 \end{proposition}
 
-Proposition~\ref{prop:ldr-limit} establishes convergence to the kernel log-density-ratio field at fixed contrastive samples and bandwidth. Appendix~\ref{apx:proof-ldr-limit} provides the proof for Proposition~\ref{prop:ldr-limit}. At finite $\varepsilon$, the steering field combines each sample's proximity to the current activation with weights constructed from the endpoint potentials and reference distribution of the discrete Schr\"{o}dinger Bridge. It therefore incorporates the transport between the two activation contrastive datasets, while the limiting field depends only on their separate kernel density estimates.
+Proposition~\ref{prop:ldr-limit} establishes convergence to the log-density-ratio field at fixed contrastive samples and bandwidth. Appendix~\ref{apx:proof-ldr-limit} provides the proof for Proposition~\ref{prop:ldr-limit}. At finite $\varepsilon$, the steering field combines each sample's proximity to the current activation with weights constructed from the endpoint potentials and reference distribution of the discrete Schr\"{o}dinger Bridge. It therefore incorporates the transport between the two activation contrastive datasets, while the limiting field depends only on their separate kernel density estimates.
 
 \label{apx:sampling-limit}
 \noindent\textbf{Sampling limit.}~The reduction above holds for fixed contrastive samples and bandwidth $b$. Relating the resulting field to the contrastive dataset log-density-ratio gradient would additionally require consistency of the density estimates and their Riemannian gradients as the sample sizes grow and the bandwidth shrinks. Establishing this sampling limit for the geodesic kernel used here is outside the scope of our analysis.
@@ -52,7 +52,7 @@ In this subsection, we relate diverse activation steering methods through log-de
 \qquad t\in[0,T].
 \label{eq:baseline-ldr-flow}
 \end{equation}
-Here $\boldsymbol{x}_t$ denotes the steered activation along the flow, initialized as $\boldsymbol{x}_0=\hquery$ in Euclidean space and $\boldsymbol{x}_0=\hquery/\|\hquery\|$ on the unit sphere $\Sph$. Spherical interventions restore the original activation norm afterward. Numerical integration takes $K$ steps over the time horizon $[0,T]$, with nominal step size $T/K$. By varying the manifold geometry $\mathcal{M}$, the number of steps $K$, and the parameterization of the density ratio, we recover the steering directions of several prominent methods.\footnote{\citet{zhaoodesteer} presents a related unification of Euclidean steering methods. Treating the manifold $\mathcal{M}$ as an explicit choice additionally allows us to interpret geometry-aware methods such as SS and HPR.} These correspondences concern directions, with finite update magnitudes determined by each method's normalization and strength controls.
+Here $\boldsymbol{x}_t$ denotes the steered activation along the flow, initialized as $\boldsymbol{x}_0=\hquery$ in Euclidean space and $\boldsymbol{x}_0=\hquery/\|\hquery\|$ on the unit sphere $\Sph$. Spherical interventions restore the original activation norm afterward. Numerical integration takes $K$ steps over the time horizon $[0,T]$, with nominal step size $T/K$. By varying the manifold geometry $\mathcal{M}$, the number of steps $K$, and the parameterization of the density ratio, we recover the steering directions of several prominent methods.\footnote{ODESteer~\citep{zhaoodesteer} presents a related unification of Euclidean steering methods. Treating the manifold $\mathcal{M}$ as an explicit choice additionally allows us to interpret geometry-aware methods such as SS and HPR.} These correspondences concern directions, with finite update magnitudes determined by each method's normalization and strength controls.
 
 The following methods can be interpreted from this perspective, as summarized in Table~\ref{tab:steering_framework}.
 
@@ -109,13 +109,13 @@ On the undesired side of the decision boundary, $\boldsymbol{u}^{\top}\boldsymbo
 
 \noindent\textbf{ODESteer~\citep{zhaoodesteer}.}~Extending single-step steering ($K=1$), ODESteer uses the continuous-time flow formulation to integrate across multiple steps ($K>1$) in a flat Euclidean space $\mathcal{M}=\mathbb{R}^d$. Rather than assuming simple parametric densities or using linear probes, it parameterizes the estimated log-density ratio as $\boldsymbol{w}^{\top}\boldsymbol{\Phi}(\boldsymbol{x})+\beta$, where $\boldsymbol{\Phi}$ is a polynomial count-sketch feature map that includes unit-norm preprocessing. The coefficients are fitted by logistic regression on contrastive activations, with the class-prior correction absorbed into $\beta$. Under this nonlinear parameterization, the steering direction is given by the normalized vector field
 \[
-\boldsymbol{V}(\boldsymbol{x})
+\boldsymbol{v}(\boldsymbol{x})
 =\frac{\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}}
 {\|\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}\|},
 \]
 where $\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})$ is the Jacobian of the feature map evaluated at the current activation. Evaluating and integrating this state-dependent field using Euler steps over $[0,T]$ gives
 \[
-\boldsymbol{x}_{k+1}=\boldsymbol{x}_k+\frac{T}{K}\boldsymbol{V}(\boldsymbol{x}_k).
+\boldsymbol{x}_{k+1}=\boldsymbol{x}_k+\frac{T}{K}\boldsymbol{v}(\boldsymbol{x}_k).
 \]
 This multi-step integration allows the direction to adapt as the activation evolves, tracing potentially curved paths through the representation space. The integration uses additive Euclidean updates even though the feature map normalizes its inputs.
 
@@ -133,12 +133,12 @@ This multi-step integration allows the direction to adapt as the activation evol
 \toprule[0.8pt]
 \textbf{Method} & \makecell[c]{\textbf{Manifold}\\$\mathcal{M}$} & \makecell[c]{\textbf{Steps}\\$K$} & \textbf{Density model / estimation} & \textbf{Induced direction} \\
 \midrule[0.6pt]
-\textbf{CAA}~\citep{rimsky2024steering} & $\mathbb{R}^d$ & $1$ & $\begin{aligned}\pplus&=\mathcal{N}(\boldsymbol{\mu}_+,\boldsymbol{I}_d),\\\pminus&=\mathcal{N}(\boldsymbol{\mu}_-,\boldsymbol{I}_d)\end{aligned}$ & Constant translation $\boldsymbol{\mu}_+-\boldsymbol{\mu}_-$ \\ \cmidrule[0.25pt](lr){1-5}
+\textbf{CAA}~\citep{rimsky2024steering} & $\mathbb{R}^d$ & $1$ & $\begin{aligned}\pplus&=\mathcal{N}(\boldsymbol{\mu}_+,\boldsymbol{I}_d),\\\pminus&=\mathcal{N}(\boldsymbol{\mu}_-,\boldsymbol{I}_d)\end{aligned}$ & Constant direction $\boldsymbol{\mu}_+-\boldsymbol{\mu}_-$ \\ \cmidrule[0.25pt](lr){1-5}
 \textbf{SS}~\citep{you2026spherical} & $\Sph$ & $1$ & $\begin{aligned}\pplus&=\operatorname{vMF}(\boldsymbol{\mu},\kappa),\\\pminus&=\operatorname{Unif}(\Sph)\end{aligned}$ & Slerp direction toward $\boldsymbol{\mu}$, proportional to $\Pi_{\boldsymbol{x}}\boldsymbol{\mu}$ \\ \cmidrule[0.25pt](lr){1-5}
 \textbf{ITI (probe)}~\citep{li2023inference} & $\mathbb{R}^{d_h}$ & $1$ & Linear logistic probe $p_{\boldsymbol{\theta}}(\boldsymbol{x})$ & Normal to the decision boundary $\boldsymbol{\theta}$ \\ \cmidrule[0.25pt](lr){1-5}
 \textbf{HPR}~\citep{pham2024householder} & $\Sph$ & $1$ & Linear probe with Householder reflector $\boldsymbol{H}$ & Initial Slerp direction toward $\boldsymbol{H}\boldsymbol{x}$ for $\boldsymbol{\theta}^{\top}\boldsymbol{x}<0$ \\ \cmidrule[0.25pt](lr){1-5}
 \textbf{ODESteer}~\citep{zhaoodesteer} & $\mathbb{R}^d$ & $>1$ & Polynomial count-sketch model $\boldsymbol{w}^{\top}\boldsymbol{\Phi}(\boldsymbol{x})+\beta$ & $\displaystyle\frac{\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}}{\|\boldsymbol{J}_{\boldsymbol{\Phi}}(\boldsymbol{x})^{\top}\boldsymbol{w}\|}$ \\ \midrule[0.6pt]
-\textbf{\Cobras~(ours)} & $\Sph$ & $>1$ & Spherical kernels and fitted Schr\"{o}dinger potentials & $\begin{aligned}&\sum_i w_i^+(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)\\&{}-\sum_j w_j^-(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_j^-)\end{aligned}$ \\
+\textbf{\Cobras~(ours)} & $\Sph$ & $>1$ & Spherical kernels and fitted Schr\"{o}dinger potentials & $\begin{aligned}{}&\sum_i w_i^+(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_i^+)\\&{}-\sum_j w_j^-(\boldsymbol{x})\log_{\boldsymbol{x}}(\boldsymbol{h}_j^-)\end{aligned}$ \\
 \bottomrule[0.8pt]
 \end{tabular}
 }
@@ -147,7 +147,7 @@ This multi-step integration allows the direction to adapt as the activation evol
 \section{Technical Proofs and Derivations}
 \label{apx:theory}
 
-This appendix derives the probability-flow ODE, the Sinkhorn updates for the discrete endpoint potentials, and the weighted tangent-vector expression for the steering field. It then proves the reduction to a kernel log-density-ratio field for fixed contrastive samples and bandwidth.
+This appendix derives the probability-flow ODE, the Sinkhorn updates for the discrete endpoint potentials, and the weighted tangent-vector expression for the steering field. It then proves the reduction to a log-density-ratio field for fixed contrastive samples and bandwidth.
 
 \subsection{Probability-flow ODE of the continuous bridge}
 \label{apx:static}
@@ -269,7 +269,7 @@ The steering field defined in Section~\ref{subsec:estimation} holds the brackete
 \label{apx:proof-ldr-limit}
 
 \begin{proof}
-Fix the contrastive sets $\mathcal{D}^-$ and $\mathcal{D}^+$ and the bandwidth $b>0$. On the domain of Proposition~\ref{prop:ldr-limit}, the fields $\boldsymbol{v}$ and $\boldsymbol{v}_b^{\mathrm{kde}}$ combine the same tangent vectors with different weights. We therefore bound their difference by comparing these weights. For the kernel log-density-ratio field, define
+Fix the contrastive sets $\mathcal{D}^-$ and $\mathcal{D}^+$ and the bandwidth $b>0$. On the domain of Proposition~\ref{prop:ldr-limit}, the fields $\boldsymbol{v}$ and $\boldsymbol{v}_b^{\mathrm{kde}}$ combine the same tangent vectors with different weights. We therefore bound their difference by comparing these weights. For the log-density-ratio field, define
 \[
 \begin{aligned}
 w_i^{+,\mathrm{kde}}(\boldsymbol{x})
@@ -280,7 +280,7 @@ w_j^{-,\mathrm{kde}}(\boldsymbol{x})
 {\sum_{j'=1}^{N_-}K_b(\boldsymbol{x},\boldsymbol{h}_{j'}^-)}.
 \end{aligned}
 \]
-Differentiating the kernel log-density-ratio and using $b\nablaS K_b(\boldsymbol{x},\boldsymbol{h})=K_b(\boldsymbol{x},\boldsymbol{h})\log_{\boldsymbol{x}}(\boldsymbol{h})$ from Eq.~\eqref{eq:grad-psi} gives
+Differentiating the log-density-ratio and using $b\nablaS K_b(\boldsymbol{x},\boldsymbol{h})=K_b(\boldsymbol{x},\boldsymbol{h})\log_{\boldsymbol{x}}(\boldsymbol{h})$ from Eq.~\eqref{eq:grad-psi} gives
 \begin{equation}
 \begin{aligned}
 \boldsymbol{v}_b^{\mathrm{kde}}(\boldsymbol{x})
@@ -375,7 +375,7 @@ Since geodesic distances on the unit sphere are at most $\pi$, each tangent vect
 The bound is independent of $\boldsymbol{x}$, so the convergence is uniform as $\varepsilon\to\infty$.
 \end{proof}
 
-Proposition~\ref{prop:ldr-limit} establishes the kernel log-density-ratio field as a limiting case of the steering field in \Cobras. At finite $\varepsilon$, the sample weights also incorporate the fitted Schr\"{o}dinger Bridge, allowing the steering field to reflect transport between the two contrastive datasets beyond their separate kernel density estimates.
+Proposition~\ref{prop:ldr-limit} establishes the log-density-ratio field as a limiting case of the steering field in \Cobras. At finite $\varepsilon$, the sample weights also incorporate the fitted Schr\"{o}dinger Bridge, allowing the steering field to reflect transport between the two contrastive datasets beyond their separate kernel density estimates.
 
 %\FloatBarrier
 \section{Calibration and Evaluation of the Support Gate}
@@ -410,7 +410,7 @@ On both models, the score $u$ separates GSM8K and MMLU from TruthfulQA more stro
 
 At $p=0.7$, mean $g$ on GSM8K is $7.3\%$ for LLaMA3.1-8B and $0.0\%$ for Mistral-7B, and is below $0.1\%$ on MMLU for both models. NQ and TriviaQA retain larger mean gate values on both models and therefore receive less attenuation. Since the gate computed at the last prompt token is reused during generation, these differences in attenuation persist throughout the generation.
 
-\noindent\textbf{Sensitivity to coverage.}~We vary $p\in\{0.6,0.7,0.8,0.9\}$ to examine how the support gate balances TruthfulQA gains with OOD retention, comparing against both unsteered models and ungated steering (Table~\ref{tab:support-gate-coverage}). We use $K=10$ and fix the integration horizon at $T=0.65$ for LLaMA3.1-8B and Mistral-7B and $T=0.4$ for Qwen2.5-7B.
+\noindent\textbf{Sensitivity to coverage.}~We vary $p\in\{0.6,0.7,0.8,0.9\}$ to examine how the support gate balances TruthfulQA gains with OOD retention (Table~\ref{tab:support-gate-coverage}). We use $K=10$ and fix the integration horizon at $T=0.65$ for LLaMA3.1-8B and Mistral-7B and $T=0.4$ for Qwen2.5-7B.
 
 \begin{table}[ht]
 \centering
@@ -431,7 +431,7 @@ $p=0.6$ & $62.1\pm0.6$ & 66.9 & 86.6 & 61.6 & 49.7 \\
 $p=0.7$ & $63.6\pm1.0$ & 65.6 & 86.8 & 61.6 & 49.5 \\
 $p=0.8$ & $65.4\pm0.7$ & 62.9 & 86.0 & 61.6 & 48.1 \\
 $p=0.9$ & $66.3\pm1.2$ & 60.3 & 84.5 & 61.6 & 43.6 \\
-\textcolor{red}{No gate} & $67.6\pm0.6$ & 59.2 & 81.6 & 44.4 & 0.6 \\
+% \textcolor{red}{No gate} & $67.6\pm0.6$ & 59.2 & 81.6 & 44.4 & 0.6 \\
 \midrule
 \multicolumn{6}{l}{\textbf{Mistral-7B} ($T=0.65$)} \\
 \addlinespace[2pt]
@@ -440,7 +440,7 @@ $p=0.6$ & $59.2\pm0.9$ & 64.1 & 86.0 & 58.1 & 36.3 \\
 $p=0.7$ & $60.7\pm0.6$ & 63.8 & 85.6 & 58.1 & 36.3 \\
 $p=0.8$ & $62.3\pm0.2$ & 63.5 & 85.5 & 58.1 & 36.3 \\
 $p=0.9$ & $64.5\pm0.5$ & 62.7 & 85.3 & 58.1 & 36.3 \\
-No gate & $65.7\pm0.3$ & 57.4 & 83.9 & 56.9 & 3.0 \\
+% No gate & $65.7\pm0.3$ & 57.4 & 83.9 & 56.9 & 3.0 \\
 \midrule
 \multicolumn{6}{l}{\textbf{Qwen2.5-7B} ($T=0.4$)} \\
 \addlinespace[2pt]
@@ -449,19 +449,20 @@ $p=0.6$ & $68.7\pm1.4$ & 57.0 & 80.7 & 70.9 & 78.0 \\
 $p=0.7$ & $68.6\pm1.1$ & 57.0 & 80.7 & 70.9 & 78.0 \\
 $p=0.8$ & $69.3\pm0.8$ & 57.0 & 80.7 & 70.9 & 78.0 \\
 $p=0.9$ & $68.3\pm1.6$ & 57.0 & 80.7 & 70.9 & 78.0 \\
-No gate & $68.4\pm1.5$ & 55.3 & 79.3 & 70.7 & 3.4 \\
+% No gate & $68.4\pm1.5$ & 55.3 & 79.3 & 70.7 & 3.4 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\textcolor{red}{
-for ood graphs, update COBRAS for llama 3.1-8b to p = 0.7
-for mistral, p = 0.9
-for qwen, p = 0.8
-}
+% \textcolor{red}{
+% for ood graphs, update COBRAS for llama 3.1-8b to p = 0.7
+% for mistral, p = 0.9
+% for qwen, p = 0.8
+% }
 
 %\FloatBarrier
-On LLaMA3.1-8B, increasing $p$ from $0.6$ to $0.9$ raises TruthfulQA True$\times$Info from $62.1\%$ to $66.3\%$, while NQ accuracy falls from $66.9\%$ to $60.3\%$ and GSM8K accuracy falls from $49.7\%$ to $43.6\%$. Mistral-7B also gains on TruthfulQA, with modest declines on NQ and TriviaQA and stable MMLU and GSM8K accuracy. Qwen2.5-7B shows little sensitivity over these coverage values, retaining the unsteered OOD accuracies while improving TruthfulQA. Disabling the gate sharply reduces GSM8K accuracy to $0.6$--$3.4\%$ across all three models.
+On LLaMA3.1-8B, increasing $p$ from $0.6$ to $0.9$ raises TruthfulQA True$\times$Info from $62.1\%$ to $66.3\%$, while NQ accuracy falls from $66.9\%$ to $60.3\%$ and GSM8K accuracy falls from $49.7\%$ to $43.6\%$. Mistral-7B also gains on TruthfulQA, with modest declines on NQ and TriviaQA and stable MMLU and GSM8K accuracy. Qwen2.5-7B shows little sensitivity over these coverage values, retaining the unsteered OOD accuracies while improving TruthfulQA. 
+% Disabling the gate sharply reduces GSM8K accuracy to $0.6$--$3.4\%$ across all three models.
 
 %\FloatBarrier
 \section{kNN gating}
