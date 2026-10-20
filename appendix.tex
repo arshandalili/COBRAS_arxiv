@@ -856,13 +856,13 @@ Unsteered & 45.1 & 97.6 & $43.0\pm1.5$ & 48.7 & 61.6 \\
 \bottomrule
 \end{tabular}
 \end{table}
-%\FloatBarrier
-\textcolor{red}{
-The Euclidean variant reduces True$\times$Info from $63.6\%$ to $61.5\%$ and GSM8K accuracy from $49.5\%$ to $15.1\%$. A diagnostic on $1{,}000$ GSM8K prompts gives a mean gate value of $71.7\%$ in Euclidean geometry, compared with the spherical gate's $7.3\%$ in Table~\ref{tab:gate-separation}. Despite equal calibration coverage, the Euclidean gate therefore attenuates steering much less on these OOD prompts. Replacing the sample weights with uniform weights has a smaller effect, giving $62.9\%$ True$\times$Info and similar OOD accuracy to \Cobras.}
+% \FloatBarrier
 
-\textcolor{red}{Removing the alignment coefficient raises True from $74.8\%$ to $81.5\%$ but lowers Info from $88.2\%$ to $52.1\%$, reducing True$\times$Info to $34.3\%$. Reducing $T$ in the step-matched control recovers Info to $74.1\%$ and True$\times$Info to $50.4\%$, so both remain below \Cobras. This suggests that alignment attenuation helps preserve informativeness beyond the effect of reducing the average step length.}
+The Euclidean variant reduces True$\times$Info from $63.6\%$ to $61.5\%$ and GSM8K accuracy from $49.5\%$ to $15.1\%$. A diagnostic on $1{,}000$ GSM8K prompts gives a mean gate value of $71.7\%$ in Euclidean geometry, compared with the spherical gate's $7.3\%$ in Table~\ref{tab:gate-separation}. Despite equal calibration coverage, the Euclidean gate therefore attenuates steering much less on these OOD prompts. Replacing the sample weights with uniform weights has a smaller effect, giving $62.9\%$ True$\times$Info and similar OOD accuracy to \Cobras.
 
-\textcolor{red}{Removing the support gate instead raises True$\times$Info from $63.6\%$ to $68.1\%$, while GSM8K accuracy falls from $49.5\%$ to $0.6\%$ and MMLU accuracy falls from $61.6\%$ to $44.4\%$. The support gate therefore trades some target-task gain for retaining OOD accuracy.}
+Removing the alignment coefficient raises True from $74.8\%$ to $81.5\%$ but lowers Info from $88.2\%$ to $52.1\%$, reducing True$\times$Info to $34.3\%$. Reducing $T$ in the step-matched control recovers Info to $74.1\%$ and True$\times$Info to $50.4\%$, so both remain below \Cobras. This suggests that alignment attenuation helps preserve informativeness beyond the effect of reducing the average step length.
+
+Removing the support gate instead raises True$\times$Info from $63.6\%$ to $67.6\%$, while GSM8K accuracy falls from $49.5\%$ to $0.6\%$ and MMLU accuracy falls from $61.6\%$ to $44.4\%$. The support gate therefore trades some target-task gain for retaining OOD accuracy.
 
 %\FloatBarrier
 
