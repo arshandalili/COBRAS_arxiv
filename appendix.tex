@@ -573,16 +573,16 @@ To evaluate the kNN gate across steering methods, we compare CAA, ODESteer, Sphe
 \toprule
 Method & TQA T$\times$I (\%) & GSM8K (\%) & MMLU (\%) \\
 \midrule
-\textcolor{red}{Unsteered} & 43.0 & 48.7 & 61.6 \\
+Unsteered & 43.0 & 48.7 & 61.6 \\
 \midrule
-\textcolor{red}{CAA} & 60.3 & 15.8 & 59.8 \\
+CAA & 61.0 & 15.8 & 59.8 \\
 CAA + kNN gate & 58.6 & 48.9 & 61.6 \\
-\textcolor{red}{ODESteer} & 58.5 & 37.4 & 61.0 \\
+ODESteer & 62.5 & 37.4 & 61.0 \\
 ODESteer + kNN gate & 56.8 & 48.9 & 61.6 \\
-\textcolor{red}{SphericalSteer} & 64.4 & 1.0 & 45.5 \\
+SphericalSteer & 63.5 & 1.0 & 45.5 \\
 SphericalSteer + kNN gate & 61.7 & 47.3 & 61.6 \\
 \midrule
-\textcolor{red}{\Cobras, no gate} & 68.1 & 0.6 & 44.4 \\
+\Cobras (no gate) & 68.1 & 0.6 & 44.4 \\
 \Cobras + kNN gate & 63.6 & 47.5 & 61.6 \\
 \Cobras + support gate ($p=0.8$) & 65.4 & 48.1 & 61.6 \\
 \bottomrule
