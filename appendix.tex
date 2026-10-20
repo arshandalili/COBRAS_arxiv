@@ -568,7 +568,7 @@ To evaluate the kNN gate across steering methods, we compare CAA, ODESteer, Sphe
 \begin{table}[ht]
 \centering
 \small
-\caption{Steering performance and OOD retention with and without gating on LLaMA3.1-8B. TruthfulQA True$\times$Info is averaged over three seeds.}
+\caption{Steering performance and OOD retention with and without gating on LLaMA3.1-8B. TruthfulQA True$\times$Info is averaged over three seeds. All methods use their Table~\ref{tab:main_results} steering configurations, with gating as indicated.}
 \label{tab:knn-external}
 \begin{tabular}{lccc}
 \toprule
@@ -578,21 +578,21 @@ Unsteered & 43.0 & 48.7 & 61.6 \\
 \midrule
 CAA & 61.0 & 15.8 & 59.8 \\
 CAA + kNN gate & 58.6 & 48.9 & 61.6 \\
-ODESteer & 62.5 & 37.4 & 61.0 \\
-ODESteer + kNN gate & 56.8 & 48.9 & 61.6 \\
+ODESteer & 62.5 & 20.4 & 60.4 \\
+ODESteer + kNN gate & 58.2 & 49.5 & 61.6 \\
 SphericalSteer & 63.5 & 1.0 & 45.5 \\
 SphericalSteer + kNN gate & 61.7 & 47.3 & 61.6 \\
 \midrule
-\Cobras (no gate) & 68.1 & 0.6 & 44.4 \\
-\Cobras + kNN gate & 63.6 & 47.5 & 61.6 \\
-\Cobras + support gate ($p=0.8$) & 65.4 & 48.1 & 61.6 \\
+\Cobras (no gate) & 68.1 & 1.3 & 48.5 \\
+\Cobras + kNN gate & 63.6 & 47.7 & 61.6 \\
+\Cobras + support gate ($p=0.8$) & 64.8 & 48.6 & 61.6 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Across all four methods, the kNN gate brings GSM8K accuracy to $47.3\%$--$48.9\%$, close to the unsteered $48.7\%$, and restores MMLU accuracy to $61.6\%$. This OOD recovery costs $1.7$--$4.0$ percentage points in TruthfulQA True$\times$Info, but every gated method remains above the unsteered $43.4\%$. With the same gate applied across methods, \Cobras achieves the highest reported mean True$\times$Info at $63.6\%$, compared with $61.7\%$ for SphericalSteer. Thus, gating improves OOD retention across methods, while the steering rule still affects target-task performance.
+Across all four methods, the kNN gate brings GSM8K accuracy to $47.3\%$--$49.5\%$, close to the unsteered $48.7\%$, and restores MMLU accuracy to $61.6\%$. This OOD recovery costs $1.8$--$4.5$ percentage points in TruthfulQA True$\times$Info, but every gated method remains above the unsteered $43.0\%$. With the same gate applied across methods, \Cobras achieves the highest reported mean True$\times$Info at $63.6\%$, compared with $61.7\%$ for SphericalSteer. Thus, gating improves OOD retention across methods, while the steering rule still affects target-task performance.
 
-For \Cobras, both gates give the same reported mean TruthfulQA True$\times$Info of $63.6\%$ and MMLU accuracy of $61.6\%$. The support gate retains higher GSM8K accuracy, at $49.5\%$ compared with $47.5\%$ for kNN. We next examine whether this OOD retention persists as the calibration parameters vary.
+For \Cobras at the reported settings, the support gate at $p=0.8$ gives a higher mean TruthfulQA True$\times$Info score than the kNN gate ($64.8\%$ versus $63.6\%$), with the same MMLU accuracy of $61.6\%$. GSM8K accuracy is $48.6\%$ with the support gate and $47.7\%$ with kNN. We next examine whether OOD retention persists as the calibration parameters vary.
 
 %\FloatBarrier
 \subsection{Calibration and sensitivity of the nearest-neighbor gate}
