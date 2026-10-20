@@ -3,7 +3,7 @@
 
 \noindent\textbf{Setup and notation.}~We fix a decoder-only transformer of residual width $d$ and a layer index $\ell$, and write $\boldsymbol{h}\in\mathbb{R}^{d}$ for the layer-$\ell$ residual-stream activation at the last token position. Two populations of inputs are given, one exhibiting a desired behavior and one an undesired behavior, with activation distributions $\pplus$ and $\pminus$ observed through i.i.d.\ samples $\mathcal{D}^{+}=\{\boldsymbol{h}^{+}_{i}\}_{i=1}^{N_{+}}\sim\pplus$ and $\mathcal{D}^{-}=\{\boldsymbol{h}^{-}_{j}\}_{j=1}^{N_{-}}\sim\pminus$, whose empirical measures we denote $\pplushat$ and $\pminushat$. At inference, we apply a steering map to the layer-$\ell$ activation of each decoded token, starting with the last prompt token, and $\hquery$ denotes the activation currently being steered. The map moves $\hquery$ toward regions of high density under $\pplus$ and low density under $\pminus$.
 
-\noindent\textbf{Spherical geometry of activations.}~Residual-stream norms concentrate tightly across inputs at a fixed layer, both empirically~\citep{pham2024householder, you2026spherical} and as a consequence of the residual architecture~\citep{yang2023spectral, xie2026controlled}. Figure~\ref{fig:norm-concentration} shows this for the four models we study, for which the coefficient of variation of the layer-normalized last-token norm lies between $2.5\%$ and $7.3\%$, and Appendix~\ref{appendix:norm_concentration} reports the same measurement layer by layer and for four further architectures. We therefore model the state space as a sphere $\Sph$ and restore the original norm of $\hquery$ after steering, so that the intervention changes only the direction of the activation. We write vectors and vector fields in bold.
+\noindent\textbf{Spherical geometry of activations.}~Residual-stream norms concentrate tightly across inputs at a fixed layer, both empirically~\citep{pham2024householder, you2026spherical} and as a consequence of the residual architecture~\citep{yang2023spectral, xie2026controlled}. Figure~\ref{fig:norm-concentration} shows this for the four models we study, whose last-token norms, divided by their layer-wise means, have coefficients of variation between $2.5\%$ and $7.3\%$. Appendix~\ref{appendix:norm_concentration} reports the same measurement layer by layer and for four further architectures. We therefore model the state space as a sphere $\Sph$ and restore the original norm of $\hquery$ after steering, so that the intervention changes only the direction of the activation. We write vectors and vector fields in bold.
 
 \begin{figure}[t]
 \centering
@@ -155,7 +155,7 @@ associated with undesired sample $j$ and desired sample $i$,
 respectively. We compute these potentials using the
 Sinkhorn algorithm~\citep{cuturi2013sinkhorn}, which
 alternately updates $\widehat{\varphi}_{0,j}$  and $\widehat{\psi}_{1,i}$ to enforce
-the undesired  the desired marginals, respectively.
+the undesired and desired marginals, respectively.
 
 The drift of the probability-flow ODE in Eq.~\eqref{eq:ldr} motivates constructing our steering field from the gradient of a log-ratio of potentials. In Section~\ref{subsec:estimation}, we use the fitted endpoint potentials to construct a steering field that can be evaluated at a given activation during inference.
 
@@ -185,7 +185,7 @@ K_b(\boldsymbol{x},\boldsymbol{h}_j^-)\right]
 K_b(\boldsymbol{x},\boldsymbol{h}_i^+).
 \label{eq:local-psi}
 \end{align}
-In $\widetilde{\psi}_b$, the bracketed coefficient for each desired sample aggregates contributions from undesired samples, weighted by their fitted endpoint potentials, their proximity to $\boldsymbol{x}$, and their reference weights connecting them to that desired sample. The outer kernel additionally accounts for the desired sample's proximity to $\boldsymbol{x}$. The construction of $\widetilde{\varphi}_b$ exchanges the roles of the two populations. We define the steering field $\boldsymbol{v}$ from the spatial gradient of the log-ratio of the $\widetilde{\varphi}_b(\boldsymbol{x})$ and $\widetilde{\psi}_b(\boldsymbol{x})$, holding the bracketed coefficients fixed at their values computed at $\boldsymbol{x}$ during differentiation:
+In $\widetilde{\psi}_b$, the bracketed coefficient for each desired sample aggregates contributions from undesired samples, weighted by their fitted endpoint potentials, their proximity to $\boldsymbol{x}$, and their reference weights connecting them to that desired sample. The outer kernel additionally accounts for the desired sample's proximity to $\boldsymbol{x}$. The construction of $\widetilde{\varphi}_b$ exchanges the roles of the two populations. We define the steering field $\boldsymbol{v}$ from the spatial gradient of the log-ratio of $\widetilde{\psi}_b(\boldsymbol{x})$ to $\widetilde{\varphi}_b(\boldsymbol{x})$, holding the bracketed coefficients fixed at their values computed at $\boldsymbol{x}$ during differentiation:
 \begin{equation}
 \displaystyle
 \boldsymbol{v}(\boldsymbol{x})
@@ -200,7 +200,7 @@ Expanding Eq.~\eqref{eq:cobras-field} gives a weighted average of tangent vector
 \subsection{Adaptive steering strength}
 \label{subsec:strength}
 
-Activation steering should weaken when an activation already aligns with the desired behavior or when the contrastive data provide little support for the prompt. We therefore normalize $\boldsymbol{v}(\boldsymbol{x})$ and control the intervention size separately through two factors: the alignment coefficient $s$ reduces the steering strength for activations already aligned with the desired behavior, and the gate $g$ which attenuates or disables steering on prompts with little contrastive support.
+Activation steering should weaken when an activation already aligns with the desired behavior or when the contrastive data provide little support for the prompt. We therefore normalize $\boldsymbol{v}(\boldsymbol{x})$ and control the intervention size separately through two factors: the alignment coefficient $s$ reduces the steering strength for activations already aligned with the desired behavior, and the gate $g$ attenuates or disables steering on prompts with little contrastive support.
 
 \noindent\textbf{Alignment coefficient.}~To determine $s$, we measure alignment with a unit contrastive axis $\boldsymbol{\mu}$, obtained by normalizing the difference between the desired and undesired sample means. We write $\cos(\boldsymbol{x},\boldsymbol{\mu})$ for their cosine similarity, with larger values indicating stronger alignment with the desired behavior.
 
