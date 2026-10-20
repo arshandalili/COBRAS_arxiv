@@ -135,7 +135,7 @@ SphericalSteer &  & -7.203 {\tiny $\pm$ 0.208} & 4.309 {\tiny $\pm$ 0.192} & 43.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[t]
     \centering
-    \includegraphics[width=\linewidth]{figures/within_task_ood.png}
+    \includegraphics[width=\linewidth]{figures/within_task_ood1.png}
     \caption{Within-task OOD evaluation. Answer-ranking accuracy on TriviaQA~\citep{joshi2017triviaqa} and NQ~\citep{kwiatkowski2019natural} is plotted against TruthfulQA True$\times$Info. Falcon-7B is omitted due to its low unsteered performance.}
     \label{fig:within_task_ood}\vspace{-5mm}
 \end{figure}
@@ -152,10 +152,12 @@ Compared to prior steering baselines, \Cobras delivers the most consistent gains
 
 \noindent\textbf{Within-task OOD.}~In this experiment, we evaluate the performance of steering methods on two datasets, Natural Questions (NQ)~\cite{kwiatkowski2019natural} and TriviaQA~\cite{joshi2017triviaqa}, relevant to truthfulness by training only on TruthfulQA. Figure~\ref{fig:within_task_ood} plots OOD accuracy against TruthfulQA True$\times$Info; the ideal method appears in the upper-right, improving truthfulness while preserving OOD accuracy. While most methods move substantially along the TruthfulQA axis, their behavior on TriviaQA and NQ varies considerably, with some producing marked accuracy losses—most visibly on NQ. \Cobras shows a different pattern: across all three models, it attains the largest TruthfulQA improvements while keeping performance on both OOD datasets near the top of the corresponding plots. These results suggest that the gains from \Cobras are not limited to the training distribution and transfer with minimal disruption to closely related QA capabilities.
 
+In this experiment, we evaluate the performance of steering methods on Natural Questions (NQ)~\cite{kwiatkowski2019natural} and TriviaQA~\cite{joshi2017triviaqa}, using steering learned exclusively from TruthfulQA. Figure~\ref{fig:within_task_ood} plots OOD answer-ranking accuracy against TruthfulQA True$\times$Info, where the upper-right region represents a favorable trade-off between in-distribution steering effectiveness and OOD capability retention. Several baselines achieve substantial TruthfulQA improvements but incur noticeable accuracy losses on NQ and TriviaQA, particularly SphericalSteer and CAA. In contrast, \Cobras achieves among the highest TruthfulQA scores while largely preserving OOD accuracy across all three models. On LLaMA3.1-8B and Qwen2.5-7B, \Cobras maintains performance close to the unsteered models, whereas on Mistral-7B, ODESteer provides slightly better OOD accuracy. Overall, these results indicate that \Cobras can improve in-distribution truthfulness metrics while retaining much of the models' factual question-answering capability under related distribution shifts.
+
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=\linewidth]{figures/cross_task_ood.png}
+    \includegraphics[width=\linewidth]{figures/cross_task_ood1.png}
     \caption{Performance of steering methods in Cross-task OOD: MMLU~\cite{hendrycks2020measuring} and GSM8K~\cite{cobbe2021gsm8k} performance. We skipped Falcon-7B because the original model's performance was low.}
     \label{fig:cross_task_ood}\vspace{-5mm}
 \end{figure}
