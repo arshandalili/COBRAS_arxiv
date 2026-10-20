@@ -5,15 +5,15 @@
 
 We evaluate whether \Cobras improves the target behavior while preserving other capabilities, and how its components affect performance and computational cost. We address three research questions. \textbf{(RQ1):} How does \Cobras compare to other steering methods on in-distribution tasks? \textbf{(RQ2):} How well does \Cobras preserve model capabilities under distribution shift? \textbf{(RQ3):} How do the design choices affect performance and computational cost?
 
-\noindent\textbf{Datasets.}~We conduct our evaluations on three prevalent steering datasets: TruthfulQA~\cite{lin2021truthfulqa} (TQA) for Truthfulness, Ultrafeedback~\cite{cui2023ultrafeedback} (UF) for Helpfulness and RealToxicityPrompts~\cite{gehman2020realtoxicityprompts} for Detoxification. With steering fitted on TruthfulQA, we evaluate out-of-distribution performance on Natural Questions~\cite{kwiatkowski2019natural} (NQ) and TriviaQA~\cite{joshi2017triviaqa} for within-task shifts, and MMLU~\cite{hendrycks2020measuring} and GSM8K~\cite{cobbe2021gsm8k} for cross-task shifts.
+\noindent\textbf{Datasets.}~We conduct our evaluations on three prevalent steering datasets: TruthfulQA~\cite{lin2021truthfulqa} (TQA) for Truthfulness, UltraFeedback~\cite{cui2023ultrafeedback} (UF) for Helpfulness and RealToxicityPrompts~\cite{gehman2020realtoxicityprompts} for Detoxification. With steering fitted on TruthfulQA, we evaluate out-of-distribution performance on Natural Questions~\cite{kwiatkowski2019natural} (NQ) and TriviaQA~\cite{joshi2017triviaqa} for within-task shifts, and MMLU~\cite{hendrycks2020measuring} and GSM8K~\cite{cobbe2021gsm8k} for cross-task shifts.
 
-\noindent\textbf{Baselines and models.}~Following ODESteer~\cite{zhaoodesteer}, we compare \Cobras against the following baselines: Representation Engineering~\citep{zou2023representation} (RepE), Inference-Time Intervention~\citep{li2023inference} (ITI), Contrastive Activation Addition~\citep{rimsky2024steering} (CAA), Minimally Modified Counterfactuals~\citep{singh2024representation} (MiMiC), Linear Activation Transport~\citep{rodriguez2025controlling} (Linear-AcT),  SphericalSteering~\cite{you2026spherical} and ODESteer~\cite{zhaoodesteer}. We test the steering methods on four open source models: Falcon-7B~\citep{almazrouei2023falcon}, Mistral-7B~\citep{jiang2023mistral7b}, LLaMA3.1-8B~\citep{meta2024llama3.1} and Qwen2.5-7B~\cite{qwen2.5}.
+\noindent\textbf{Baselines and models.}~Following ODESteer~\cite{zhaoodesteer}, we compare \Cobras against the following baselines: Representation Engineering~\citep{zou2023representation} (RepE), Inference-Time Intervention~\citep{li2023inference} (ITI), Contrastive Activation Addition~\citep{rimsky2024steering} (CAA), Minimally Modified Counterfactuals~\citep{singh2024representation} (MiMiC), Linear Activation Transport~\citep{rodriguez2025controlling} (Linear-AcT),  SphericalSteering~\cite{you2026spherical} and ODESteer~\cite{zhaoodesteer}. We test the steering methods on four open-source models: Falcon-7B~\citep{almazrouei2023falcon}, Mistral-7B~\citep{jiang2023mistral7b}, LLaMA3.1-8B~\citep{meta2024llama3.1} and Qwen2.5-7B~\cite{qwen2.5}.
 
-\noindent\textbf{Metrics.}~Following ODESteer~\cite{zhaoodesteer}, we use Truthfulness x Informativeness \% as the primary metric for TQA while reporting Truthfulness\% and Informativeness\%. For UF/Helpfulness task, we use win rate over no steer (primary metric), Mean Reward and 90th Percentile Reward as secondary metrics. For Detoxification task, we use Toxicity Score from Perspective API~\cite{perspective_api} as primary metric while reporting Perplexity and Dist-2 as secondary metrics. For GSM8K and MMLU, we use accuracy as the metric. See Appendix~\ref{appendix:metrics} for details.
+\noindent\textbf{Metrics.}~Following ODESteer~\cite{zhaoodesteer}, we use Truthfulness $\times$ Informativeness (\%) as the primary metric for TQA and report Truthfulness (\%) and Informativeness (\%). For UF, we use win rate over the unsteered model (primary), mean reward, and 90th percentile reward. For detoxification, we use toxicity from the Perspective API~\cite{perspective_api} (primary), perplexity, and Dist-2. For GSM8K and MMLU, we use accuracy. See Appendix~\ref{appendix:metrics} for details.
 
 \begin{table*}[t]
 \centering
-\caption{Performance of steering methods on Helpfulness (Ultrafeedback), Truthfulness (TruthfulQA), and Detoxification (Real Toxicity Prompts) for 4 LLM models. Results are means $\pm$ standard deviations over three runs with different seeds. Primary metrics are highlighted in light purple.
+\caption{Performance of steering methods on Helpfulness (UltraFeedback), Truthfulness (TruthfulQA), and Detoxification (RealToxicityPrompts) for four LLMs. Results are means $\pm$ standard deviations over three runs with different seeds. Primary metrics are highlighted in light purple.
 }
 \large
 \renewcommand{\arraystretch}{1.2}
@@ -25,7 +25,7 @@ c c >{\columncolor{lightpurple!25}}c}
 
 \toprule[1.5pt]
 \multirow{2}{*}{\textbf{Method}} & \multirow{2}{*}{\textbf{Model}} &
-\multicolumn{3}{c|}{\textbf{Helpfulness} \textsubscript{\scriptsize\textbf{(Ultrafeedback)}}} &
+\multicolumn{3}{c|}{\textbf{Helpfulness} \textsubscript{\scriptsize\textbf{(UltraFeedback)}}} &
 \multicolumn{3}{c|}{\textbf{Truthfulness} \textsubscript{\scriptsize\textbf{(TruthfulQA)}}} &
 \multicolumn{3}{c}{\textbf{Detoxification} \textsubscript{\scriptsize{(RealToxicityPrompts)}}} \\
 \cmidrule(lr){3-5}\cmidrule(lr){6-8}\cmidrule(lr){9-11}
@@ -35,7 +35,7 @@ c c >{\columncolor{lightpurple!25}}c}
 \midrule
 
 
-Original & \multirow{10}{*}{\rotatebox[origin=c]{90}{Falcon-7B}} & -12.642 {\tiny $\pm$ 0.162} & -2.705 {\tiny $\pm$ 0.171} & 50.0 {\tiny $\pm$ 0.000} & 32.1 {\tiny $\pm$ 0.951} & 96.5 {\tiny $\pm$ 0.283} & 29.1 {\tiny $\pm$ 0.919} & 15.358 {\tiny $\pm$ 0.449} & 0.946 {\tiny $\pm$ 0.003} & 0.255 {\tiny $\pm$ 0.004} \\\midrule
+Original & \multirow{9}{*}{\rotatebox[origin=c]{90}{Falcon-7B}} & -12.642 {\tiny $\pm$ 0.162} & -2.705 {\tiny $\pm$ 0.171} & 50.0 {\tiny $\pm$ 0.000} & 32.1 {\tiny $\pm$ 0.951} & 96.5 {\tiny $\pm$ 0.283} & 29.1 {\tiny $\pm$ 0.919} & 15.358 {\tiny $\pm$ 0.449} & 0.946 {\tiny $\pm$ 0.003} & 0.255 {\tiny $\pm$ 0.004} \\\midrule
 
 
 
@@ -59,7 +59,7 @@ SphericalSteer &  & -12.495 {\tiny $\pm$ 0.120} & -3.108 {\tiny $\pm$ 0.244} & 4
 
 \midrule
 \midrule
-Original & \multirow{10}{*}{\rotatebox[origin=c]{90}{Mistral-7B}} & -11.063 {\tiny $\pm$ 0.377} & -0.469 {\tiny $\pm$ 0.752} & 50.0 {\tiny $\pm$ 0.000} & 41.7 {\tiny $\pm$ 0.764} & 94.8 {\tiny $\pm$ 0.463} & 36.9 {\tiny $\pm$ 0.616} & 18.542 {\tiny $\pm$ 0.498} & 0.990 {\tiny $\pm$ 0.001} & 0.207 {\tiny $\pm$ 0.008} \\\midrule
+Original & \multirow{9}{*}{\rotatebox[origin=c]{90}{Mistral-7B}} & -11.063 {\tiny $\pm$ 0.377} & -0.469 {\tiny $\pm$ 0.752} & 50.0 {\tiny $\pm$ 0.000} & 41.7 {\tiny $\pm$ 0.764} & 94.8 {\tiny $\pm$ 0.463} & 36.9 {\tiny $\pm$ 0.616} & 18.542 {\tiny $\pm$ 0.498} & 0.990 {\tiny $\pm$ 0.001} & 0.207 {\tiny $\pm$ 0.008} \\\midrule
 
 
 RepE &  & -11.981 {\tiny $\pm$ 0.377} & -1.622 {\tiny $\pm$ 0.423} & 45.3 {\tiny $\pm$ 2.237} & 42.0 {\tiny $\pm$ 0.674} & 93.9 {\tiny $\pm$ 0.490} & 36.1 {\tiny $\pm$ 1.055} & 76.065 {\tiny $\pm$ 1.734} & 0.969 {\tiny $\pm$ 0.001} & 0.218 {\tiny $\pm$ 0.004} \\
@@ -83,7 +83,7 @@ SphericalSteer &  & -11.005 {\tiny $\pm$ 0.126} & -1.958 {\tiny $\pm$ 0.337} & 5
 \midrule
 \midrule
 
-Original & \multirow{10}{*}{\rotatebox[origin=c]{90}{LLaMA3.1-8B}} & -10.303 {\tiny $\pm$ 0.145} & -0.744 {\tiny $\pm$ 0.435} & 50.0 {\tiny $\pm$ 0.000} & 45.1 {\tiny $\pm$ 1.309} & 97.6 {\tiny $\pm$ 0.628} & 43.0 {\tiny $\pm$ 1.496} & 18.562 {\tiny $\pm$ 0.107} & 0.992 {\tiny $\pm$ 0.001} & 0.218 {\tiny $\pm$ 0.002} \\\midrule
+Original & \multirow{9}{*}{\rotatebox[origin=c]{90}{LLaMA3.1-8B}} & -10.303 {\tiny $\pm$ 0.145} & -0.744 {\tiny $\pm$ 0.435} & 50.0 {\tiny $\pm$ 0.000} & 45.1 {\tiny $\pm$ 1.309} & 97.6 {\tiny $\pm$ 0.628} & 43.0 {\tiny $\pm$ 1.496} & 18.562 {\tiny $\pm$ 0.107} & 0.992 {\tiny $\pm$ 0.001} & 0.218 {\tiny $\pm$ 0.002} \\\midrule
 
 
 RepE &  & -10.763 {\tiny $\pm$ 0.295} & -1.356 {\tiny $\pm$ 0.378} & 47.1 {\tiny $\pm$ 1.050} & 46.2 {\tiny $\pm$ 0.989} & 97.4 {\tiny $\pm$ 0.187} & 43.9 {\tiny $\pm$ 1.041} & 19.101 {\tiny $\pm$ 0.496} & 0.991 {\tiny $\pm$ 0.001} & 0.195 {\tiny $\pm$ 0.003} \\
@@ -106,7 +106,7 @@ SphericalSteer &  & -9.434 {\tiny $\pm$ 0.304} & -0.633 {\tiny $\pm$ 0.837} & 52
 
 \midrule
 \midrule
-Original & \multirow{10}{*}{\rotatebox[origin=c]{90}{Qwen2.5-7B}} & -6.006 {\tiny $\pm$ 0.208} & 4.384 {\tiny $\pm$ 0.378} & 50.0 {\tiny $\pm$ 0.000} & 78.3 {\tiny $\pm$ 0.578} & 86.4 {\tiny $\pm$ 0.764} & 64.8 {\tiny $\pm$ 0.707} & 22.166 {\tiny $\pm$ 0.369} & 0.989 {\tiny $\pm$ 0.001} & 0.194 {\tiny $\pm$ 0.001} \\\midrule
+Original & \multirow{9}{*}{\rotatebox[origin=c]{90}{Qwen2.5-7B}} & -6.006 {\tiny $\pm$ 0.208} & 4.384 {\tiny $\pm$ 0.378} & 50.0 {\tiny $\pm$ 0.000} & 78.3 {\tiny $\pm$ 0.578} & 86.4 {\tiny $\pm$ 0.764} & 64.8 {\tiny $\pm$ 0.707} & 22.166 {\tiny $\pm$ 0.369} & 0.989 {\tiny $\pm$ 0.001} & 0.194 {\tiny $\pm$ 0.001} \\\midrule
 
 
 RepE &  & -6.011 {\tiny $\pm$ 0.202} & 4.504 {\tiny $\pm$ 0.271} & 48.8 {\tiny $\pm$ 0.300} & 78.7 {\tiny $\pm$ 0.927} & 86.5 {\tiny $\pm$ 1.111} & 65.3 {\tiny $\pm$ 1.429} & 22.620 {\tiny $\pm$ 0.681} & 0.990 {\tiny $\pm$ 0.000} & 0.196 {\tiny $\pm$ 0.002} \\
@@ -140,7 +140,7 @@ SphericalSteer &  & -7.203 {\tiny $\pm$ 0.208} & 4.309 {\tiny $\pm$ 0.192} & 43.
     \label{fig:within_task_ood}\vspace{-5mm}
 \end{figure}
 
-\noindent\textbf{RQ1: In-distribution steering performance.}~We first evaluate \Cobras in the standard in-distribution setting, where each steering method is trained and tested on the same task axis. We consider three representative alignment objectives: helpfulness on UltraFeedback, truthfulness on TruthfulQA, and detoxification on RealToxicityPrompts. Table~\ref{tab:main_results} reports results across four  models.
+\noindent\textbf{RQ1: In-distribution steering performance.}~We first evaluate \Cobras in the standard in-distribution setting, where each steering method is trained and tested on the same task axis. We consider three representative alignment objectives: helpfulness on UltraFeedback, truthfulness on TruthfulQA, and detoxification on RealToxicityPrompts. Table~\ref{tab:main_results} reports results across four models.
 
 \Cobras improves the primary metric over the unsteered model for all three tasks across models. On helpfulness, it achieves the highest mean UltraFeedback win rate for every model, improving over the original model by $+2.8$, $+7.1$, $+9.7$, and $+1.9$ absolute points on Falcon-7B, Mistral-7B, LLaMA3.1-8B, and Qwen2.5-7B, respectively. On truthfulness, it obtains the highest mean TruthfulQA True$\times$Info score across all four models, with especially large gains on Mistral-7B $(+29.5)$ and LLaMA3.1-8B $(+25.1)$. On detoxification, it reduces toxicity by approximately $41\%$--$54\%$ relative to the original models and has the lowest mean toxicity on three of four models. On Falcon-7B, CAA reduces toxicity further ($0.076$ versus $0.138$) but has substantially higher perplexity ($75.550$ versus $15.304$).
 % Compared to prior steering baselines, \Cobras provides the most consistent gains across objectives. While some baselines perform well on individual tasks, they often introduce undesirable trade-offs, such as reduced informativeness on TruthfulQA or large perplexity increases on RealToxicityPrompts. In contrast, \Cobras improves the target alignment metrics while largely preserving generation quality, as reflected by competitive reward-model scores, informativeness, perplexity, and diversity. These results show that \Cobras is a strong and robust in-distribution steering method across helpfulness, truthfulness, and detoxification.
@@ -179,7 +179,7 @@ Compared to prior steering baselines, \Cobras delivers the most consistent gains
 
 %\noindent\textbf{Effect of abstention parameters:} \Cobras uses an abstention rule to avoid steering inputs far from the training distribution. For each training example, we compute the distance to its $K$-th nearest neighbor and set the abstention threshold to a chosen percentile of these distances. At test time, \Cobras abstains from steering when an input's neighborhood distance exceeds this threshold. In-distribution inputs are expected to have nearby neighbors and therefore be steered, whereas OOD inputs should have larger distances and trigger abstention. Table~\ref{tab:abstain-results} evaluate this mechanism on LLaMA3.1-8B-Base and Mistral-7B-Base using TruthfulQA as the in-distribution task and GSM8K as the OOD task. Increasing the abstention percentile makes \Cobras steer more examples. This improves TruthfulQA True$\times$Info, but can reduce OOD accuracy, most notably for LLaMA3.1-8B-Base at the $99.5$th percentile. Increasing $K$ shows a similar trade-off: larger neighborhoods improve TruthfulQA, but can lower GSM8K accuracy, especially for LLaMA3.1-8B-Base. These results show that abstention helps balance effective in-distribution steering with preserving OOD capabilities.
 
-\noindent{\textbf{RQ3: Ablations and computational cost.}}~We examine how each component of \Cobras affects its performance. On LLaMA3.1-8B, removing the support gate weakens OOD retention. Using Euclidean geometry instead of Riemannian geometry decreases performance on both in-distribution and OOD data, while removing the alignment coefficient reduces informativeness (Appendix~\ref{apx:component-ablations}). Coverage $p$ tunes the OOD trade-off (Appendix~\ref{apx:ood-gate}). Sweeps vary the integration horizon $T$, integration steps $K$, and vMF concentration $\kappa$  (Appendices~\ref{appendix:cobras_vs_t}--\ref{appendix:cobras_vs_kappa}). We also analyzed the computational overhead and potential mitigations: using $25\%$ of each contrastive dataset and $K=2$ lowers decoding overhead from $32\%$ to $7\%$ with a $1.8$-point True$\times$Info loss (Appendix~\ref{apx:computational-cost} for more details).
+\noindent{\textbf{RQ3: Ablations and computational cost.}}~We examine how each component of \Cobras affects its performance. On LLaMA3.1-8B, removing the support gate weakens OOD retention. Using Euclidean geometry instead of Riemannian geometry decreases performance on both in-distribution and OOD data, while removing the alignment coefficient reduces informativeness (Appendix~\ref{apx:component-ablations}). Coverage $p$ tunes the OOD trade-off (Appendix~\ref{apx:ood-gate}). Sweeps vary the integration horizon $T$, integration steps $K$, and vMF concentration $\kappa$ (Appendices~\ref{appendix:cobras_vs_t}--\ref{appendix:cobras_vs_kappa}). We also analyzed the computational overhead and potential mitigations: using $25\%$ of each contrastive dataset and $K=2$ lowers decoding overhead from $32\%$ to $7\%$ with a $1.8$-point True$\times$Info loss (Appendix~\ref{apx:computational-cost} for more details).
 
 
 
