@@ -937,7 +937,7 @@ We vary the number of geodesic Euler steps $K$ under ungated steering to examine
 Every tested $K$ gives higher True and True$\times$Info scores than the corresponding unsteered reference. Increasing $K$ raises informativeness but can lower truthfulness. On Falcon-7B, moving from $K=1$ to $K=10$ raises Info from $73.7$ to $93.4$ and lowers True from $60.5$ to $45.5$, while improving the joint score from $37.3$ to $40.3$. The joint-score gain is larger on LLaMA3.1-8B and smaller on Mistral-7B. Although $K=10$ gives the highest mean joint score for each model, the Falcon trend is not monotonic. The choice of $K$ should therefore reflect both the desired truthfulness--informativeness balance and the cost of additional field evaluations (Appendix~\ref{apx:computational-cost}).
 
 %\FloatBarrier
-\subsection{\textcolor{red}{Effect of the vMF concentration $\kappa$; check numbers}}
+\subsection{Effect of the vMF concentration $\kappa$}
 \label{appendix:cobras_vs_kappa}
 
 We vary the vMF concentration $\kappa\in\{0,10,20,40,80\}$ of the alignment coefficient $s$ (Section~\ref{subsec:strength}) on TruthfulQA, using $K=10$ and ungated steering (Table~\ref{tab:cobras_vs_kappa}). For each model, we fix the integration horizon $T$ at the value with the highest True$\times$Info in Figure~\ref{fig:cobras_tqa_vs_t}. At $\kappa=0$, $s=1/2$ for every activation, removing the coefficient's dependence on alignment with $\boldsymbol{\mu}$.
@@ -958,7 +958,7 @@ Unsteered & 45.1 & 97.6 & $43.0\pm1.5$ & 41.7 & 94.8 & $36.9\pm0.6$ & 78.3 & 86.
 \midrule
 $0$ & 65.6 & 94.6 & $60.5\pm1.6$ & 67.4 & 91.9 & $59.5\pm1.8$ & 84.2 & 86.7 & $71.2\pm1.0$ \\
 $10$ & 75.4 & 89.2 & $65.2\pm1.2$ & 78.0 & 87.6 & $66.0\pm1.2$ & 83.9 & 85.5 & $69.6\pm1.9$ \\
-\textcolor{red}{$20$} & 79.9 & 86.4 & $67.1\pm1.9$ & 81.2 & 83.9 & $65.7\pm0.7$ & 83.1 & 85.0 & $68.4\pm1.5$ \\
+$20$ & 79.9 & 86.4 & $67.1\pm1.9$ & 81.2 & 83.9 & $65.7\pm0.7$ & 83.1 & 85.0 & $68.4\pm1.5$ \\
 $40$ & 81.8 & 84.8 & $67.0\pm1.0$ & 83.8 & 80.0 & $64.5\pm0.9$ & 84.4 & 83.4 & $68.1\pm1.7$ \\
 $80$ & 81.9 & 84.3 & $66.5\pm0.8$ & 84.4 & 78.2 & $63.1\pm0.6$ & 85.0 & 81.8 & $67.4\pm1.6$ \\
 \bottomrule
